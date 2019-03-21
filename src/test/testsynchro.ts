@@ -2,6 +2,7 @@ import { Logger } from "../api/logger";
 import { Synchro } from "../lib/catchup/synchro";
 import { StatusDataBase } from "../lib/storage/statusdb";
 import { StorageDataBase } from "../lib/storage/StorageDataBase";
+import { subtractBN3 } from "../lib/storage/computer";
 
 
 const logger = Logger.init({
@@ -44,7 +45,23 @@ async function main() {
   let result3 = await storageDB.queryAccountTableByAddress('154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r');
   logger.info(result3);
 
-}
+  logger.info('test BN\n')
+  logger.info(subtractBN3("1000", "100", "1"))
 
+  statusDB.close();
+  storageDB.close();
+}
+function formatToJsonObj(str: any) {
+  console.log(str);
+  logger.info(typeof str);
+  let obj = Object.create({});
+
+  let lst = str.split(',');
+  for (let i = 0; i < lst.length; i++) {
+    let lstItem = lst[i].split('=')
+    obj['' + lstItem[0]] = lstItem[1];
+  }
+  return obj;
+}
 main();
 

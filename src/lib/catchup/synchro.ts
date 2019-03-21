@@ -8,6 +8,7 @@ import { getReceipt } from '../../api/getreceipt';
 import { StatusDataBase } from '../storage/statusdb';
 import { StorageDataBase, HASH_TYPE } from '../storage/StorageDataBase';
 import { ErrorCode, IFeedBack } from '../../core';
+import { type } from 'os';
 /**
  * This is a client , always syncing with the Chain
  */
@@ -152,11 +153,11 @@ export class Synchro {
           }
 
           // save tx information
-          feedback = await this.updateTx(hash, timestamp, obj.transactions);
-          if (feedback.err) {
-            resolv({ err: feedback.err, data: null });
-            return;
-          }
+          // feedback = await this.updateTx(hash, timestamp, obj.transactions);
+          // if (feedback.err) {
+          //   resolv({ err: feedback.err, data: null });
+          //   return;
+          // }
         }
 
         resolv({ err: ErrorCode.RESULT_OK, data: null })
@@ -205,6 +206,7 @@ export class Synchro {
           resolv({ err: feedback.err, data: null });
           return;
         }
+        console.log(feedback.data)
 
         let feedback2 = await this.checkAccountAndToken(feedback.data);
         if (feedback2.err) {
@@ -220,13 +222,18 @@ export class Synchro {
   // 2, account table
   // 3, hash table
   private async checkAccountAndToken(receipt: any): Promise<IFeedBack> {
-    let tx = receipt.tx;
+    let recet = JSON.parse(receipt.toString());
+    this.logger.info('checkAccountAndToken\n')
+    this.logger.info(recet);
+
+    let tx = recet.tx;
+    console.log(tx);
 
     if (tx.method === 'transferTo') {
-      return this.checkTxTransferTo(receipt);
+      return this.checkTxTransferTo(recet);
     }
     else if (tx.method === 'sellBancorToken') {
-      return this.checkTxSellBancorToken(tx);
+      return this.checkTxSellBancorToken(recet);
     }
     else {
       return new Promise<IFeedBack>(async (resolv) => {
@@ -288,9 +295,21 @@ export class Synchro {
   }
   public async getReceiptInfo(strHash: string) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('getReceiptInfo\n')
       let result = await getReceipt(this.ctx, [strHash]);
+      console.log(result.resp);
+      console.log(typeof result.resp)
+
       if (result.ret === 200) {
-        resolv({ err: ErrorCode.RESULT_OK, data: result.resp });
+        let obj: any;
+        try {
+          obj = JSON.parse(JSON.stringify(result.resp));
+        }
+        catch (e) {
+          resolv({ err: ErrorCode.RESULT_FAILED, data: null })
+          return;
+        }
+        resolv({ err: ErrorCode.RESULT_OK, data: obj });
       } else {
         resolv({ err: ErrorCode.RESULT_FAILED, data: null })
       }

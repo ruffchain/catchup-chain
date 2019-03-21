@@ -118,15 +118,15 @@ export class WRQueue extends EventEmitter {
       let arr: any;
       arr = [];
       if (!this.isANumber(args)) {
-        // it is a number or a token name
+        // it is a token name
         let result = await this.pStorageDb.queryHashTableFullName(args, 6);
         if (result.data) {
           result.data.forEach((item: any) => {
-            arr.push({ hash: item.hash, type: item.type });
+            arr.push({ type: item.type });
           });
           resolv({ err: ErrorCode.RESULT_OK, data: arr });
         } else {
-          resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.NONE }] })
+          resolv({ err: ErrorCode.RESULT_OK, data: [] })
         }
 
         return;
@@ -134,10 +134,10 @@ export class WRQueue extends EventEmitter {
         // if it is a number
         let num = parseInt(args);
         if (num >= 0 && num < this.pStatusDb.nCurrentHeight) {
-          resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.HEIGHT }] });
+          resolv({ err: ErrorCode.RESULT_OK, data: [{ type: HASH_TYPE.HEIGHT }] });
         }
         else {
-          resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.NONE }] });
+          resolv({ err: ErrorCode.RESULT_OK, data: [] });
         }
       }
 

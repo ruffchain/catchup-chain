@@ -1,6 +1,7 @@
 import { CUDataBase, IfCUDataBaseOptions } from './cudatabase';
 import winston = require('winston');
 import { ErrorCode, IFeedBack } from '../../core/error_code';
+import { subtractBN3 } from './computer';
 
 export const HASH_TYPE = {
   ADDRESS: 'addr',
@@ -63,7 +64,7 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash LIKE "${s}%" LIMIT ${num};`);
   }
   public queryHashTableFullName(s: string, num: number) {
-    return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash LIKE "${s}" LIMIT ${num};`);
+    return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash = "${s}" LIMIT ${num};`);
   }
 
   public insertOrReplaceHashTable(hash: string, type: string) {
@@ -149,15 +150,23 @@ export class StorageDataBase extends CUDataBase {
     return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
   }
   public updateAccountTable(address: string, amount: string, value: number) {
-
+    return this.updateRecord(``);
   }
   public addToAccountTable(address: string, amount: string) {
 
   }
   public subtractToAccountTable(address: string, amount: string, fee: string) {
     // I won't judge address correctness
-    return new Promise<IFeedBack>((resolv) => {
+    return new Promise<IFeedBack>(async (resolv) => {
       // get account amount
+      let result = await this.queryAccountTableByAddress(address);
+      if(result.err){
+
+      }
+      let amountOld = result.data.amount;
+      let amountNew = subtractBN3(amountOld, amount, fee);
+
+      result = await this.updateAccountTable(address, amountNew, 0);
 
     });
   }
