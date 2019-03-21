@@ -103,8 +103,39 @@ export class WRQueue extends EventEmitter {
       let result = await this.taskGetName(task.request.args, 6);
       arr = result.data;
     }
+    else if (task.request.funName === 'getAccount') {
+      let result = await this.taskGetAccount(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getToken') {
+      let result = await this.taskGetToken(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getTxs') {
+      let result = await this.taskGetTxs();
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getTx') {
+      let result = await this.taskGetTx(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getBlocks') {
+      let result = await this.taskGetBlocks();
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else {
-      arr.push({ error: 'unknown name' })
+      // arr.push({ error: 'unknown name' })
+      this.logger.error('unknown name method:', task.request.funName);
     }
 
     task.callback({ err: ErrorCode.RESULT_OK, data: arr })
@@ -143,15 +174,44 @@ export class WRQueue extends EventEmitter {
 
     })
   }
-  private isTokenOrAddress(args: string) {
-    if (args.length >= 20) {
-      return true;
-    }
-    if (this.isANumber(args)) {
-      return false;
-    }
-    return true;
+  // get account all balances
+  private async taskGetAccount(address: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryAllAccountTableByAddress(address);
+      resolv(result);
+    });
   }
+
+  private async taskGetToken(token: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryTokenTable(token);
+      resolv(result);
+    });
+  }
+  private async taskGetTxs() {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryLatestTxTable();
+      resolv(result);
+    });
+  }
+  private async taskGetTx(name: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryTxTable(name);
+      resolv(result);
+    });
+  }
+  private async taskGetBlocks() {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryLatestBlockTable();
+      resolv(result);
+    });
+  }
+
   public isANumber(args: string) {
     // only contain numbers
     let lst = args.split('');

@@ -86,13 +86,13 @@ export class Inquiro {
     });
   }
 
-  private testAsync() {
-    setTimeout(() => {
-      if (lst.length > 0) {
-        lst[0]({ err: ErrorCode.RESULT_OK, data: 'OK' })
-      }
-      lst.shift();
-    }, 5000)
-  }
+  // private testAsync() {
+  //   setTimeout(() => {
+  //     if (lst.length > 0) {
+  //       lst[0]({ err: ErrorCode.RESULT_OK, data: 'OK' })
+  //     }
+  //     lst.shift();
+  //   }, 5000)
+  // }
 
 }

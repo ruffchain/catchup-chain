@@ -151,6 +151,9 @@ export class StorageDataBase extends CUDataBase {
   public queryAccountTableByAddress(addr: string) {
     return this.getRecord(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
   }
+  public queryAllAccountTableByAddress(addr: string) {
+    return this.getAllRecords(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
+  }
   public queryAccountTableByToken(token: string) {
 
   }
@@ -187,66 +190,7 @@ export class StorageDataBase extends CUDataBase {
   public addToAccountTable(address: string, amount: string) {
 
   }
-  // public subtractToAccountTable(address: string, amount: string, fee: string) {
-  //   // I won't judge address correctness
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     // get account amount
-  //     let result = await this.queryAccountTableByAddress(address);
-  //     if (result.err) {
 
-  //     }
-  //     let amountOld = result.data.amount;
-  //     let amountNew = subtractBN3(amountOld, amount, fee);
-
-  //     result = await this.updateAccountTable(address, amountNew, 0);
-
-  //   });
-  // }
-  // public subtractAddAccountTable(caller: string, to: string, value: string, fee: string) {
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     this.logger.info('subtractAddAccountTable()\n')
-  //     // transaction, to change at the same time
-  //     let result = await this.queryAccountTableByAddress(caller);
-  //     console.log(result);
-
-  //     if (result.err) {
-  //       resolv(result);
-  //       return;
-  //     }
-  //     let oldCallerAmount = result.data.amount;
-  //     let newCallerAmout = subtractBN3(oldCallerAmount, value, fee);
-
-  //     result = await this.queryAccountTableByAddress(to);
-  //     console.log('To:\n')
-  //     console.log(result)
-  //     console.log(typeof result.err)
-
-  //     if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-  //       // it is empty
-  //       // add a new account to account table;
-  //       this.logger.info('add new account \n')
-  //       let result1 = await this.insertAccountTable(to, 's', '0', 0);
-  //       console.log(result1);
-  //       if (result1.err) {
-  //         resolv(result1);
-  //         return;
-  //       }
-  //     } else if (result.err) {
-  //       resolv(result);
-  //       return;
-  //     }
-  //     console.log('to account:')
-  //     console.log(result)
-
-  //     let oldToAmount = result.data.amount;
-  //     let newToAmount = addBN2(oldToAmount, value);
-
-  //     result = await this.execTransaction2(
-  //       `UPDATE ${this.accountTable} SET amount=${newCallerAmout} WHERE hash=${caller};`,
-  //       `UPDATE ${this.accountTable} SET amount=${newToAmount} WHERE hash=${to};`);
-  //     resolv(result);
-  //   });
-  // }
   // block table
 
   public queryBlockTable(num: number) {
@@ -256,18 +200,25 @@ export class StorageDataBase extends CUDataBase {
     this.logger.info('into insertOrReplaceBlockTable()', hash, '\n')
     return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, txs, address,timestamp) VALUES("${hash}", ${txno}, "${address}", ${datetime});`);
   }
+  public queryLatestBlockTable() {
+    return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT 50;`)
+  }
 
   // tx table
-  public queryTxTable(num: number, time: number) {
-
+  public queryTxTable(hash: string) {
+    return this.getRecord(`SELECT * FROM ${this.txTable} WHERE hash = "${hash}";`)
   }
   public insertTxTable(hash: string, blockhash: string, address: string, datetime: number, fee: string) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
     return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, address,timestamp, fee) VALUES("${hash}", "${blockhash}", "${address}", ${datetime},"${fee}");`);
   }
+  public queryLatestTxTable() {
+    return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT 50 ;`)
+  }
 
+  // token table
   public queryTokenTable(name: string) {
-
+    return this.getRecord(`SELECT * FROM ${this.tokenTable} WHERE hash = "${name}";`);
   }
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
     return this.insertRecord(`INSERT INTO ${this.tokenTable} (name, type, address, timestamp) VALUES("${tokenname}", "${type}", "${address}", ${datetime})`);
