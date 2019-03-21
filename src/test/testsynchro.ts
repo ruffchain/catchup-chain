@@ -63,15 +63,30 @@ async function main() {
   // logger.info(result);
   // logger.info('libnumber:', parseInt(result.resp!))
 
+  let result = await synchro.getBalanceInfo('154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
+  logger.info(result);
+  let obj = JSON.parse(result.resp!);
+  logger.info('libnumber:', obj.value, '\n')
+
+  result = await synchro.getTokenBalanceInfo('hdbahsdga', '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a')
+  logger.info(result);
+  obj = JSON.parse(result.resp!);
+  logger.info('libnumber:', obj.value)
+
+  result = await synchro.getBancorTokenBalanceInfo('token90', '1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79')
+  logger.info(result);
+  obj = JSON.parse(result.resp!);
+  logger.info('bancortoken balance:', obj.value)
+
   // let result = await synchro.getReceiptInfo('0b75087541bfb6aa5dd71a0376b065b5d9ece87d0dd56949cf647b6fbb7d9d15');
   // logger.info(result.data);
 
-  for (let i = 0; i < txLst.length; i++) {
-    logger.info(i + 1 + '\n')
-    let result = await synchro.getReceiptInfo(txLst[i]);
-    logger.info(result.data);
-    logger.info('\n')
-  }
+  // for (let i = 0; i < txLst.length; i++) {
+  //   logger.info(i + 1 + '\n')
+  //   let result = await synchro.getReceiptInfo(txLst[i]);
+  //   logger.info(result.data);
+  //   logger.info('\n')
+  // }
 
   // logger.info('\n')
   // let result2 = await synchro.getBlock(134);

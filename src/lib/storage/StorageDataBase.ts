@@ -13,6 +13,11 @@ export const HASH_TYPE = {
 };
 export const SYS_TOKEN = 's';
 
+export const TOKEN_TYPE = {
+  NORMAL: 'normal',
+  BANCOR: 'bancor'
+}
+
 
 export class StorageDataBase extends CUDataBase {
   private hashTable: string;
@@ -43,6 +48,7 @@ export class StorageDataBase extends CUDataBase {
     this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
 
     this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "fee" CHAR(64) NOT NULL);`;
+
     this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
   }
 
@@ -153,6 +159,9 @@ export class StorageDataBase extends CUDataBase {
   public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
     return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
   }
+  public insertOrReplaceAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
+  }
   public updateAccountTable(address: string, amount: string, value: number) {
     return this.updateRecord(``);
   }
@@ -189,7 +198,21 @@ export class StorageDataBase extends CUDataBase {
       let newCallerAmout = subtractBN3(oldCallerAmount, value, fee);
 
       result = await this.queryAccountTableByAddress(to);
-      if (result.err) {
+      console.log('To:\n')
+      console.log(result)
+      console.log(typeof result.err)
+
+      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+        // it is empty
+        // add a new account to account table;
+        this.logger.info('add new account \n')
+        let result1 = await this.insertAccountTable(to, 's', '0', 0);
+        console.log(result1);
+        if (result1.err) {
+          resolv(result1);
+          return;
+        }
+      } else if (result.err) {
         resolv(result);
         return;
       }
@@ -223,10 +246,10 @@ export class StorageDataBase extends CUDataBase {
     return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, address,timestamp, fee) VALUES("${hash}", "${blockhash}", "${address}", ${datetime},"${fee}");`);
   }
 
-  public queryTokenTable(num: number) {
+  public queryTokenTable(name: string) {
 
   }
-  public insertTokenTable() {
-
+  public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
+    return this.insertRecord(`INSERT INTO ${this.tokenTable} (name, type, address, timestamp) VALUES("${tokenname}", "${type}", "${address}", ${datetime})`);
   }
 }

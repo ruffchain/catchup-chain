@@ -65,6 +65,8 @@ export enum ErrorCode {
 
     RESULT_SYNC_TX_UNKNOWN_METHOD = 11100,
     RESULT_SYNC_TX_EXEC2 = 11101,
+    RESULT_SYNC_GETBALANCE_FAILED = 11102,
+    RESULT_SYNC_GETTOKENBALANCE_FAILED = 11103,
 }
 
 export interface IFeedBack { err: ErrorCode; data: any; }
