@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { CUDataBase, IfCUDataBaseOptions } from './cudatabase';
 import winston = require('winston');
 import { StatusDataBase } from './statusdb';
-import { StorageDataBase } from './StorageDataBase';
+import { StorageDataBase, HASH_TYPE } from './StorageDataBase';
 import { IfReq } from '../catchup/inquiro'
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 
@@ -96,27 +96,56 @@ export class WRQueue extends EventEmitter {
     }
 
     if (task.request.funName === 'getName') {
-      let result = await this.pStorageDb.queryHashTable(task.request.args, 6);
       let arr: any;
       arr = [];
 
-      let i = 0;
-      const NUM = 10;
+      let result = await this.taskGetName(task.request.args, 6);
 
-      if (result.data) {
-        // for (let i = 0; i < result.data.length && i < NUM; i++) {
-        //   arr.push(result.data[i]);
-        // }
-        result.data.forEach((item: any) => {
-          arr.push({ hash: item.hash, type: item.type });
-        });
-      }
+      arr = result.data;
 
       task.callback({ err: ErrorCode.RESULT_OK, data: arr })
       que.shift();
       this.emit('execRead');
       return;
     }
+  }
+  private async taskGetName(args: string, num: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let arr: any;
+      arr = [];
+      if (this.isTokenOrAddress(args)) {
+        // it is a number or a token name
+        let result = await this.pStorageDb.queryHashTableFullName(args, 6);
+        if (result.data) {
+          result.data.forEach((item: any) => {
+            arr.push({ hash: item.hash, type: item.type });
+          });
+        }
+        resolv({ err: ErrorCode.RESULT_OK, data: arr });
+      } else {
+        // if it is a number
+        let num = parseInt(args);
+        if (num >= 0 && num < this.pStatusDb.nCurrentHeight) {
+          resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.HEIGHT }] });
+        }
+        else {
+          resolv({ err: ErrorCode.RESULT_OK, data: [] });
+        }
+      }
+
+    })
+  }
+  private isTokenOrAddress(args: string) {
+    if (args.length === 64) {
+      return true;
+    }
+    try {
+      parseInt(args);
+    } catch (e) {
+      this.logger.error('isTokenOrAddress is a token');
+      return true;
+    }
+    return false;
   }
   public async execQueueWrite(que: IfTask[]) {
 

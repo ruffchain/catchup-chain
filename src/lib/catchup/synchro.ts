@@ -129,16 +129,30 @@ export class Synchro {
         let txno = obj.transactions.length;
 
         this.logger.info('save block hash to hash table')
-        let feedback = await this.pStorageDb.saveToHashTable(hash, HASH_TYPE.BLOCK);
+        // save to hash table
+        let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
+        if (feedback.err) {
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
 
+        // save to block table
+        feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, txno, address, timestamp);
         if (feedback.err) {
           resolv({ err: feedback.err, data: null });
           return;
         }
 
         if (txno > 0) {
-          this.logger.info('save tx hash to hash table')
-          feedback = await this.pStorageDb.saveTxToHashTable(obj.transactions);
+          this.logger.info('save tx infomation\n')
+          // feedback = await this.pStorageDb.saveTxToHashTable(obj.transactions);
+          // if (feedback.err) {
+          //   resolv({ err: feedback.err, data: null });
+          //   return;
+          // }
+
+          // save tx information
+          feedback = await this.updateTx(hash, timestamp, obj.transactions);
           if (feedback.err) {
             resolv({ err: feedback.err, data: null });
             return;
@@ -154,8 +168,93 @@ export class Synchro {
       }
     });
   }
-  private async updateTx() {
+  // Need to check if address is already in hash table here, 
+  // Because information is got from tx
+  private async updateTx(bhash: string, dtime: number, txs: any[]) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      for (let j = 0; j < txs.length; j++) {
 
+        let hash = txs[j].hash;
+        let blockhash = bhash;
+        let address = txs[j].caller;
+        let datetime = dtime;
+        let fee = txs[j].fee;
+
+        // put it into tx table, insertOrReplace
+        let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, address, datetime, fee);
+        if (feedback.err) {
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+
+        // insertOrReplace it into hash table
+        feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
+        if (feedback.err) {
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+
+        // udpate account table if needed
+        // check account is in hashtable
+        // update token table if needed
+        // check token is in hashtable
+
+        // get receipt
+        feedback = await this.getReceiptInfo(hash);
+        if (feedback.err) {
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+
+        let feedback2 = await this.checkAccountAndToken(feedback.data);
+        if (feedback2.err) {
+          resolv({ err: feedback2.err, data: null });
+          return;
+        }
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
+  // Based on tx method name
+  // 1, token table
+  // 2, account table
+  // 3, hash table
+  private async checkAccountAndToken(receipt: any): Promise<IFeedBack> {
+    let tx = receipt.tx;
+
+    if (tx.method === 'transferTo') {
+      return this.checkTxTransferTo(receipt);
+    }
+    else if (tx.method === 'sellBancorToken') {
+      return this.checkTxSellBancorToken(tx);
+    }
+    return new Promise<IFeedBack>(async (resolv) => {
+      resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
+    });
+  }
+  private checkTxTransferTo(receipt: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let caller = receipt.tx.caller;
+      let to = receipt.tx.input.to;
+      let value = receipt.tx.value; // string
+
+      // put address into hashtable
+      let feedback = await this.pStorageDb.updateNamesToHashTable([caller, to], HASH_TYPE.ADDRESS);
+      if (feedback.err) {
+        resolv(feedback);
+      }
+
+      // if tx succeed, udpate account table
+      if (receipt.receipt.returnCode === 0) {
+
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  private checkTxSellBancorToken(receipt: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+
+    });
   }
   public async getLastestBlock() {
     let result = await getBlock(this.ctx, ['latest', 'true']);
@@ -172,8 +271,17 @@ export class Synchro {
     this.logger.info('LIBNumber', result.resp!);
     return result;
   }
-  public async getReceipt(strHash: string) {
-    let result = await getReceipt(this.ctx, [strHash]);
-    this.logger.info(result.resp!);
+  public async getReceiptInfo(strHash: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await getReceipt(this.ctx, [strHash]);
+      if (result.ret === 200) {
+        resolv({ err: ErrorCode.RESULT_OK, data: result.resp });
+      } else {
+        resolv({ err: ErrorCode.RESULT_FAILED, data: null })
+      }
+    })
   }
+  // public async getTransaction(strHash:string){
+  //   let result = await this.getTransaction();
+  // }
 }

@@ -27,10 +27,14 @@ let synchro = new Synchro({
 
 // synchro.getBlock(0);
 async function main() {
-  let result = await synchro.getLIBNumber()
-  logger.info(result);
-  logger.info('libnumber:', parseInt(result.resp!))
+  // let result = await synchro.getLIBNumber()
+  // logger.info(result);
+  // logger.info('libnumber:', parseInt(result.resp!))
+  let result = await synchro.getReceiptInfo('cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4');
+  logger.info(result.data);
 
+  // let result2 = await synchro.getBlock(134);
+  // logger.info(result2);
 
 }
 

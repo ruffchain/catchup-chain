@@ -6,7 +6,8 @@ export const HASH_TYPE = {
   ADDRESS: 'addr',
   TOKEN: 'token',
   TX: 'tx',
-  BLOCK: 'block'
+  BLOCK: 'block',
+  HEIGHT: 'height',
 };
 export const SYS_TOKEN = 's';
 
@@ -36,7 +37,7 @@ export class StorageDataBase extends CUDataBase {
     // hash-tokenname, value for search purpose!
     this.accountTableSchema = `("hash" CHAR(64) NOT NULL, "token" CHAR(64) NOT NULL, "amount" TEXT NOT NULL, "value" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
     this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
-    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
+    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "fee" CHAR(64) NOT NULL);`;
     this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
   }
 
@@ -57,6 +58,9 @@ export class StorageDataBase extends CUDataBase {
   public queryHashTable(s: string, num: number) {
     return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash LIKE "${s}%" LIMIT ${num};`);
   }
+  public queryHashTableFullName(s: string, num: number) {
+    return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash LIKE "${s}" LIMIT ${num};`);
+  }
 
   public insertOrReplaceHashTable(hash: string, type: string) {
     this.logger.info('into insertOrReplaceToHashTable()', hash, '\n')
@@ -70,26 +74,26 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(`SELECT * FROM ${this.hashTable} WHERE hash = "${s}";`);
   }
 
-  public saveToHashTable(hash: string, type: string) {
-    this.logger.info('into saveToHashTable()', hash, '\n')
-    return new Promise<IFeedBack>(async (resolv) => {
-      let feedback = await this.getHashTable(hash);
-      if (feedback.err) {
-        // insert
-        feedback = await this.insertHashTable(hash, HASH_TYPE.BLOCK);
-      } else {
-        feedback = await this.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
-      }
+  // public saveToHashTable(hash: string, type: string) {
+  //   this.logger.info('into saveToHashTable()', hash, '\n')
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     let feedback = await this.getHashTable(hash);
+  //     if (feedback.err) {
+  //       // insert
+  //       feedback = await this.insertHashTable(hash, HASH_TYPE.BLOCK);
+  //     } else {
+  //       feedback = await this.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
+  //     }
 
-      this.logger.info('after insertion ', feedback);
+  //     this.logger.info('after insertion ', feedback);
 
-      if (feedback.err) {
-        resolv({ err: feedback.err, data: null })
-      } else {
-        resolv({ err: ErrorCode.RESULT_OK, data: null })
-      }
-    });
-  }
+  //     if (feedback.err) {
+  //       resolv({ err: feedback.err, data: null })
+  //     } else {
+  //       resolv({ err: ErrorCode.RESULT_OK, data: null })
+  //     }
+  //   });
+  // }
 
   public saveTxToHashTable(txs: any[]) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -101,6 +105,25 @@ export class StorageDataBase extends CUDataBase {
         }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
+  public async updateNamesToHashTable(names: string[], type: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      for (let j = 0; j < names.length; j++) {
+        await this.updateNameToHashTable(names[j], type);
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  public async updateNameToHashTable(name: string, type: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let feedback = await this.getHashTable(name);
+      if (feedback.err) {
+        // insert
+        feedback = await this.insertHashTable(name, HASH_TYPE.BLOCK);
+      } else {
+        feedback = await this.insertOrReplaceHashTable(name, HASH_TYPE.BLOCK);
+      }
     });
   }
 
@@ -120,19 +143,22 @@ export class StorageDataBase extends CUDataBase {
   public updateAccountTable() {
 
   }
-
+  // block table
   public queryBlockTable(num: number) {
 
   }
-  public insertOrReplaceBlockTable() {
-
+  public insertOrReplaceBlockTable(hash: string, txno: string, address: string, datetime: number) {
+    this.logger.info('into insertOrReplaceBlockTable()', hash, '\n')
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, txs, address,timestamp) VALUES("${hash}", "${txno}", ${address}, ${datetime});`);
   }
 
+  // tx table
   public queryTxTable(num: number, time: number) {
 
   }
-  public insertTxTable() {
-
+  public insertTxTable(hash: string, blockhash: string, address: string, datetime: number, fee: string) {
+    this.logger.info('insertOrREplaceTxTable', hash, '\n');
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, address,timestamp, fee) VALUES("${hash}", "${blockhash}", ${address}, ${datetime},${fee});`);
   }
 
   public queryTokenTable(num: number) {
