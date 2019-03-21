@@ -145,18 +145,18 @@ export class Synchro {
 
         if (txno > 0) {
           this.logger.info('save tx infomation\n')
-          // feedback = await this.pStorageDb.saveTxToHashTable(obj.transactions);
-          // if (feedback.err) {
-          //   resolv({ err: feedback.err, data: null });
-          //   return;
-          // }
-
-          // save tx information
-          feedback = await this.updateTx(hash, timestamp, obj.transactions);
+          feedback = await this.pStorageDb.saveTxToHashTable(obj.transactions);
           if (feedback.err) {
             resolv({ err: feedback.err, data: null });
             return;
           }
+
+          // save tx information
+          // feedback = await this.updateTx(hash, timestamp, obj.transactions);
+          // if (feedback.err) {
+          //   resolv({ err: feedback.err, data: null });
+          //   return;
+          // }
         }
 
         resolv({ err: ErrorCode.RESULT_OK, data: null })
@@ -206,11 +206,11 @@ export class Synchro {
           return;
         }
 
-        let feedback2 = await this.checkAccountAndToken(feedback.data);
-        if (feedback2.err) {
-          resolv({ err: feedback2.err, data: null });
-          return;
-        }
+        // let feedback2 = await this.checkAccountAndToken(feedback.data);
+        // if (feedback2.err) {
+        //   resolv({ err: feedback2.err, data: null });
+        //   return;
+        // }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null })
     });

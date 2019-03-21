@@ -6,6 +6,7 @@ import { StatusDataBase } from './statusdb';
 import { StorageDataBase, HASH_TYPE } from './StorageDataBase';
 import { IfReq } from '../catchup/inquiro'
 import { ErrorCode, IFeedBack } from '../../core/error_code';
+import { isNumber } from 'util';
 
 export interface IfTask {
   maxRetry: number;
@@ -95,25 +96,28 @@ export class WRQueue extends EventEmitter {
       return;
     }
 
+    let arr: any;
+    arr = [];
+
     if (task.request.funName === 'getName') {
-      let arr: any;
-      arr = [];
-
       let result = await this.taskGetName(task.request.args, 6);
-
       arr = result.data;
-
-      task.callback({ err: ErrorCode.RESULT_OK, data: arr })
-      que.shift();
-      this.emit('execRead');
-      return;
     }
+    else {
+      arr.push({ error: 'unknown name' })
+    }
+
+    task.callback({ err: ErrorCode.RESULT_OK, data: arr })
+    que.shift();
+    this.emit('execRead');
+    return;
   }
+  // getName
   private async taskGetName(args: string, num: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       let arr: any;
       arr = [];
-      if (this.isTokenOrAddress(args)) {
+      if (!this.isANumber(args)) {
         // it is a number or a token name
         let result = await this.pStorageDb.queryHashTableFullName(args, 6);
         if (result.data) {
@@ -122,6 +126,7 @@ export class WRQueue extends EventEmitter {
           });
         }
         resolv({ err: ErrorCode.RESULT_OK, data: arr });
+        return;
       } else {
         // if it is a number
         let num = parseInt(args);
@@ -136,16 +141,26 @@ export class WRQueue extends EventEmitter {
     })
   }
   private isTokenOrAddress(args: string) {
-    if (args.length === 64) {
+    if (args.length >= 20) {
       return true;
     }
-    try {
-      parseInt(args);
-    } catch (e) {
-      this.logger.error('isTokenOrAddress is a token');
-      return true;
+    if (this.isANumber(args)) {
+      return false;
     }
-    return false;
+    return true;
+  }
+  public isANumber(args: string) {
+    // only contain numbers
+    let lst = args.split('');
+
+    for (let i = 0; i < lst.length; i++) {
+      // this.logger.info('test:', lst[i])
+      console.log(parseInt(lst[i]))
+      if (isNaN(parseInt(lst[i]))) {
+        return false;
+      }
+    }
+    return true;
   }
   public async execQueueWrite(que: IfTask[]) {
 
