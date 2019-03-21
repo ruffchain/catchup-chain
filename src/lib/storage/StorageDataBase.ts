@@ -1,7 +1,7 @@
 import { CUDataBase, IfCUDataBaseOptions } from './cudatabase';
 import winston = require('winston');
 import { ErrorCode, IFeedBack } from '../../core/error_code';
-import { subtractBN3 } from './computer';
+import { subtractBN3, addBN2 } from './computer';
 
 export const HASH_TYPE = {
   ADDRESS: 'addr',
@@ -127,7 +127,9 @@ export class StorageDataBase extends CUDataBase {
   public async updateNameToHashTable(name: string, type: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       let feedback = await this.getHashTable(name);
-      if (feedback.err || feedback.data.length > 0) {
+      if (feedback.err) {
+        resolv(feedback);
+      } else if (feedback.data.length > 0) {
         resolv(feedback);
       } else {
         let result = await this.insertOrReplaceHashTable(name, type);
@@ -160,7 +162,7 @@ export class StorageDataBase extends CUDataBase {
     return new Promise<IFeedBack>(async (resolv) => {
       // get account amount
       let result = await this.queryAccountTableByAddress(address);
-      if(result.err){
+      if (result.err) {
 
       }
       let amountOld = result.data.amount;
@@ -168,6 +170,31 @@ export class StorageDataBase extends CUDataBase {
 
       result = await this.updateAccountTable(address, amountNew, 0);
 
+    });
+  }
+  public subtractAddAccountTable(caller: string, to: string, value: string, fee: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // transaction, to change at the same time
+      let result = await this.queryAccountTableByAddress(caller);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let oldCallerAmount = result.data.amount;
+      let newCallerAmout = subtractBN3(oldCallerAmount, value, fee);
+
+      result = await this.queryAccountTableByAddress(to);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let oldToAmount = result.data.amount;
+      let newToAmount = addBN2(oldToAmount, value);
+
+      result = await this.execTransaction2(
+        `UPDATE ${this.accountTable} SET amount=${newCallerAmout} WHERE hash=${caller};`,
+        `UPDATE ${this.accountTable} SET amount=${newToAmount} WHERE hash=${to};`);
+      resolv(result);
     });
   }
   // block table

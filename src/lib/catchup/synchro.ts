@@ -153,11 +153,11 @@ export class Synchro {
           }
 
           // save tx information
-          // feedback = await this.updateTx(hash, timestamp, obj.transactions);
-          // if (feedback.err) {
-          //   resolv({ err: feedback.err, data: null });
-          //   return;
-          // }
+          feedback = await this.updateTx(hash, timestamp, obj.transactions);
+          if (feedback.err) {
+            resolv({ err: feedback.err, data: null });
+            return;
+          }
         }
 
         resolv({ err: ErrorCode.RESULT_OK, data: null })
@@ -194,11 +194,6 @@ export class Synchro {
           resolv({ err: feedback.err, data: null });
           return;
         }
-
-        // udpate account table if needed
-        // check account is in hashtable
-        // update token table if needed
-        // check token is in hashtable
 
         // get receipt
         feedback = await this.getReceiptInfo(hash);
@@ -258,17 +253,11 @@ export class Synchro {
       // if tx succeed, udpate account table
       if (receipt.receipt.returnCode === 0) {
 
-        // let feedback1 = await this.pStorageDb.subtractToAccountTable(caller, value, fee);
-        // if (feedback1.err) {
-        //   resolv(feedback1);
-        //   return;
-        // }
-        // feedback1 = await this.pStorageDb.addToAccountTable(to, value);
-        // if (feedback1.err) {
-        //   resolv(feedback1);
-        //   return;
-        // }
-
+        let feedback1 = await this.pStorageDb.subtractAddAccountTable(caller, to, value, fee);
+        if (feedback1.err) {
+          resolv(feedback1);
+          return;
+        }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
@@ -297,19 +286,19 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('getReceiptInfo\n')
       let result = await getReceipt(this.ctx, [strHash]);
-      console.log(result.resp);
-      console.log(typeof result.resp)
+      // console.log(result.resp);
+      // console.log(typeof result.resp)
 
       if (result.ret === 200) {
-        let obj: any;
-        try {
-          obj = JSON.parse(JSON.stringify(result.resp));
-        }
-        catch (e) {
-          resolv({ err: ErrorCode.RESULT_FAILED, data: null })
-          return;
-        }
-        resolv({ err: ErrorCode.RESULT_OK, data: obj });
+        // let obj: any;
+        // try {
+        //   obj = JSON.parse(JSON.stringify(result.resp));
+        // }
+        // catch (e) {
+        //   resolv({ err: ErrorCode.RESULT_FAILED, data: null })
+        //   return;
+        // }
+        resolv({ err: ErrorCode.RESULT_OK, data: result.resp });
       } else {
         resolv({ err: ErrorCode.RESULT_FAILED, data: null })
       }

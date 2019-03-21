@@ -64,6 +64,7 @@ export enum ErrorCode {
     RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED = 11001,
 
     RESULT_SYNC_TX_UNKNOWN_METHOD = 11100,
+    RESULT_SYNC_TX_EXEC2 = 11101,
 }
 
 export interface IFeedBack { err: ErrorCode; data: any; }

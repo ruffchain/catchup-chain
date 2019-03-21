@@ -136,6 +136,29 @@ export abstract class CUDataBase {
       });
     });
   }
+  // atomic transaction
+  public execTransaction2(sql1: string, sql2: string) {
+    return new Promise<IFeedBack>((resolv) => {
+      this.db.serialize(() => {
+        this.db.exec('BEGIN', (err: any) => {
+
+        });
+        this.db.run(sql1, (err: any) => {
+
+        });
+        this.db.run(sql2, (err: any) => {
+
+        });
+        this.db.exec('COMMIT', (err: any) => {
+          if (err) {
+            resolv({ err: ErrorCode.RESULT_SYNC_TX_EXEC2, data: null })
+          } else {
+            resolv({ err: ErrorCode.RESULT_OK, data: null })
+          }
+        });
+      });
+    });
+  }
   public matchWriteFunc(task: IfTask) {
     // task is in the closure
     return () => {

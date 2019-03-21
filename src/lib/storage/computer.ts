@@ -8,6 +8,8 @@ export function subtractBN3(num1: string, num2: string, num3: string): string {
   return N1.toString();
 
 }
-export function testBN(num: string) {
-
+export function addBN2(num: string, delt: string) {
+  let N1 = new BigNumber(num);
+  N1 = N1.plus(new BigNumber(delt));
+  return N1.toString();
 }
