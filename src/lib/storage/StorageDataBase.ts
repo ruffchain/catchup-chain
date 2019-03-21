@@ -133,11 +133,12 @@ export class StorageDataBase extends CUDataBase {
   }
   public async updateNameToHashTable(name: string, type: string) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('\n')
       this.logger.info('updateNameToHashTable()\n');
       let feedback = await this.getHashTable(name);
-      console.log('feedback is ->')
+      console.log('\nfeedback is ->')
       console.log(feedback)
-      if (feedback.err) {
+      if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         let result = await this.insertOrReplaceHashTable(name, type);
         resolv(result);
       } else {
@@ -153,8 +154,11 @@ export class StorageDataBase extends CUDataBase {
   public queryAccountTableByToken(token: string) {
 
   }
-  public queryAccountTableByTokenAndAddress(token: string, addr: string) {
-
+  public queryAccountTableByTokenAndAddress(addr: string, token: string) {
+    return this.getRecord(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}" AND token = "${token}"`);
+  }
+  private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string) {
+    return this.updateRecord(`UPDATE ${this.accountTable} SET amount = "${amount}" WHERE hash="${addr}" AND token = "${token}"`);
   }
   public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
     return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
@@ -162,73 +166,89 @@ export class StorageDataBase extends CUDataBase {
   public insertOrReplaceAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
     return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
   }
-  public updateAccountTable(address: string, amount: string, value: number) {
-    return this.updateRecord(``);
+  public updateAccountTable(address: string, token: string, amount: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // if address token is not empty, update it
+      let result = await this.queryAccountTableByTokenAndAddress(address, token);
+
+      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+        // insert into it
+        let result1 = await this.insertAccountTable(address, token, amount, 0);
+        resolv(result1);
+      } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+        resolv(result);
+      } else {
+        // update it
+        let result2 = await this.updateAccountTableByTokenAndAddress(address, token, amount)
+        resolv(result2);
+      }
+    })
   }
   public addToAccountTable(address: string, amount: string) {
 
   }
-  public subtractToAccountTable(address: string, amount: string, fee: string) {
-    // I won't judge address correctness
-    return new Promise<IFeedBack>(async (resolv) => {
-      // get account amount
-      let result = await this.queryAccountTableByAddress(address);
-      if (result.err) {
+  // public subtractToAccountTable(address: string, amount: string, fee: string) {
+  //   // I won't judge address correctness
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     // get account amount
+  //     let result = await this.queryAccountTableByAddress(address);
+  //     if (result.err) {
 
-      }
-      let amountOld = result.data.amount;
-      let amountNew = subtractBN3(amountOld, amount, fee);
+  //     }
+  //     let amountOld = result.data.amount;
+  //     let amountNew = subtractBN3(amountOld, amount, fee);
 
-      result = await this.updateAccountTable(address, amountNew, 0);
+  //     result = await this.updateAccountTable(address, amountNew, 0);
 
-    });
-  }
-  public subtractAddAccountTable(caller: string, to: string, value: string, fee: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('subtractAddAccountTable()\n')
-      // transaction, to change at the same time
-      let result = await this.queryAccountTableByAddress(caller);
-      console.log(result);
+  //   });
+  // }
+  // public subtractAddAccountTable(caller: string, to: string, value: string, fee: string) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     this.logger.info('subtractAddAccountTable()\n')
+  //     // transaction, to change at the same time
+  //     let result = await this.queryAccountTableByAddress(caller);
+  //     console.log(result);
 
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-      let oldCallerAmount = result.data.amount;
-      let newCallerAmout = subtractBN3(oldCallerAmount, value, fee);
+  //     if (result.err) {
+  //       resolv(result);
+  //       return;
+  //     }
+  //     let oldCallerAmount = result.data.amount;
+  //     let newCallerAmout = subtractBN3(oldCallerAmount, value, fee);
 
-      result = await this.queryAccountTableByAddress(to);
-      console.log('To:\n')
-      console.log(result)
-      console.log(typeof result.err)
+  //     result = await this.queryAccountTableByAddress(to);
+  //     console.log('To:\n')
+  //     console.log(result)
+  //     console.log(typeof result.err)
 
-      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-        // it is empty
-        // add a new account to account table;
-        this.logger.info('add new account \n')
-        let result1 = await this.insertAccountTable(to, 's', '0', 0);
-        console.log(result1);
-        if (result1.err) {
-          resolv(result1);
-          return;
-        }
-      } else if (result.err) {
-        resolv(result);
-        return;
-      }
-      console.log('to account:')
-      console.log(result)
+  //     if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+  //       // it is empty
+  //       // add a new account to account table;
+  //       this.logger.info('add new account \n')
+  //       let result1 = await this.insertAccountTable(to, 's', '0', 0);
+  //       console.log(result1);
+  //       if (result1.err) {
+  //         resolv(result1);
+  //         return;
+  //       }
+  //     } else if (result.err) {
+  //       resolv(result);
+  //       return;
+  //     }
+  //     console.log('to account:')
+  //     console.log(result)
 
-      let oldToAmount = result.data.amount;
-      let newToAmount = addBN2(oldToAmount, value);
+  //     let oldToAmount = result.data.amount;
+  //     let newToAmount = addBN2(oldToAmount, value);
 
-      result = await this.execTransaction2(
-        `UPDATE ${this.accountTable} SET amount=${newCallerAmout} WHERE hash=${caller};`,
-        `UPDATE ${this.accountTable} SET amount=${newToAmount} WHERE hash=${to};`);
-      resolv(result);
-    });
-  }
+  //     result = await this.execTransaction2(
+  //       `UPDATE ${this.accountTable} SET amount=${newCallerAmout} WHERE hash=${caller};`,
+  //       `UPDATE ${this.accountTable} SET amount=${newToAmount} WHERE hash=${to};`);
+  //     resolv(result);
+  //   });
+  // }
   // block table
+
   public queryBlockTable(num: number) {
 
   }

@@ -1,7 +1,7 @@
 import { Logger } from '../../api/logger';
 import winston = require('winston');
 import { RPCClient } from '../../client/client/rfc_client';
-import { IfSysinfo, IfContext, DelayPromise } from '../../api/common'
+import { IfSysinfo, IfContext, DelayPromise, IfResult } from '../../api/common'
 import { getLastIrreversibleBlockNumber } from '../../api/getLIBNumber'
 import { getBlock } from '../../api/getblock'
 import { getReceipt } from '../../api/getreceipt';
@@ -214,7 +214,7 @@ export class Synchro {
   private async checkAccountAndToken(receipt: any): Promise<IFeedBack> {
     let recet = JSON.parse(receipt.toString());
     this.logger.info('checkAccountAndToken\n')
-    this.logger.info(recet);
+    // this.logger.info(recet);
 
     let tx = recet.tx;
     console.log(tx);
@@ -260,7 +260,7 @@ export class Synchro {
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
-        let result = await this.updateBalance(caller);
+        let result = await this.updateBalance(caller, tokenName);
         if (result.err) {
           resolv(result);
           return;
@@ -286,11 +286,33 @@ export class Synchro {
   }
   private checkBuyBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+      let tokenName = receipt.tx.input.tokenid;
+      let caller = receipt.tx.caller;
+
+      if (receipt.receipt.returnCode === 0) {
+        let result = await this.updateBancorTokenBalance(tokenName, caller);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+      }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
   private checkTransferTokenTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+
+      let tokenName = receipt.tx.input.tokenid;
+      let caller = receipt.tx.caller;
+      let to = receipt.tx.input.to;
+
+      if (receipt.receipt.returnCode === 0) {
+        let result = await this.updateBancorTokenBalances(tokenName, [caller, to]);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+      }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
@@ -310,7 +332,7 @@ export class Synchro {
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
-        let result = await this.updateBalance(caller);
+        let result = await this.updateBalance(caller, tokenName);
         if (result.err) {
           resolv(result);
           return;
@@ -336,6 +358,19 @@ export class Synchro {
   }
   private checkSellBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+      let caller = receipt.tx.caller;
+      let tokenName = receipt.tx.input.tokenid;
+
+
+      if (receipt.receipt.returnCode === 0) {
+        // update caller token account
+        let result = await this.updateBancorTokenBalance(tokenName, caller);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+
+      }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
@@ -343,18 +378,21 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
-      let value = receipt.tx.value; // string
-      let fee = receipt.tx.fee;
+      
+      // let value = receipt.tx.value; // string
+      // let fee = receipt.tx.fee;
 
       // update caller, to address to hash table
       // this.logger.info('checkTxTransferto, updateNamesToHashTable\n')
       // // put address into hashtable
+      this.logger.info('checkTransferTo, updateNamesToHashTable')
       let feedback = await this.pStorageDb.updateNamesToHashTable([caller, to], HASH_TYPE.ADDRESS);
       if (feedback.err) {
         resolv(feedback);
         return;
       }
       if (receipt.receipt.returnCode === 0) {
+        this.logger.info('checkTranserTo, updateBalances')
         feedback = await this.updateBalances([caller, to]);
         if (feedback.err) {
           resolv(feedback);
@@ -365,27 +403,24 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
-  public async updateBalance(account: string) {
+  private updateBalanceBasic(account: string, token: string, funcGetBalance: (token: string, address: string) => Promise<IfResult>) {
     return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.getBalanceInfo(account);
+      let result = await funcGetBalance.call(this, token, account);
+
       if (result.ret === 200) {
         let amount: string = JSON.parse(result.resp!).value.replace('n', '');
-        let result2 = await this.pStorageDb.insertOrReplaceAccountTable(account, SYS_TOKEN, amount, 0);
-        if (result2.err) {
-          resolv(result2)
-        } else {
-          resolv({ err: ErrorCode.RESULT_OK, data: null })
-        }
+        this.logger.info('updateAccountTable ->\n')
+        let result2 = await this.pStorageDb.updateAccountTable(account, token, amount);
+        resolv(result2);
       } else {
         resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });
-        return;
       }
-    })
+    });
   }
-  public async updateBalances(accounts: string[]) {
+  private updateBalancesBaisc(accounts: string[], token: string, funcUpdate: (accounts: string, token: string) => Promise<IFeedBack>) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = 0; i < accounts.length; i++) {
-        let result = await this.updateBalance(accounts[i]);
+        let result = await funcUpdate.call(this, accounts[i], token);
         if (result.err) {
           resolv(result);
           return;
@@ -394,64 +429,101 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     })
   }
-  public async updateTokenBalance(token: string, account: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.getTokenBalanceInfo(token, account);
-      if (result.ret === 200) {
-        let amount: string = JSON.parse(result.resp!).value.replace('n', '');
-        let result2 = await this.pStorageDb.insertOrReplaceAccountTable(account, token, amount, 0);
-        if (result2.err) {
-          resolv(result2)
-        } else {
-          resolv({ err: ErrorCode.RESULT_OK, data: null })
-        }
-      } else {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENBALANCE_FAILED, data: null });
-        return;
-      }
-    })
+  public async updateBalance(account: string, token: string) {
+    return this.updateBalanceBasic(account, token, this.getBalanceInfo);
   }
-  public async updateTokenBalances(token: string, accounts: string[]) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      for (let i = 0; i < accounts.length; i++) {
-        let result = await this.updateTokenBalance(token, accounts[i]);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-      }
-      resolv({ err: ErrorCode.RESULT_OK, data: null });
-    })
+  // public async updateBalance(account: string) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     let result = await this.getBalanceInfo(account);
+
+  //     if (result.ret === 200) {
+  //       let amount: string = JSON.parse(result.resp!).value.replace('n', '');
+  //       let result2 = await this.pStorageDb.updateAccountTable(account, SYS_TOKEN, amount);
+  //       resolv(result2);
+  //     } else {
+  //       resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });
+  //     }
+  //   })
+  // }
+  // public async updateBalances(accounts: string[]) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     for (let i = 0; i < accounts.length; i++) {
+  //       let result = await this.updateBalance(accounts[i]);
+  //       if (result.err) {
+  //         resolv(result);
+  //         return;
+  //       }
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_OK, data: null });
+  //   })
+  // }
+  private async updateBalances(accounts: string[]) {
+    return this.updateBalancesBaisc(accounts, SYS_TOKEN, this.updateBalance);
   }
-  public async updateBancorTokenBalance(token: string, account: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.getBancorTokenBalanceInfo(token, account);
-      if (result.ret === 200) {
-        let amount: string = JSON.parse(result.resp!).value.replace('n', '');
-        let result2 = await this.pStorageDb.insertOrReplaceAccountTable(account, token, amount, 0);
-        if (result2.err) {
-          resolv(result2)
-        } else {
-          resolv({ err: ErrorCode.RESULT_OK, data: null })
-        }
-      } else {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENBALANCE_FAILED, data: null });
-        return;
-      }
-    })
+  private async updateTokenBalance(account: string, token: string) {
+    return this.updateBalanceBasic(account, token, this.getTokenBalanceInfo);
   }
-  public async updateBancorTokenBalances(token: string, accounts: string[]) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      for (let i = 0; i < accounts.length; i++) {
-        let result = await this.updateBancorTokenBalance(token, accounts[i]);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-      }
-      resolv({ err: ErrorCode.RESULT_OK, data: null });
-    })
+  // public async updateTokenBalance(token: string, account: string) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     let result = await this.getTokenBalanceInfo(token, account);
+
+  //     if (result.ret === 200) {
+  //       let amount: string = JSON.parse(result.resp!).value.replace('n', '');
+  //       let result2 = await this.pStorageDb.updateAccountTable(account, token, amount);
+  //       resolv(result2)
+  //     } else {
+  //       resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENBALANCE_FAILED, data: null });
+  //     }
+  //   })
+  // }
+  // public async updateTokenBalances(token: string, accounts: string[]) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     for (let i = 0; i < accounts.length; i++) {
+  //       let result = await this.updateTokenBalance(accounts[i], token);
+  //       if (result.err) {
+  //         resolv(result);
+  //         return;
+  //       }
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_OK, data: null });
+  //   })
+  // }
+  private async updateTokenBalances(token: string, accounts: string[]) {
+    return this.updateBalancesBaisc(accounts, token, this.updateTokenBalance)
   }
+  // public async updateBancorTokenBalance(token: string, account: string) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     let result = await this.getBancorTokenBalanceInfo(token, account);
+  //     if (result.ret === 200) {
+  //       let amount: string = JSON.parse(result.resp!).value.replace('n', '');
+  //       let result2 = await this.pStorageDb.updateAccountTable(account, token, amount);
+  //       resolv(result2)
+  //     } else {
+  //       resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENBALANCE_FAILED, data: null });
+  //     }
+  //   })
+  // }
+  private async updateBancorTokenBalance(account: string, token: string) {
+    return this.updateBalanceBasic(account, token, this.getBancorTokenBalanceInfo);
+  }
+  // public async updateBancorTokenBalances(token: string, accounts: string[]) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     for (let i = 0; i < accounts.length; i++) {
+  //       let result = await this.updateBancorTokenBalance(accounts[i], token);
+  //       if (result.err) {
+  //         resolv(result);
+  //         return;
+  //       }
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_OK, data: null });
+  //   })
+  // }
+
+  private async updateBancorTokenBalances(token: string, accounts: string[]) {
+    return this.updateBalancesBaisc(accounts, token, this.updateBancorTokenBalance);
+  }
+
+  // Basic commands 
   public async getLastestBlock() {
     let result = await getBlock(this.ctx, ['latest', 'true']);
     this.logger.info(result.resp!);
@@ -481,7 +553,7 @@ export class Synchro {
       }
     })
   }
-  public async getBalanceInfo(strHash: string) {
+  public async getBalanceInfo(token: string, strHash: string) {
     let result = await getBalance(this.ctx, [strHash]);
     this.logger.info(JSON.stringify(result));
     this.logger.info('balance:', JSON.parse(result.resp!).value);
@@ -499,7 +571,5 @@ export class Synchro {
     this.logger.info('bancor token balance:', JSON.parse(result.resp!).value);
     return result;
   }
-  // public async getTransaction(strHash:string){
-  //   let result = await this.getTransaction();
-  // }
+
 }

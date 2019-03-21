@@ -1,7 +1,7 @@
 import { Logger } from "../api/logger";
 import { Synchro } from "../lib/catchup/synchro";
 import { StatusDataBase } from "../lib/storage/statusdb";
-import { StorageDataBase } from "../lib/storage/StorageDataBase";
+import { StorageDataBase, TOKEN_TYPE, SYS_TOKEN } from "../lib/storage/StorageDataBase";
 import { subtractBN3 } from "../lib/storage/computer";
 
 
@@ -63,7 +63,7 @@ async function main() {
   // logger.info(result);
   // logger.info('libnumber:', parseInt(result.resp!))
 
-  let result = await synchro.getBalanceInfo('154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
+  let result = await synchro.getBalanceInfo(SYS_TOKEN, '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
   logger.info(result);
   let obj = JSON.parse(result.resp!);
   logger.info('libnumber:', obj.value, '\n')
@@ -71,15 +71,15 @@ async function main() {
   result = await synchro.getTokenBalanceInfo('hdbahsdga', '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a')
   logger.info(result);
   obj = JSON.parse(result.resp!);
-  logger.info('libnumber:', obj.value)
+  logger.info('libnumber:', obj.value, '\n')
 
   result = await synchro.getBancorTokenBalanceInfo('token90', '1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79')
   logger.info(result);
   obj = JSON.parse(result.resp!);
-  logger.info('bancortoken balance:', obj.value)
+  logger.info('bancortoken balance:', obj.value, '\n')
 
-  // let result = await synchro.getReceiptInfo('0b75087541bfb6aa5dd71a0376b065b5d9ece87d0dd56949cf647b6fbb7d9d15');
-  // logger.info(result.data);
+  let result2 = await synchro.getReceiptInfo('d3f975a1724296842c8f7547f0a2a52e62c823832a6a3ff6816e63c68dc7df84');
+  logger.info(result2);
 
   // for (let i = 0; i < txLst.length; i++) {
   //   logger.info(i + 1 + '\n')
