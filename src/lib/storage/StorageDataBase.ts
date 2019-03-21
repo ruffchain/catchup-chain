@@ -103,6 +103,7 @@ export class StorageDataBase extends CUDataBase {
   public saveTxToHashTable(txs: any[]) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let j = 0; j < txs.length; j++) {
+        this.logger.info('saveTxToHashTable()\n');
         let feedback = await this.insertOrReplaceHashTable(txs[j].hash, HASH_TYPE.TX);
         if (feedback.err) {
           resolv({ err: feedback.err, data: null })
@@ -126,14 +127,15 @@ export class StorageDataBase extends CUDataBase {
   }
   public async updateNameToHashTable(name: string, type: string) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('updateNameToHashTable()\n');
       let feedback = await this.getHashTable(name);
+      console.log('feedback is ->')
+      console.log(feedback)
       if (feedback.err) {
-        resolv(feedback);
-      } else if (feedback.data.length > 0) {
-        resolv(feedback);
-      } else {
         let result = await this.insertOrReplaceHashTable(name, type);
         resolv(result);
+      } else {
+        resolv(feedback);
       }
     });
   }
@@ -174,8 +176,11 @@ export class StorageDataBase extends CUDataBase {
   }
   public subtractAddAccountTable(caller: string, to: string, value: string, fee: string) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('subtractAddAccountTable()\n')
       // transaction, to change at the same time
       let result = await this.queryAccountTableByAddress(caller);
+      console.log(result);
+
       if (result.err) {
         resolv(result);
         return;
@@ -188,6 +193,9 @@ export class StorageDataBase extends CUDataBase {
         resolv(result);
         return;
       }
+      console.log('to account:')
+      console.log(result)
+
       let oldToAmount = result.data.amount;
       let newToAmount = addBN2(oldToAmount, value);
 

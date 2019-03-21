@@ -225,10 +225,19 @@ export class Synchro {
     console.log(tx);
 
     if (tx.method === 'transferTo') {
-      return this.checkTxTransferTo(recet);
+      return this.checkTransferTo(recet);
     }
     else if (tx.method === 'sellBancorToken') {
       return this.checkTxSellBancorToken(recet);
+    }
+    else if (tx.method === 'createBancorToken') {
+      return this.checkCreateBancorToken(recet);
+    }
+    else if (tx.method === 'buyBancorToken') {
+      return this.checkBuyBancorToken(recet);
+    }
+    else if (tx.method === 'transferTokenTo') {
+      return this.checkTransferTokenTo(recet);
     }
     else {
       return new Promise<IFeedBack>(async (resolv) => {
@@ -236,15 +245,33 @@ export class Synchro {
       });
     }
   }
-  private checkTxTransferTo(receipt: any) {
+
+  private checkBuyBancorToken(receipt: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  private checkTransferTokenTo(receipt: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  private checkCreateBancorToken(receipt: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  private checkTransferTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
       let value = receipt.tx.value; // string
       let fee = receipt.tx.fee;
 
+      this.logger.info('checkTxTransferto, updateNamesToHashTable\n')
       // put address into hashtable
       let feedback = await this.pStorageDb.updateNamesToHashTable([caller, to], HASH_TYPE.ADDRESS);
+      this.logger.info('after updateNamesToHashTable\n')
       if (feedback.err) {
         resolv(feedback);
         return;
@@ -252,7 +279,7 @@ export class Synchro {
 
       // if tx succeed, udpate account table
       if (receipt.receipt.returnCode === 0) {
-
+        this.logger.info('checkTxTransferto, receipt returnCode\n')
         let feedback1 = await this.pStorageDb.subtractAddAccountTable(caller, to, value, fee);
         if (feedback1.err) {
           resolv(feedback1);
