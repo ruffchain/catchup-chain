@@ -8,6 +8,7 @@ export const HASH_TYPE = {
   TX: 'tx',
   BLOCK: 'block',
   HEIGHT: 'height',
+  NONE: 'none'
 };
 export const SYS_TOKEN = 's';
 

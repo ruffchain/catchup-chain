@@ -134,7 +134,7 @@ export class WRQueue extends EventEmitter {
           resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.HEIGHT }] });
         }
         else {
-          resolv({ err: ErrorCode.RESULT_OK, data: [] });
+          resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.NONE }] });
         }
       }
 
