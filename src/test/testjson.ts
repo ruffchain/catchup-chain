@@ -9,20 +9,20 @@ const logger = Logger.init({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '127.0.0.1',
+  host: '139.219.141.143', // '127.0.0.1',
   port: 18080,
   address: '',
   verbose: false
 }
 
 let client = new RPCClient(
-  '127.0.0.1',
+  '139.219.141.143',// '127.0.0.1',
   18080,
   SYSINFO
 );
 
 async function maine() {
-  let cr = await client.callAsync('getName', "1")
+  let cr = await client.callAsync('getName', "13")
   logger.info(cr);
   // logger.info(cr.resp)
 }
