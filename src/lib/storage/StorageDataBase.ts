@@ -7,7 +7,7 @@ export const HASH_TYPE = {
   TOKEN: 'token',
   TX: 'tx',
   BLOCK: 'block',
-  HEIGHT: 'height',
+  HEIGHT: 'block',
   NONE: 'none'
 };
 export const SYS_TOKEN = 's';
@@ -35,6 +35,7 @@ export class StorageDataBase extends CUDataBase {
     this.tokenTable = 'tokentable';
 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
+
     // hash-tokenname, value for search purpose!
     this.accountTableSchema = `("hash" CHAR(64) NOT NULL, "token" CHAR(64) NOT NULL, "amount" TEXT NOT NULL, "value" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
 
@@ -113,7 +114,11 @@ export class StorageDataBase extends CUDataBase {
   public async updateNamesToHashTable(names: string[], type: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let j = 0; j < names.length; j++) {
-        await this.updateNameToHashTable(names[j], type);
+        let result = await this.updateNameToHashTable(names[j], type);
+        if (result.err) {
+          resolv(result)
+          return;
+        }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
@@ -121,30 +126,40 @@ export class StorageDataBase extends CUDataBase {
   public async updateNameToHashTable(name: string, type: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       let feedback = await this.getHashTable(name);
-      if (feedback.err) {
-        // insert
-        feedback = await this.insertHashTable(name, HASH_TYPE.BLOCK);
+      if (feedback.err || feedback.data.length > 0) {
+        resolv(feedback);
       } else {
-        feedback = await this.insertOrReplaceHashTable(name, HASH_TYPE.BLOCK);
+        let result = await this.insertOrReplaceHashTable(name, type);
+        resolv(result);
       }
     });
   }
 
   // account
-  public queryAccountTableByAddress(num: number) {
-
+  public queryAccountTableByAddress(addr: string) {
+    return this.getRecord(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
   }
-  public queryAccountTableByToken(num: number) {
+  public queryAccountTableByToken(token: string) {
 
   }
   public queryAccountTableByTokenAndAddress(token: string, addr: string) {
 
   }
-  public insertAccountTable(hash: string, token: string, amount: number, value: number): Promise<IFeedBack> {
-    return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", ${amount}, ${value})`);
+  public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
+    return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
   }
-  public updateAccountTable() {
+  public updateAccountTable(address: string, amount: string, value: number) {
 
+  }
+  public addToAccountTable(address: string, amount: string) {
+
+  }
+  public subtractToAccountTable(address: string, amount: string, fee: string) {
+    // I won't judge address correctness
+    return new Promise<IFeedBack>((resolv) => {
+      // get account amount
+
+    });
   }
   // block table
   public queryBlockTable(num: number) {

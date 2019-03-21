@@ -84,7 +84,7 @@ async function main() {
 
     for (let i = 0; i < arrPreBalances.length; i++) {
       let preBalance = arrPreBalances[i];
-      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, preBalance.amount, 0), 'add to account table ', logger);
+      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, preBalance.amount.toString(), 0), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
     }

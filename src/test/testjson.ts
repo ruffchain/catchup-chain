@@ -30,7 +30,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.1.241', // ,'40.73.1.241' '127.0.0.1'
+  host: '127.0.0.1', // ,'40.73.1.241' '127.0.0.1'
   port: 18080,
   address: '',
   verbose: false

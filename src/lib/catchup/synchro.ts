@@ -152,11 +152,11 @@ export class Synchro {
           }
 
           // save tx information
-          // feedback = await this.updateTx(hash, timestamp, obj.transactions);
-          // if (feedback.err) {
-          //   resolv({ err: feedback.err, data: null });
-          //   return;
-          // }
+          feedback = await this.updateTx(hash, timestamp, obj.transactions);
+          if (feedback.err) {
+            resolv({ err: feedback.err, data: null });
+            return;
+          }
         }
 
         resolv({ err: ErrorCode.RESULT_OK, data: null })
@@ -206,11 +206,11 @@ export class Synchro {
           return;
         }
 
-        // let feedback2 = await this.checkAccountAndToken(feedback.data);
-        // if (feedback2.err) {
-        //   resolv({ err: feedback2.err, data: null });
-        //   return;
-        // }
+        let feedback2 = await this.checkAccountAndToken(feedback.data);
+        if (feedback2.err) {
+          resolv({ err: feedback2.err, data: null });
+          return;
+        }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null })
     });
@@ -228,24 +228,39 @@ export class Synchro {
     else if (tx.method === 'sellBancorToken') {
       return this.checkTxSellBancorToken(tx);
     }
-    return new Promise<IFeedBack>(async (resolv) => {
-      resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
-    });
+    else {
+      return new Promise<IFeedBack>(async (resolv) => {
+        resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
+      });
+    }
   }
   private checkTxTransferTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
       let value = receipt.tx.value; // string
+      let fee = receipt.tx.fee;
 
       // put address into hashtable
       let feedback = await this.pStorageDb.updateNamesToHashTable([caller, to], HASH_TYPE.ADDRESS);
       if (feedback.err) {
         resolv(feedback);
+        return;
       }
 
       // if tx succeed, udpate account table
       if (receipt.receipt.returnCode === 0) {
+
+        // let feedback1 = await this.pStorageDb.subtractToAccountTable(caller, value, fee);
+        // if (feedback1.err) {
+        //   resolv(feedback1);
+        //   return;
+        // }
+        // feedback1 = await this.pStorageDb.addToAccountTable(to, value);
+        // if (feedback1.err) {
+        //   resolv(feedback1);
+        //   return;
+        // }
 
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
