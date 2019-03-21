@@ -124,8 +124,11 @@ export class WRQueue extends EventEmitter {
           result.data.forEach((item: any) => {
             arr.push({ hash: item.hash, type: item.type });
           });
+          resolv({ err: ErrorCode.RESULT_OK, data: arr });
+        } else {
+          resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.NONE }] })
         }
-        resolv({ err: ErrorCode.RESULT_OK, data: arr });
+
         return;
       } else {
         // if it is a number
