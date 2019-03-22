@@ -207,6 +207,10 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT 50;`)
   }
 
+  public queryBlockTableByPage(index: number, size: number) {
+    return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT ${size} OFFSET ${index * size} ;`);
+  }
+
   // tx table
   public queryTxTable(hash: string) {
     return this.getRecord(`SELECT * FROM ${this.txTable} WHERE hash = "${hash}";`)
@@ -226,6 +230,10 @@ export class StorageDataBase extends CUDataBase {
   }
   public queryLatestTxTable() {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT 50 ;`)
+  }
+
+  public queryTxTableCount() {
+    return this.getRecord(`SELECT COUNT(*) as count FROM ${this.txTable};`)
   }
 
   // token table

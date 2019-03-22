@@ -7,6 +7,7 @@ import { StorageDataBase, HASH_TYPE } from './StorageDataBase';
 import { IfReq } from '../catchup/inquiro'
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 import { isNumber } from 'util';
+import { Synchro } from '../catchup/synchro';
 
 export interface IfTask {
   maxRetry: number;
@@ -33,10 +34,11 @@ export class WRQueue extends EventEmitter {
   private logger: any;
   private pStatusDb: StatusDataBase;
   private pStorageDb: StorageDataBase;
+  private pSynchro: Synchro;
   // private db: CUDataBase;
   // private dbOptions: IfCUDataBaseOptions;
 
-  constructor(loggerpath: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase) {
+  constructor(loggerpath: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase, synchro: Synchro) {
     super();
     this.queueWrite = [];
     this.queueRead = [];
@@ -45,6 +47,7 @@ export class WRQueue extends EventEmitter {
     // this.dbOptions = options;
     this.pStatusDb = statusdb;
     this.pStorageDb = storagedb;
+    this.pSynchro = synchro;
 
     // only one write can happen at one time
     this.on('write', (data: IfTask) => {
@@ -121,6 +124,27 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getLatestTxs') {
+      let result: any;
+      if (!task.request.args) {
+        result = await this.pStorageDb.queryLatestTxTable();
+        if (result.err === ErrorCode.RESULT_OK) {
+          arr = result.data;
+        }
+      } else {
+        try {
+          let argsObj = JSON.parse(JSON.stringify(task.request.args));
+          result = await this.pStorageDb.queryTxTableByPage(
+            (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
+
+          if (result.err === ErrorCode.RESULT_OK) {
+            arr = result.data;
+          }
+        } catch (e) {
+          this.logger.error('Wrong getTxs ARGS');
+        }
+      }
+    }
     else if (task.request.funName === 'getTxs') {
       let result: any;
       if (!task.request.args) {
@@ -141,8 +165,6 @@ export class WRQueue extends EventEmitter {
           this.logger.error('Wrong getTxs ARGS');
         }
       }
-
-
     }
     else if (task.request.funName === 'getTxsByAddress') {
       let result = await this.pStorageDb.queryTxTableByAddress(task.request.args);
@@ -157,13 +179,40 @@ export class WRQueue extends EventEmitter {
       }
     }
     else if (task.request.funName === 'getTx') {
-      let result = await this.taskGetTx(task.request.args);
+      let result = await this.pStorageDb.queryTxTable(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
         arr = result.data;
       }
     }
     else if (task.request.funName === 'getBlocks') {
       let result = await this.pStorageDb.queryLatestBlockTable();
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getLatestBlocks') {
+      let result: any;
+      if (!task.request.args) {
+        result = await this.pStorageDb.queryLatestBlockTable();
+        if (result.err === ErrorCode.RESULT_OK) {
+          arr = result.data;
+        }
+      } else {
+        try {
+          let argsObj = JSON.parse(JSON.stringify(task.request.args));
+          result = await this.pStorageDb.queryBlockTableByPage(
+            (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
+
+          if (result.err === ErrorCode.RESULT_OK) {
+            arr = result.data;
+          }
+        } catch (e) {
+          this.logger.error('Wrong getTxs ARGS');
+        }
+      }
+    }
+    else if (task.request.funName === 'getChainOverview') {
+      let result = await this.taskGetChainOverview();
       if (result.err === ErrorCode.RESULT_OK) {
         arr = result.data;
       }
@@ -225,25 +274,47 @@ export class WRQueue extends EventEmitter {
       resolv(result);
     });
   }
-  private async taskGetTxs() {
+  private async taskGetChainOverview() {
     return new Promise<IFeedBack>(async (resolv) => {
-      // check account table, 
-      let result = await this.pStorageDb.queryLatestTxTable();
-      resolv(result);
-    });
-  }
-  private async taskGetTx(name: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      // check account table, 
-      let result = await this.pStorageDb.queryTxTable(name);
-      resolv(result);
-    });
-  }
-  private async taskGetBlocks() {
-    return new Promise<IFeedBack>(async (resolv) => {
-      // check account table, 
-      let result = await this.pStorageDb.queryLatestBlockTable();
-      resolv(result);
+
+      let nLatest = 0;
+
+      // get latestblock
+      let result = await this.pSynchro.getLIBNumber();
+      if (result.ret === 200) {
+        nLatest = parseInt(result.resp!);
+      }
+
+      let nLib = 0;
+      // get lib number
+      result = await this.pSynchro.getLastestBlock();
+      if (result.ret === 200) {
+        try {
+          let obj = JSON.parse(result.resp!);
+          nLib = obj.block.number;
+        }
+        catch (e) {
+          this.logger.error('taskgetchainoverview get lib number JSON parse fail');
+        }
+      }
+
+      let nTxCount = 0;
+      // get tx count
+      let result2 = await this.pStorageDb.queryTxTableCount();
+      if (!result2.err) {
+        try {
+          nTxCount = parseInt(result2.data.count)
+        } catch (e) {
+          this.logger.error('taskgetchainoverview get tx count JSON parse fail');
+        }
+      }
+      resolv({
+        err: ErrorCode.RESULT_OK, data: {
+          blockHeight: nLatest,
+          irreversibleBlockHeight: nLib,
+          txCount: nTxCount
+        }
+      });
     });
   }
 

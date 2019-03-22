@@ -30,7 +30,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.1.241', // ,'40.73.1.241' '127.0.0.1'
+  host: '127.0.0.1', // ,'40.73.1.241' '127.0.0.1'
   port: 18080,
   address: '',
   verbose: false
@@ -42,7 +42,7 @@ let client = new RPCClient(
   SYSINFO
 );
 
-let queue = new WRQueue(logger, statusDB, storageDB);
+let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 
 // logger.info(queue.isANumber("1B"));
 
@@ -51,11 +51,14 @@ async function maine() {
   // logger.info(cr);
   // logger.info(cr.resp)
 
-  let cr = await client.callAsync('getTxsByAddress', "154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r")
+  let cr = await client.callAsync('getTxs', { page: 1, pageSize: 3 })
+  logger.info('\n')
   logger.info(cr);
 
 
-
+  cr = await client.callAsync('getChainOverview', { page: 1, pageSize: 3 })
+  logger.info('\n')
+  logger.info(cr);
 
 
 }

@@ -49,17 +49,21 @@ let storageDB = new StorageDataBase(logger, {
   path: './data/db/'
 })
 
-let queue = new WRQueue(logger, statusDB, storageDB);
+// let queue = new WRQueue(logger, statusDB, storageDB);
 
 let client = new Synchro({
   ip: '139.219.184.44',
   port: 18089
 }, logger, statusDB, storageDB);
 
+
+let queue = new WRQueue(logger, statusDB, storageDB, client);
+
 let server = new Inquiro({
   ip: '0.0.0.0',
   port: 18080
 }, logger, queue);
+
 
 
 

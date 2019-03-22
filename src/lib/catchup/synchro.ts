@@ -72,6 +72,7 @@ export class Synchro {
       this.nCurrentLIBHeight = parseInt(result.resp!);
     }
 
+
     // get currentHeight
     let nCurrentHeight = this.pStatusDb.nCurrentHeight;
 
@@ -442,7 +443,7 @@ export class Synchro {
   private async updateTokenBalances(token: string, accounts: string[]) {
     return this.updateBalancesBaisc(accounts, token, this.updateTokenBalance)
   }
-  
+
   private async updateBancorTokenBalance(account: string, token: string) {
     return this.updateBalanceBasic(account, token, this.getBancorTokenBalanceInfo);
   }
@@ -455,6 +456,7 @@ export class Synchro {
   public async getLastestBlock() {
     let result = await getBlock(this.ctx, ['latest', 'true']);
     this.logger.info(result.resp!);
+    return result;
   }
   public async getBlock(num: number) {
     let result = await getBlock(this.ctx, [num + '', 'true']);

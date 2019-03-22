@@ -62,24 +62,31 @@ async function main() {
   // let result = await synchro.getLIBNumber()
   // logger.info(result);
   // logger.info('libnumber:', parseInt(result.resp!))
+  // logger.info('\n')
 
-  let result = await synchro.getBalanceInfo(SYS_TOKEN, '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
-  logger.info(result);
-  let obj = JSON.parse(result.resp!);
-  logger.info('libnumber:', obj.value, '\n')
+  // result = await synchro.getLastestBlock();
+  // logger.info(result);
+  // logger.info('latest block:', parseInt(result.resp!));
+  // let obj = JSON.parse(result.resp!)
+  // logger.info(obj.block.number);
 
-  result = await synchro.getTokenBalanceInfo('hdbahsdga', '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a')
-  logger.info(result);
-  obj = JSON.parse(result.resp!);
-  logger.info('libnumber:', obj.value, '\n')
+  // let result = await synchro.getBalanceInfo(SYS_TOKEN, '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
+  // logger.info(result);
+  // let obj = JSON.parse(result.resp!);
+  // logger.info('libnumber:', obj.value, '\n')
 
-  result = await synchro.getBancorTokenBalanceInfo('token90', '1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79')
-  logger.info(result);
-  obj = JSON.parse(result.resp!);
-  logger.info('bancortoken balance:', obj.value, '\n')
+  // result = await synchro.getTokenBalanceInfo('hdbahsdga', '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a')
+  // logger.info(result);
+  // obj = JSON.parse(result.resp!);
+  // logger.info('libnumber:', obj.value, '\n')
 
-  let result2 = await synchro.getReceiptInfo('d3f975a1724296842c8f7547f0a2a52e62c823832a6a3ff6816e63c68dc7df84');
-  logger.info(result2);
+  // result = await synchro.getBancorTokenBalanceInfo('token90', '1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79')
+  // logger.info(result);
+  // obj = JSON.parse(result.resp!);
+  // logger.info('bancortoken balance:', obj.value, '\n')
+
+  // let result2 = await synchro.getReceiptInfo('d3f975a1724296842c8f7547f0a2a52e62c823832a6a3ff6816e63c68dc7df84');
+  // logger.info(result2);
 
   // for (let i = 0; i < txLst.length; i++) {
   //   logger.info(i + 1 + '\n')
@@ -94,6 +101,11 @@ async function main() {
 
   await statusDB.open();
   await storageDB.open();
+
+  let result2 = await storageDB.queryTxTableCount();
+  logger.info(result2);
+  console.log(result2)
+  console.log(result2.data.count!)
 
   // let result3 = await storageDB.queryAccountTableByAddress('154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r');
   // logger.info(result3);
