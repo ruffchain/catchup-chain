@@ -130,6 +130,7 @@ export class Synchro {
         console.log(obj);
 
         let hash = obj.block.hash;
+        let hashnumber = obj.block.number;
         let timestamp = obj.block.timestamp;
         let address = obj.block.creator;
         let txno = obj.transactions.length;
@@ -151,7 +152,7 @@ export class Synchro {
         }
 
         if (txno > 0) {
-          feedback = await this.updateTx(hash, timestamp, obj.transactions);
+          feedback = await this.updateTx(hash, hashnumber, timestamp, obj.transactions);
           if (feedback.err) {
             resolv({ err: feedback.err, data: null });
             return;
@@ -169,18 +170,19 @@ export class Synchro {
   }
   // Need to check if address is already in hash table here, 
   // Because information is got from tx
-  private async updateTx(bhash: string, dtime: number, txs: any[]) {
+  private async updateTx(bhash: string, nhash: number, dtime: number, txs: any[]) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let j = 0; j < txs.length; j++) {
 
         let hash = txs[j].hash;
         let blockhash = bhash;
+        let blocknumber = nhash;
         let address = txs[j].caller;
         let datetime = dtime;
         let fee = txs[j].fee;
 
         // put it into tx table, insertOrReplace
-        let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, address, datetime, fee);
+        let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, fee);
         if (feedback.err) {
           resolv({ err: feedback.err, data: null });
           return;
