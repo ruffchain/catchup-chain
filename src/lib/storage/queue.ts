@@ -217,6 +217,12 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getLatestTxCount') {
+      let result = await this.taskGetLatestTxCount(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else {
       // arr.push({ error: 'unknown name' })
       this.logger.error('unknown name method:', task.request.funName);
@@ -272,6 +278,40 @@ export class WRQueue extends EventEmitter {
       // check account table, 
       let result = await this.pStorageDb.queryTokenTable(token);
       resolv(result);
+    });
+  }
+  // getLatestTxCount
+  private async taskGetLatestTxCount(args: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let obj: any;
+      try {
+        obj = JSON.parse(JSON.stringify(args));
+        let nFrom = new Date(obj.from).getTime();
+        let nTo = new Date(obj.to).getTime();
+
+        let nTxCount = 0;
+
+        let result2 = await this.pStorageDb.queryTxTableByDatetime(nFrom, nTo);
+        if (!result2.err) {
+          try {
+            nTxCount = parseInt(result2.data.count)
+
+            resolv({
+              err: ErrorCode.RESULT_OK,
+              data: {
+                txCount: nTxCount
+              }
+            });
+            return;
+          } catch (e) {
+            this.logger.error('taskGetLatestTxCount get tx count JSON parse fail');
+          }
+        }
+      } catch (e) {
+        this.logger.error('taskGetLatestTxCount input JSON parse fail');
+      }
+      resolv({ err: ErrorCode.RESULT_SYNC_PARSE_JSON_QUERY_FAILED, data: [] })
+
     });
   }
   private async taskGetChainOverview() {

@@ -218,6 +218,10 @@ export class StorageDataBase extends CUDataBase {
   public queryTxTableByPage(index: number, size: number) {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT ${size} OFFSET ${index * size} ;`);
   }
+  public queryTxTableByDatetime(from: number, to: number) {
+    return this.getAllRecords(`SELECT COUNT(*) as count FROM ${this.txTable} WHERE  timestamp >= ${from} AND timestamp < ${to};`);
+  }
+
   public queryTxTableByAddress(address: string) {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE address = "${address}";`)
   }

@@ -67,6 +67,8 @@ export enum ErrorCode {
     RESULT_SYNC_TX_EXEC2 = 11101,
     RESULT_SYNC_GETBALANCE_FAILED = 11102,
     RESULT_SYNC_GETTOKENBALANCE_FAILED = 11103,
+
+    RESULT_SYNC_PARSE_JSON_QUERY_FAILED = 11201,
 }
 
 export interface IFeedBack { err: ErrorCode; data: any; }

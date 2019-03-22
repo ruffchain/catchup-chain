@@ -107,6 +107,18 @@ async function main() {
   console.log(result2)
   console.log(result2.data.count!)
 
+  logger.info('\n')
+  result2 = await storageDB.queryTxTableByPage(1, 10);
+  logger.info(result2);
+  console.log(result2)
+  console.log(result2.data.count!)
+
+  // 1552962146, 1552963616,
+  result2 = await storageDB.queryTxTableByDatetime(1552962146, 1552963616);
+  logger.info(result2);
+  console.log(result2)
+  console.log(result2.data.count!)
+
   // let result3 = await storageDB.queryAccountTableByAddress('154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r');
   // logger.info(result3);
 
