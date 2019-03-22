@@ -102,22 +102,29 @@ async function main() {
   await statusDB.open();
   await storageDB.open();
 
-  let result2 = await storageDB.queryTxTableCount();
+  let result2 = await storageDB.queryTxTable('cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4');
   logger.info(result2);
   console.log(result2)
-  console.log(result2.data.count!)
+  console.log(result2.data.content);
+  let data = result2.data.content;
+  const myobj = JSON.parse(data.toString())
+  console.log('\n')
+  console.log(myobj)
+  console.log('\n')
 
-  logger.info('\n')
-  result2 = await storageDB.queryTxTableByPage(1, 10);
-  logger.info(result2);
-  console.log(result2)
-  console.log(result2.data.count!)
+  // console.log(result2.data.count!)
+
+  // logger.info('\n')
+  // result2 = await storageDB.queryTxTableByPage(1, 10);
+  // logger.info(result2);
+  // console.log(result2)
+  // console.log(result2.data.count!)
 
   // 1552962146, 1552963616,
-  result2 = await storageDB.queryTxTableByDatetime(1552962146, 1552963616);
-  logger.info(result2);
-  console.log(result2)
-  console.log(result2.data.count!)
+  // result2 = await storageDB.queryTxTableByDatetime(1552962146, 1552963616);
+  // logger.info(result2);
+  // console.log(result2)
+  // console.log(result2.data.count!)
 
   // let result3 = await storageDB.queryAccountTableByAddress('154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r');
   // logger.info(result3);

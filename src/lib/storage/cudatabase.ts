@@ -16,7 +16,7 @@ export interface IfCUDataBaseOptions {
 
 export abstract class CUDataBase {
   public logger: any;
-  private db: any;
+  public db: any;
   private options: IfCUDataBaseOptions;
 
   constructor(loggerpath: winston.LoggerInstance, options: IfCUDataBaseOptions) {

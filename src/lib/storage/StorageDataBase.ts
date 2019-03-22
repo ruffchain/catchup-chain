@@ -47,7 +47,7 @@ export class StorageDataBase extends CUDataBase {
 
     this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE,"number" INTEGER NOT NULL, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
 
-    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "fee" CHAR(64) NOT NULL);`;
+    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
     this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
   }
@@ -228,9 +228,29 @@ export class StorageDataBase extends CUDataBase {
   public queryTxTableByBlock(block: string) {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE blockhash = "${block}";`)
   }
-  public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, fee: string) {
+  public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, fee) VALUES("${hash}", "${blockhash}",${blocknumber} ,"${address}", ${datetime},"${fee}");`);
+    // return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, fee, content) VALUES("${hash}", "${blockhash}",${blocknumber} ,"${address}", ${datetime},"${fee}","${content1}");`);
+
+    return new Promise<IFeedBack>((resolv) => {
+      this.db.run(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash,$blocknumber ,$address, $datetime,$content1);`,
+        {
+          $hash: hash,
+          $blockhash: blockhash,
+          $blocknumber: blocknumber,
+          $address: address,
+          $datetime: datetime,
+          $content1: content1
+        },
+        (err: any) => {
+          if (err) {
+            this.logger.error('Error =>', err);
+            resolv({ err: ErrorCode.RESULT_DB_TABLE_INSERTREPLACE_FAILED, data: err });
+          } else {
+            resolv({ err: ErrorCode.RESULT_OK, data: null });
+          }
+        });
+    });
   }
   public queryLatestTxTable() {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT 50 ;`)

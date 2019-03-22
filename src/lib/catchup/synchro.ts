@@ -180,9 +180,13 @@ export class Synchro {
         let address = txs[j].caller;
         let datetime = dtime;
         let fee = txs[j].fee;
+        let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
+        // console.log('updateTx:')
+        // console.log(content);
+        // console.log(typeof content)
 
         // put it into tx table, insertOrReplace
-        let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, fee);
+        let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
         if (feedback.err) {
           resolv({ err: feedback.err, data: null });
           return;
