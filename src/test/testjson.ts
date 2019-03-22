@@ -51,7 +51,7 @@ async function maine() {
   // logger.info(cr);
   // logger.info(cr.resp)
 
-  let cr = await client.callAsync('getTxs', "1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J")
+  let cr = await client.callAsync('getTxsByAddress', "154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r")
   logger.info(cr);
 
 

@@ -211,6 +211,9 @@ export class StorageDataBase extends CUDataBase {
   public queryTxTable(hash: string) {
     return this.getRecord(`SELECT * FROM ${this.txTable} WHERE hash = "${hash}";`)
   }
+  public queryTxTableByPage(index: number, size: number) {
+    return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT ${size} OFFSET ${index * size} ;`);
+  }
   public queryTxTableByAddress(address: string) {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE address = "${address}";`)
   }

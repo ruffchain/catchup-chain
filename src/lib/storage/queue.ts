@@ -122,10 +122,27 @@ export class WRQueue extends EventEmitter {
       }
     }
     else if (task.request.funName === 'getTxs') {
-      let result = await this.pStorageDb.queryLatestTxTable();
-      if (result.err === ErrorCode.RESULT_OK) {
-        arr = result.data;
+      let result: any;
+      if (!task.request.args) {
+        result = await this.pStorageDb.queryLatestTxTable();
+        if (result.err === ErrorCode.RESULT_OK) {
+          arr = result.data;
+        }
+      } else {
+        try {
+          let argsObj = JSON.parse(JSON.stringify(task.request.args));
+          result = await this.pStorageDb.queryTxTableByPage(
+            (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
+
+          if (result.err === ErrorCode.RESULT_OK) {
+            arr = result.data;
+          }
+        } catch (e) {
+          this.logger.error('Wrong getTxs ARGS');
+        }
       }
+
+
     }
     else if (task.request.funName === 'getTxsByAddress') {
       let result = await this.pStorageDb.queryTxTableByAddress(task.request.args);
