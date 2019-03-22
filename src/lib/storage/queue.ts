@@ -277,24 +277,24 @@ export class WRQueue extends EventEmitter {
   private async taskGetChainOverview() {
     return new Promise<IFeedBack>(async (resolv) => {
 
-      let nLatest = 0;
+      let nLib = 0;
 
       // get latestblock
       let result = await this.pSynchro.getLIBNumber();
       if (result.ret === 200) {
-        nLatest = parseInt(result.resp!);
+        nLib = parseInt(result.resp!);
       }
 
-      let nLib = 0;
+      let nLatest = 0;
       // get lib number
       result = await this.pSynchro.getLastestBlock();
       if (result.ret === 200) {
         try {
           let obj = JSON.parse(result.resp!);
-          nLib = obj.block.number;
+          nLatest = obj.block.number;
         }
         catch (e) {
-          this.logger.error('taskgetchainoverview get lib number JSON parse fail');
+          this.logger.error('taskgetchainoverview get latest block JSON parse fail');
         }
       }
 
