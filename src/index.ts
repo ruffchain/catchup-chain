@@ -106,26 +106,3 @@ async function main() {
 }
 
 main();
-
-// const db = new DataBase(logger, {
-//   name: 'testdb',
-//   path: './data/',
-// });
-// let tab = 'Tiger'
-// db.serialize(() => {
-//   db.run(`CREATE TABLE IF NOT EXISTS "${tab}" ("name" TEXT NOT NULL UNIQUE)`);
-//   db.run('INSERT INTO Tiger (name) VALUES ( $value )', { $value: "mosuse" });
-//   db.run('INSERT INTO Tiger (name) VALUES ( $value )', { $value: "horse" });
-//   db.each('SELECT rowid AS id , name from Tiger', (err: any, row: any) => {
-//     console.log(row.id + ':' + row.name)
-//   })
-// });
-// db.initTable((err: any) => {
-//   if (err) {
-//     throw new Error('');
-//   }
-//   db.info('db table initialized');
-// });
-// // console.log(logger)
-// db.error('database closed');
-// db.close();

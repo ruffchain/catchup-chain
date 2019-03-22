@@ -45,7 +45,7 @@ export class StorageDataBase extends CUDataBase {
     // hash-tokenname, value for search purpose!
     this.accountTableSchema = `("hash" CHAR(64) NOT NULL, "token" CHAR(64) NOT NULL, "amount" TEXT NOT NULL, "value" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
 
-    this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
+    this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE,"number" INTEGER NOT NULL, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
 
     this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "fee" CHAR(64) NOT NULL);`;
 
@@ -199,9 +199,9 @@ export class StorageDataBase extends CUDataBase {
   public queryBlockTable(num: number) {
 
   }
-  public insertOrReplaceBlockTable(hash: string, txno: number, address: string, datetime: number) {
+  public insertOrReplaceBlockTable(hash: string, height: number, txno: number, address: string, datetime: number) {
     this.logger.info('into insertOrReplaceBlockTable()', hash, '\n')
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, txs, address,timestamp) VALUES("${hash}", ${txno}, "${address}", ${datetime});`);
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, number, txs, address, timestamp) VALUES("${hash}",${height}, ${txno}, "${address}", ${datetime});`);
   }
   public queryLatestBlockTable() {
     return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT 50;`)

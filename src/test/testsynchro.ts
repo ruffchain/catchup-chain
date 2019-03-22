@@ -64,11 +64,11 @@ async function main() {
   // logger.info('libnumber:', parseInt(result.resp!))
   // logger.info('\n')
 
-  // result = await synchro.getLastestBlock();
-  // logger.info(result);
-  // logger.info('latest block:', parseInt(result.resp!));
-  // let obj = JSON.parse(result.resp!)
-  // logger.info(obj.block.number);
+  let result = await synchro.getLastestBlock();
+  logger.info(result);
+  logger.info('latest block:', parseInt(result.resp!));
+  let obj = JSON.parse(result.resp!)
+  logger.info(obj.block.number);
 
   // let result = await synchro.getBalanceInfo(SYS_TOKEN, '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
   // logger.info(result);

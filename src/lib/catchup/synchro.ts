@@ -113,7 +113,8 @@ export class Synchro {
   private async updateBlock(nBlock: number): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('Get block ' + nBlock + '\n')
-      let result = await this.getBlock(nBlock);
+      let result = await this.getBlock(nBlock)
+
       if (result.ret === 200) {
         this.logger.info(result.resp + '\n');
         // save resp to hashtable
@@ -132,6 +133,7 @@ export class Synchro {
         let timestamp = obj.block.timestamp;
         let address = obj.block.creator;
         let txno = obj.transactions.length;
+        let height = obj.block.number;
 
         this.logger.info('save block hash to hash table')
         // save to hash table
@@ -142,7 +144,7 @@ export class Synchro {
         }
 
         // save to block table
-        feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, txno, address, timestamp);
+        feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, height, txno, address, timestamp);
         if (feedback.err) {
           resolv({ err: feedback.err, data: null });
           return;
