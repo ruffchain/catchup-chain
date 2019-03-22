@@ -109,6 +109,12 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getAccounts') {
+      let result = await this.pStorageDb.queryLatestAccountTable();
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else if (task.request.funName === 'getToken') {
       let result = await this.taskGetToken(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
@@ -116,7 +122,19 @@ export class WRQueue extends EventEmitter {
       }
     }
     else if (task.request.funName === 'getTxs') {
-      let result = await this.taskGetTxs();
+      let result = await this.pStorageDb.queryLatestTxTable();
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getTxsByAddress') {
+      let result = await this.pStorageDb.queryTxTableByAddress(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
+    else if (task.request.funName === 'getTxsByBlock') {
+      let result = await this.pStorageDb.queryTxTableByBlock(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
         arr = result.data;
       }
@@ -128,7 +146,7 @@ export class WRQueue extends EventEmitter {
       }
     }
     else if (task.request.funName === 'getBlocks') {
-      let result = await this.taskGetBlocks();
+      let result = await this.pStorageDb.queryLatestBlockTable();
       if (result.err === ErrorCode.RESULT_OK) {
         arr = result.data;
       }

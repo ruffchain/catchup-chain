@@ -154,6 +154,9 @@ export class StorageDataBase extends CUDataBase {
   public queryAllAccountTableByAddress(addr: string) {
     return this.getAllRecords(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
   }
+  public queryLatestAccountTable() {
+    return this.getAllRecords(`SELECT * FROM ${this.accountTable} LIMIT 50;`);
+  }
   public queryAccountTableByToken(token: string) {
 
   }
@@ -207,6 +210,12 @@ export class StorageDataBase extends CUDataBase {
   // tx table
   public queryTxTable(hash: string) {
     return this.getRecord(`SELECT * FROM ${this.txTable} WHERE hash = "${hash}";`)
+  }
+  public queryTxTableByAddress(address: string) {
+    return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE address = "${address}";`)
+  }
+  public queryTxTableByBlock(block: string) {
+    return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE blockhash = "${block}";`)
   }
   public insertTxTable(hash: string, blockhash: string, address: string, datetime: number, fee: string) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
