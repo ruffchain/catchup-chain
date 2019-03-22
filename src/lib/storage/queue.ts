@@ -176,8 +176,7 @@ export class WRQueue extends EventEmitter {
       let result = await this.pStorageDb.queryTxTable(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
         try {
-          // let obj = result.data.content;
-          result.data.conent = JSON.parse(result.data.content.toString())
+          result.data.content = JSON.parse(result.data.content.toString())
           arr = result.data;
         } catch (e) {
           this.logger.info('Wrong getTx result parsing')
