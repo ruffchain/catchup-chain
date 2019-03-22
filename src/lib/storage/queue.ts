@@ -124,7 +124,7 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
-    else if (task.request.funName === 'getLatestTxs') {
+    else if (task.request.funName === 'getLatestTxs' || task.request.funName === 'getTxsByAddress') {
       let result: any;
       if (!task.request.args) {
         result = await this.pStorageDb.queryLatestTxTable();
@@ -164,12 +164,6 @@ export class WRQueue extends EventEmitter {
         } catch (e) {
           this.logger.error('Wrong getTxs ARGS');
         }
-      }
-    }
-    else if (task.request.funName === 'getTxsByAddress') {
-      let result = await this.pStorageDb.queryTxTableByAddress(task.request.args);
-      if (result.err === ErrorCode.RESULT_OK) {
-        arr = result.data;
       }
     }
     else if (task.request.funName === 'getTxsByBlock') {
@@ -233,6 +227,7 @@ export class WRQueue extends EventEmitter {
     this.emit('execRead');
     return;
   }
+  // commands
   // getName
   private async taskGetName(args: string, num: number) {
     return new Promise<IFeedBack>(async (resolv) => {
