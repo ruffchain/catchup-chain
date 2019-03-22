@@ -175,7 +175,13 @@ export class WRQueue extends EventEmitter {
     else if (task.request.funName === 'getTx') {
       let result = await this.pStorageDb.queryTxTable(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
-        arr = result.data;
+        try {
+          // let obj = result.data.content;
+          result.data.conent = JSON.parse(result.data.content.toString())
+          arr = result.data;
+        } catch (e) {
+          this.logger.info('Wrong getTx result parsing')
+        }
       }
     }
     else if (task.request.funName === 'getBlocks') {
@@ -201,7 +207,7 @@ export class WRQueue extends EventEmitter {
             arr = result.data;
           }
         } catch (e) {
-          this.logger.error('Wrong getTxs ARGS');
+          this.logger.error('Wrong getLatestBlocks ARGS');
         }
       }
     }

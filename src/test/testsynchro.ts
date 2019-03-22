@@ -103,7 +103,6 @@ async function main() {
   await storageDB.open();
 
   let result2 = await storageDB.queryTxTable('cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4');
-  logger.info(result2);
   console.log(result2)
   console.log(result2.data.content);
   let data = result2.data.content;
@@ -111,6 +110,8 @@ async function main() {
   console.log('\n')
   console.log(myobj)
   console.log('\n')
+  result2.data.content = myobj;
+  console.log(result2.data)
 
   // console.log(result2.data.count!)
 

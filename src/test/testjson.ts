@@ -51,7 +51,7 @@ async function maine() {
   // logger.info(cr);
   // logger.info(cr.resp)
 
-  let cr = await client.callAsync('getTxs', { page: 1, pageSize: 3 })
+  let cr = await client.callAsync('getTx', 'cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4')
   logger.info('\n')
   logger.info(cr);
 
