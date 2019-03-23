@@ -65,9 +65,9 @@ export abstract class CUDataBase {
   abstract init(): Promise<IFeedBack>;
 
   // You can not insert a same priv key record
-  public insertRecord(sql: string): Promise<IFeedBack> {
+  public insertRecord(sql: string,params:any): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`${sql};`,
+      this.db.run(`${sql};`,params,
         (err: any) => {
           if (err) {
             this.logger.error(err);
@@ -92,9 +92,9 @@ export abstract class CUDataBase {
         });
     });
   }
-  public insertOrReplaceRecord(sql: string) {
+  public insertOrReplaceRecord(sql: string, params: any) {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`${sql};`,
+      this.db.run(`${sql};`, params,
         (err: any) => {
           if (err) {
             this.logger.error('Error =>', err);

@@ -30,7 +30,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.1.241', // ,     '40.73.1.241'    '127.0.0.1'
+  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1'
   port: 18080,
   address: '',
   verbose: false
@@ -56,6 +56,9 @@ async function maine() {
   logger.info(cr);
 
 
+  cr = await client.callAsync('getTxsByBlock', '83cc99a0f3d9f3558f6f6e4d53f978d7e796a2e9aca580ca7f853adf57f66c31')
+  logger.info('\n')
+  logger.info(cr);
   // cr = await client.callAsync('getTxByAddress', {
   //   address: '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a',
   //   page: 1,

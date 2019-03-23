@@ -75,11 +75,11 @@ export class StorageDataBase extends CUDataBase {
 
   public insertOrReplaceHashTable(hash: string, type: string) {
     this.logger.info('into insertOrReplaceToHashTable()', hash, '\n')
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.hashTable} (hash, type, verified) VALUES("${hash}", "${type}", 0);`);
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.hashTable} (hash, type, verified) VALUES("${hash}", "${type}", 0);`, {});
   }
   public insertHashTable(hash: string, type: string): Promise<IFeedBack> {
     this.logger.info('into insertHashTable()', hash, '\n')
-    return this.insertRecord(`INSERT INTO ${this.hashTable} (hash, type, verified) VALUES("${hash}", "${type}", 0);`);
+    return this.insertRecord(`INSERT INTO ${this.hashTable} (hash, type, verified) VALUES("${hash}", "${type}", 0);`, {});
   }
   public getHashTable(s: string) {
     return this.getRecord(`SELECT * FROM ${this.hashTable} WHERE hash = "${s}";`);
@@ -167,10 +167,10 @@ export class StorageDataBase extends CUDataBase {
     return this.updateRecord(`UPDATE ${this.accountTable} SET amount = "${amount}" WHERE hash="${addr}" AND token = "${token}"`);
   }
   public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
+    return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`, {});
   }
   public insertOrReplaceAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`);
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`, {});
   }
   public updateAccountTable(address: string, token: string, amount: string) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -201,7 +201,7 @@ export class StorageDataBase extends CUDataBase {
   }
   public insertOrReplaceBlockTable(hash: string, height: number, txno: number, address: string, datetime: number) {
     this.logger.info('into insertOrReplaceBlockTable()', hash, '\n')
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, number, txs, address, timestamp) VALUES("${hash}",${height}, ${txno}, "${address}", ${datetime});`);
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, number, txs, address, timestamp) VALUES("${hash}",${height}, ${txno}, "${address}", ${datetime});`, {});
   }
   public queryLatestBlockTable() {
     return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT 50;`)
@@ -230,27 +230,35 @@ export class StorageDataBase extends CUDataBase {
   }
   public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
-    // return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, fee, content) VALUES("${hash}", "${blockhash}",${blocknumber} ,"${address}", ${datetime},"${fee}","${content1}");`);
 
-    return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash,$blocknumber ,$address, $datetime,$content1);`,
-        {
-          $hash: hash,
-          $blockhash: blockhash,
-          $blocknumber: blocknumber,
-          $address: address,
-          $datetime: datetime,
-          $content1: content1
-        },
-        (err: any) => {
-          if (err) {
-            this.logger.error('Error =>', err);
-            resolv({ err: ErrorCode.RESULT_DB_TABLE_INSERTREPLACE_FAILED, data: err });
-          } else {
-            resolv({ err: ErrorCode.RESULT_OK, data: null });
-          }
-        });
+    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash,$blocknumber ,$address, $datetime,$content1);`, {
+      $hash: hash,
+      $blockhash: blockhash,
+      $blocknumber: blocknumber,
+      $address: address,
+      $datetime: datetime,
+      $content1: content1
     });
+
+    // return new Promise<IFeedBack>((resolv) => {
+    //   this.db.run(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash,$blocknumber ,$address, $datetime,$content1);`,
+    //     {
+    //       $hash: hash,
+    //       $blockhash: blockhash,
+    //       $blocknumber: blocknumber,
+    //       $address: address,
+    //       $datetime: datetime,
+    //       $content1: content1
+    //     },
+    //     (err: any) => {
+    //       if (err) {
+    //         this.logger.error('Error =>', err);
+    //         resolv({ err: ErrorCode.RESULT_DB_TABLE_INSERTREPLACE_FAILED, data: err });
+    //       } else {
+    //         resolv({ err: ErrorCode.RESULT_OK, data: null });
+    //       }
+    //     });
+    // });
   }
   public queryLatestTxTable() {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT 50 ;`)
@@ -265,6 +273,6 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(`SELECT * FROM ${this.tokenTable} WHERE hash = "${name}";`);
   }
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
-    return this.insertRecord(`INSERT INTO ${this.tokenTable} (name, type, address, timestamp) VALUES("${tokenname}", "${type}", "${address}", ${datetime})`);
+    return this.insertRecord(`INSERT INTO ${this.tokenTable} (name, type, address, timestamp) VALUES("${tokenname}", "${type}", "${address}", ${datetime})`, {});
   }
 }

@@ -169,7 +169,15 @@ export class WRQueue extends EventEmitter {
     else if (task.request.funName === 'getTxsByBlock') {
       let result = await this.pStorageDb.queryTxTableByBlock(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
-        arr = result.data;
+        // console.log(result.data)
+        try {
+          for (let i = 0; i < result.data.length; i++) {
+            result.data[i].content = JSON.parse(result.data[i].content);
+          }
+          arr = result.data;
+        } catch (e) {
+          this.logger.info('Wrong getTxsBlock result parsing')
+        }
       }
     }
     else if (task.request.funName === 'getTx') {

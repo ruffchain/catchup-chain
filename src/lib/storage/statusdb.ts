@@ -25,7 +25,7 @@ export class StatusDataBase extends CUDataBase {
   public getLoadGenesisFileBool(): Promise<IFeedBack> {
     return this.getSomeStatus(this.nameLoadGenesisFile, async (resolv: (a: IFeedBack) => void) => {
       this.logger.info('insert records from ', this.nameLoadGenesisFile);
-      let result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameLoadGenesisFile}", 0, 0)`);
+      let result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameLoadGenesisFile}", 0, 0)`, {});
       if (result.err) {
         resolv(result);
       } else {
@@ -63,7 +63,7 @@ export class StatusDataBase extends CUDataBase {
       } else {
         this.logger.info('Insert into statustable now');
         // insert default height = 0 into the table
-        result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameCurrentHeight}", 0, 0)`);
+        result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameCurrentHeight}", 0, 0)`, {});
         if (result.err) {
           resolv(result);
         }
@@ -78,7 +78,7 @@ export class StatusDataBase extends CUDataBase {
   }
   // test purpose
   public setAuthor(author: string) {
-    return this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${author}", 10, 0)`);
+    return this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${author}", 10, 0)`, {});
   }
   public updateAuthor(author: string, value: number) {
     return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${value} WHERE name="${author}";`);
