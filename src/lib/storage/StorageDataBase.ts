@@ -68,45 +68,29 @@ export class StorageDataBase extends CUDataBase {
 
   // access functions
   // hash table, use regex to get hash value ,default is 5 result
-  public queryHashTable(s: string, num: number) {
-    return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash LIKE "${s}%" LIMIT ${num};`);
-  }
+  // public queryHashTable(s: string, num: number) {
+  //   let sql = SqlString.format('SELECT * FROM ? WHERE hash LIKE "?%" LIMIT ?;', [this.hashTable, s, num])
+  //   return this.getAllRecords(sql);
+  // }
   public queryHashTableFullName(s: string, num: number) {
-    return this.getAllRecords(`SELECT * FROM ${this.hashTable} WHERE hash = "${s}" LIMIT ${num};`);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? LIMIT ?;', [this.hashTable, s, num])
+    return this.getAllRecords(sql);
   }
 
   public insertOrReplaceHashTable(hash: string, type: string) {
     this.logger.info('into insertOrReplaceToHashTable()', hash, '\n')
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.hashTable} (hash, type, verified) VALUES("${hash}", "${type}", 0);`, {});
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, hash, type])
+    return this.insertOrReplaceRecord(sql, {});
   }
   public insertHashTable(hash: string, type: string): Promise<IFeedBack> {
     this.logger.info('into insertHashTable()', hash, '\n')
-    return this.insertRecord(`INSERT INTO ${this.hashTable} (hash, type, verified) VALUES("${hash}", "${type}", 0);`, {});
+    let sql = SqlString.format('INSERT INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, hash, type])
+    return this.insertRecord(sql, {});
   }
   public getHashTable(s: string) {
-    return this.getRecord(`SELECT * FROM ${this.hashTable} WHERE hash = "${s}";`);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.hashTable, s])
+    return this.getRecord(sql);
   }
-
-  // public saveToHashTable(hash: string, type: string) {
-  //   this.logger.info('into saveToHashTable()', hash, '\n')
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     let feedback = await this.getHashTable(hash);
-  //     if (feedback.err) {
-  //       // insert
-  //       feedback = await this.insertHashTable(hash, HASH_TYPE.BLOCK);
-  //     } else {
-  //       feedback = await this.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
-  //     }
-
-  //     this.logger.info('after insertion ', feedback);
-
-  //     if (feedback.err) {
-  //       resolv({ err: feedback.err, data: null })
-  //     } else {
-  //       resolv({ err: ErrorCode.RESULT_OK, data: null })
-  //     }
-  //   });
-  // }
 
   public saveTxToHashTable(txs: any[]) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -155,25 +139,29 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
   public queryAllAccountTableByAddress(addr: string) {
-    return this.getAllRecords(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.accountTable, addr])
+    return this.getAllRecords(sql);
   }
   public queryLatestAccountTable() {
-    return this.getAllRecords(`SELECT * FROM ${this.accountTable} LIMIT 50;`);
+    let sql = SqlString.format('SELECT * FROM ? LIMIT 50;', [this.accountTable])
+    return this.getAllRecords(sql);
   }
-  public queryAccountTableByToken(token: string) {
 
-  }
   public queryAccountTableByTokenAndAddress(addr: string, token: string) {
-    return this.getRecord(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}" AND token = "${token}"`);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? AND token = ?', [this.accountTable, addr, token])
+    return this.getRecord(sql);
   }
   private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string) {
-    return this.updateRecord(`UPDATE ${this.accountTable} SET amount = "${amount}" WHERE hash="${addr}" AND token = "${token}"`);
+    let sql = SqlString.format('UPDATE ? SET amount = ? WHERE hash=? AND token = ?;', [this.accountTable, amount, addr, token])
+    return this.updateRecord(sql);
   }
   public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    return this.insertRecord(`INSERT INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`, {});
+    let sql = SqlString.format('INSERT INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
+    return this.insertRecord(sql, {});
   }
   public insertOrReplaceAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.accountTable} (hash, token, amount, value) VALUES("${hash}", "${token}", "${amount}", ${value})`, {});
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
+    return this.insertOrReplaceRecord(sql, {});
   }
   public updateAccountTable(address: string, token: string, amount: string) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -199,19 +187,19 @@ export class StorageDataBase extends CUDataBase {
 
   // block table
 
-  public queryBlockTable(num: number) {
-
-  }
   public insertOrReplaceBlockTable(hash: string, height: number, txno: number, address: string, datetime: number) {
     this.logger.info('into insertOrReplaceBlockTable()', hash, '\n')
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.blockTable} (hash, number, txs, address, timestamp) VALUES("${hash}",${height}, ${txno}, "${address}", ${datetime});`, {});
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, number, txs, address, timestamp) VALUES(?,?, ?, ?, ?);', [this.blockTable, hash, height, txno, address, datetime])
+    return this.insertOrReplaceRecord(sql, {});
   }
   public queryLatestBlockTable() {
-    return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT 50;`)
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 50;', [this.blockTable])
+    return this.getAllRecords(sql)
   }
 
   public queryBlockTableByPage(index: number, size: number) {
-    return this.getAllRecords(`SELECT * FROM ${this.blockTable} ORDER BY timestamp DESC LIMIT ${size} OFFSET ${index * size} ;`);
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT ? OFFSET ?;', [this.blockTable, size, index * size])
+    return this.getAllRecords(sql);
   }
 
   // tx table
@@ -220,64 +208,53 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
   public queryTxTableByPage(index: number, size: number) {
-    return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT ${size} OFFSET ${index * size} ;`);
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT ? OFFSET ?;', [this.txTable, size, index * size]);
+    return this.getAllRecords(sql);
   }
   public queryTxTableByDatetime(from: number, to: number) {
-    return this.getAllRecords(`SELECT COUNT(*) as count FROM ${this.txTable} WHERE  timestamp >= ${from} AND timestamp < ${to};`);
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE  timestamp >= ? AND timestamp < ?;', [this.txTable, from, to])
+    return this.getAllRecords(sql);
   }
 
   public queryTxTableByAddress(address: string) {
-    return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE address = "${address}";`)
+    let sql = SqlString.format('SELECT * FROM ? WHERE address = ?;', [this.txTable, address]);
+    return this.getAllRecords(sql)
   }
   public queryTxTableByBlock(block: string) {
-    return this.getAllRecords(`SELECT * FROM ${this.txTable} WHERE blockhash = "${block}";`)
+    let sql = SqlString.format('SELECT * FROM ? WHERE blockhash = ?;', [this.txTable, block]);
+
+    return this.getAllRecords(sql)
   }
   public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
-    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime,$content1);', [this.txTable])
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime,$content1);', [this.txTable]);
 
     return this.insertOrReplaceRecord(sql, {
-      $hash: hash,
-      $blockhash: blockhash,
-      $blocknumber: blocknumber,
-      $address: address,
-      $datetime: datetime,
-      $content1: content1
+      $hash: SqlString.escape(hash),
+      $blockhash: SqlString.escape(blockhash),
+      $blocknumber: SqlString.escape(blocknumber),
+      $address: SqlString.escape(address),
+      $datetime: SqlString.escape(datetime),
+      $content1: SqlString.escape(content1)
     });
-
-    // return new Promise<IFeedBack>((resolv) => {
-    //   this.db.run(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash,$blocknumber ,$address, $datetime,$content1);`,
-    //     {
-    //       $hash: hash,
-    //       $blockhash: blockhash,
-    //       $blocknumber: blocknumber,
-    //       $address: address,
-    //       $datetime: datetime,
-    //       $content1: content1
-    //     },
-    //     (err: any) => {
-    //       if (err) {
-    //         this.logger.error('Error =>', err);
-    //         resolv({ err: ErrorCode.RESULT_DB_TABLE_INSERTREPLACE_FAILED, data: err });
-    //       } else {
-    //         resolv({ err: ErrorCode.RESULT_OK, data: null });
-    //       }
-    //     });
-    // });
   }
   public queryLatestTxTable() {
-    return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT 50 ;`)
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 50;', [this.txTable])
+    return this.getAllRecords(sql)
   }
 
   public queryTxTableCount() {
-    return this.getRecord(`SELECT COUNT(*) as count FROM ${this.txTable};`)
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ?;', [this.txTable]);
+    return this.getRecord(sql)
   }
 
   // token table
   public queryTokenTable(name: string) {
-    return this.getRecord(`SELECT * FROM ${this.tokenTable} WHERE hash = "${name}";`);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.tokenTable, name])
+    return this.getRecord(sql);
   }
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
-    return this.insertRecord(`INSERT INTO ${this.tokenTable} (name, type, address, timestamp) VALUES("${tokenname}", "${type}", "${address}", ${datetime})`, {});
+    let sql = SqlString.format('INSERT INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?)', [this.tokenTable, tokenname, type, address, datetime])
+    return this.insertRecord(sql, {});
   }
 }
