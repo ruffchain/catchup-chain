@@ -1,7 +1,9 @@
 import { CUDataBase, IfCUDataBaseOptions } from './cudatabase';
 import winston = require('winston');
 import { ErrorCode, IFeedBack } from '../../core/error_code';
-import { subtractBN3, addBN2 } from './computer';
+//import { subtractBN3, addBN2 } from './computer';
+import * as SqlString from 'sqlstring';
+
 
 export const HASH_TYPE = {
   ADDRESS: 'addr',
@@ -149,7 +151,8 @@ export class StorageDataBase extends CUDataBase {
 
   // account
   public queryAccountTableByAddress(addr: string) {
-    return this.getRecord(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.accountTable, addr]);
+    return this.getRecord(sql);
   }
   public queryAllAccountTableByAddress(addr: string) {
     return this.getAllRecords(`SELECT * FROM ${this.accountTable} WHERE hash = "${addr}";`);
@@ -213,7 +216,8 @@ export class StorageDataBase extends CUDataBase {
 
   // tx table
   public queryTxTable(hash: string) {
-    return this.getRecord(`SELECT * FROM ${this.txTable} WHERE hash = "${hash}";`)
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.txTable, hash]);
+    return this.getRecord(sql);
   }
   public queryTxTableByPage(index: number, size: number) {
     return this.getAllRecords(`SELECT * FROM ${this.txTable} ORDER BY timestamp DESC LIMIT ${size} OFFSET ${index * size} ;`);
@@ -230,8 +234,9 @@ export class StorageDataBase extends CUDataBase {
   }
   public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime,$content1);', [this.txTable])
 
-    return this.insertOrReplaceRecord(`INSERT OR REPLACE INTO ${this.txTable} (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash,$blocknumber ,$address, $datetime,$content1);`, {
+    return this.insertOrReplaceRecord(sql, {
       $hash: hash,
       $blockhash: blockhash,
       $blocknumber: blocknumber,
