@@ -128,20 +128,23 @@ export class WRQueue extends EventEmitter {
       let result: any;
       if (!task.request.args) {
         result = await this.pStorageDb.queryLatestTxTable();
-        if (result.err === ErrorCode.RESULT_OK) {
-          arr = result.data;
-        }
       } else {
         try {
           let argsObj = JSON.parse(JSON.stringify(task.request.args));
           result = await this.pStorageDb.queryTxTableByPage(
             (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
-
-          if (result.err === ErrorCode.RESULT_OK) {
-            arr = result.data;
-          }
         } catch (e) {
-          this.logger.error('Wrong getTxs ARGS');
+          this.logger.error('Wrong getLatestTxs ARGS');
+        }
+      }
+      if (result.err === ErrorCode.RESULT_OK) {
+        try {
+          for (let i = 0; i < result.data.length; i++) {
+            result.data[i].content = JSON.parse(result.data[i].content);
+          }
+          arr = result.data;
+        } catch (e) {
+          this.logger.info('Wrong getLatestTxs result parsing')
         }
       }
     }

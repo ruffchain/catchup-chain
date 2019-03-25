@@ -1,11 +1,9 @@
 
-import * as Sqlite3 from 'sqlite3';
+// import * as Sqlite3 from 'sqlite3';
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 import { IfTask } from './queue';
 import winston = require('winston');
 import * as path from 'path';
-
-// Sqlite3.verbose();
 
 var sqlite3 = require('sqlite3').verbose();
 
@@ -65,9 +63,9 @@ export abstract class CUDataBase {
   abstract init(): Promise<IFeedBack>;
 
   // You can not insert a same priv key record
-  public insertRecord(sql: string,params:any): Promise<IFeedBack> {
+  public insertRecord(sql: string, params: any): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`${sql};`,params,
+      this.db.run(`${sql};`, params,
         (err: any) => {
           if (err) {
             this.logger.error(err);

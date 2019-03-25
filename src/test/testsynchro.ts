@@ -2,7 +2,7 @@ import { Logger } from "../api/logger";
 import { Synchro } from "../lib/catchup/synchro";
 import { StatusDataBase } from "../lib/storage/statusdb";
 import { StorageDataBase, TOKEN_TYPE, SYS_TOKEN } from "../lib/storage/StorageDataBase";
-import { subtractBN3 } from "../lib/storage/computer";
+import { subtractBN3 } from "../lib/storage/compute";
 
 
 const logger = Logger.init({

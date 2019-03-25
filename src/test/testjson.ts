@@ -47,18 +47,18 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 // logger.info(queue.isANumber("1B"));
 
 async function maine() {
-  // let cr = await client.callAsync('getName', "1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J")
+  let cr = await client.callAsync('getName', "1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J")
+  logger.info(cr);
+  logger.info(cr.resp)
+
+  // let cr = await client.callAsync('getTx', 'cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4')
+  // logger.info('\n')
   // logger.info(cr);
-  // logger.info(cr.resp)
-
-  let cr = await client.callAsync('getTx', 'cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4')
-  logger.info('\n')
-  logger.info(cr);
 
 
-  cr = await client.callAsync('getTxsByBlock', '83cc99a0f3d9f3558f6f6e4d53f978d7e796a2e9aca580ca7f853adf57f66c31')
-  logger.info('\n')
-  logger.info(cr);
+  // cr = await client.callAsync('getTxsByBlock', '83cc99a0f3d9f3558f6f6e4d53f978d7e796a2e9aca580ca7f853adf57f66c31')
+  // logger.info('\n')
+  // logger.info(cr);
   // cr = await client.callAsync('getTxByAddress', {
   //   address: '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a',
   //   page: 1,
@@ -66,7 +66,7 @@ async function maine() {
   // }
   // )
   logger.info('\n');
-  cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 3 });
+  cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
   logger.info('\n')
   logger.info(cr);
 
