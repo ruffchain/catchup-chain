@@ -212,6 +212,11 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(sql);
   }
 
+  public queryBlockTotal() {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ?;', [this.blockTable]);
+    return this.getRecord(sql)
+  }
+
   // tx table
   public queryTxTable(hash: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.txTable, hash]);

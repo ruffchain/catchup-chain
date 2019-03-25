@@ -86,12 +86,15 @@ async function maine() {
   console.log(tempStr);
   console.log(typeof tempStr)
 
-  cr = await client.callAsync('getFortuneRanking', { token: "s", page: 1, pageSize: 2 });
-  logger.info('\n')
-  logger.info(cr);
+  // cr = await client.callAsync('getFortuneRanking', { token: "s", page: 1, pageSize: 2 });
+  // logger.info('\n')
+  // logger.info(cr);
   // cr = await client.callAsync('getTokenInfo', "hdba");
   // logger.info('\n')
   // logger.info(cr);
+  cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 2 });
+  logger.info('\n')
+  logger.info(cr);
 }
 
 maine();

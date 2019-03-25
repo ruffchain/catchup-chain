@@ -253,7 +253,13 @@ export class WRQueue extends EventEmitter {
             (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
 
           if (result.err === ErrorCode.RESULT_OK) {
-            arr = result.data;
+            // arr = result.data;
+            let result1 = await this.pStorageDb.queryBlockTotal();
+            let newObj: any;
+            newObj = {};
+            newObj.data = result.data;
+            newObj.total = parseInt(result1.data.count)
+            arr = newObj;
           }
         } catch (e) {
           this.logger.error('Wrong getLatestBlocks ARGS');
