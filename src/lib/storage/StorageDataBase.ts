@@ -151,10 +151,7 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? AND token = ?', [this.accountTable, addr, token])
     return this.getRecord(sql);
   }
-  private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string) {
-    let sql = SqlString.format('UPDATE ? SET amount = ? WHERE hash=? AND token = ?;', [this.accountTable, amount, addr, token])
-    return this.updateRecord(sql);
-  }
+
   public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
     let sql = SqlString.format('INSERT INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
     return this.insertRecord(sql, {});
@@ -163,7 +160,11 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
     return this.insertOrReplaceRecord(sql, {});
   }
-  public updateAccountTable(address: string, token: string, amount: string) {
+  private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string, value: number) {
+    let sql = SqlString.format('UPDATE ? SET amount = ? , value = ? WHERE hash=? AND token = ?;', [this.accountTable, amount, value, addr, token])
+    return this.updateRecord(sql);
+  }
+  public updateAccountTable(address: string, token: string, amount: string, value: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       // if address token is not empty, update it
       let result = await this.queryAccountTableByTokenAndAddress(address, token);
@@ -176,7 +177,7 @@ export class StorageDataBase extends CUDataBase {
         resolv(result);
       } else {
         // update it
-        let result2 = await this.updateAccountTableByTokenAndAddress(address, token, amount)
+        let result2 = await this.updateAccountTableByTokenAndAddress(address, token, amount, value)
         resolv(result2);
       }
     })

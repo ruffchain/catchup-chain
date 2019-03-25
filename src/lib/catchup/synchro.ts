@@ -418,8 +418,9 @@ export class Synchro {
 
       if (result.ret === 200) {
         let amount: string = JSON.parse(result.resp!).value.replace('n', '');
+        let value: number = parseFloat(amount)
         this.logger.info('updateAccountTable ->\n')
-        let result2 = await this.pStorageDb.updateAccountTable(account, token, amount);
+        let result2 = await this.pStorageDb.updateAccountTable(account, token, amount, value);
         resolv(result2);
       } else {
         resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });

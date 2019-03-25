@@ -113,7 +113,7 @@ async function main() {
   // result2.data.content = myobj;
   // console.log(result2.data)
 
-  let result2 = await storageDB.queryAccountTableByAddress('12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC');
+  let result2 = await storageDB.queryAccountTableByAddress('1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a');
   console.log(result2);
 
 
