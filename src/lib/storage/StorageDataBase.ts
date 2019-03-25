@@ -157,10 +157,10 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('INSERT INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
     return this.insertRecord(sql, {});
   }
-  public insertOrReplaceAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
-    return this.insertOrReplaceRecord(sql, {});
-  }
+  // public insertOrReplaceAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
+  //   let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
+  //   return this.insertOrReplaceRecord(sql, {});
+  // }
   private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string, value: number) {
     let sql = SqlString.format('UPDATE ? SET amount = ? , value = ? WHERE hash=? AND token = ?;', [this.accountTable, amount, value, addr, token])
     return this.updateRecord(sql);
@@ -172,7 +172,7 @@ export class StorageDataBase extends CUDataBase {
 
       if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         // insert into it
-        let result1 = await this.insertAccountTable(address, token, amount, 0);
+        let result1 = await this.insertAccountTable(address, token, amount, value);
         resolv(result1);
       } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
         resolv(result);
@@ -183,9 +183,7 @@ export class StorageDataBase extends CUDataBase {
       }
     })
   }
-  public addToAccountTable(address: string, amount: string) {
 
-  }
 
   // block table
 

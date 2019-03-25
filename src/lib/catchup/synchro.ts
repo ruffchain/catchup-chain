@@ -20,6 +20,9 @@ interface IfSynchroOptions {
   ip: string;
   port: number;
 }
+interface IName {
+  address: string;
+}
 
 export class Synchro {
   public logger: winston.LoggerInstance;
@@ -248,6 +251,7 @@ export class Synchro {
     }
     else {
       return new Promise<IFeedBack>(async (resolv) => {
+        this.logger.error('Unrecognized account and token method:');
         resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
       });
     }
@@ -259,17 +263,19 @@ export class Synchro {
       let preBalances = receipt.tx.input.preBalances; // array
       let datetime = receipt.block.timestamp;
       let caller = receipt.tx.caller;
-      let nameLst: string[] = [];
-      let amountAll: number = 0;
+      let nameLst: IName[] = [];
+      // let amountAll: number = 0;
 
       preBalances.forEach((element: any) => {
-        nameLst.push(element.address)
-        amountAll += parseInt(element.amount);
+        nameLst.push({
+          address: element.address
+        })
+        // amountAll += parseInt(element.amount);
       });
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
-        let result = await this.updateBalance(caller, tokenName);
+        let result = await this.updateBalance(tokenName, { address: caller });
         if (result.err) {
           resolv(result);
           return;
@@ -299,7 +305,7 @@ export class Synchro {
       let caller = receipt.tx.caller;
 
       if (receipt.receipt.returnCode === 0) {
-        let result = await this.updateBancorTokenBalance(caller, tokenName);
+        let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
         if (result.err) {
           resolv(result);
           return;
@@ -316,7 +322,7 @@ export class Synchro {
       let to = receipt.tx.input.to;
 
       if (receipt.receipt.returnCode === 0) {
-        let result = await this.updateBancorTokenBalances(tokenName, [caller, to]);
+        let result = await this.updateBancorTokenBalances(tokenName, [{ address: caller }, { address: to }]);
         if (result.err) {
           resolv(result);
           return;
@@ -331,17 +337,17 @@ export class Synchro {
       let preBalances = receipt.tx.input.preBalances; // array
       let datetime = receipt.block.timestamp;
       let caller = receipt.tx.caller;
-      let nameLst: string[] = [];
-      let amountAll: number = 0;
+      let nameLst: IName[] = [];
+      // let amountAll: number = 0;
 
       preBalances.forEach((element: any) => {
-        nameLst.push(element.address)
-        amountAll += parseInt(element.amount);
+        nameLst.push({ address: element.address });
+        // amountAll += parseInt(element.amount);
       });
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
-        let result = await this.updateBalance(caller, tokenName);
+        let result = await this.updateBalance(tokenName, { address: caller });
         if (result.err) {
           resolv(result);
           return;
@@ -373,7 +379,7 @@ export class Synchro {
 
       if (receipt.receipt.returnCode === 0) {
         // update caller token account
-        let result = await this.updateBancorTokenBalance(caller, tokenName);
+        let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
         if (result.err) {
           resolv(result);
           return;
@@ -402,7 +408,7 @@ export class Synchro {
       }
       if (receipt.receipt.returnCode === 0) {
         this.logger.info('checkTranserTo, updateBalances')
-        feedback = await this.updateBalances([caller, to]);
+        feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }, { address: to }]);
         if (feedback.err) {
           resolv(feedback);
           return;
@@ -412,25 +418,26 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
-  private updateBalanceBasic(account: string, token: string, funcGetBalance: (token: string, address: string) => Promise<IfResult>) {
+  private updateBalanceBasic(token: string, account: IName, funcGetBalance: (token1: string, address1: string) => Promise<IfResult>) {
     return new Promise<IFeedBack>(async (resolv) => {
-      let result = await funcGetBalance.call(this, token, account);
+      let result = await funcGetBalance.call(this, token, account.address);
 
       if (result.ret === 200) {
         let amount: string = JSON.parse(result.resp!).value.replace('n', '');
         let value: number = parseFloat(amount)
         this.logger.info('updateAccountTable ->\n')
-        let result2 = await this.pStorageDb.updateAccountTable(account, token, amount, value);
+        console.log("value:", value);
+        let result2 = await this.pStorageDb.updateAccountTable(account.address, token, amount, value);
         resolv(result2);
       } else {
         resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });
       }
     });
   }
-  private updateBalancesBaisc(accounts: string[], token: string, funcUpdate: (accounts: string, token: string) => Promise<IFeedBack>) {
+  private updateBalancesBaisc(token: string, accounts: IName[], funcUpdate: (token1: string, account1: IName) => Promise<IFeedBack>) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = 0; i < accounts.length; i++) {
-        let result = await funcUpdate.call(this, accounts[i], token);
+        let result = await funcUpdate.call(this, token, accounts[i]);
         if (result.err) {
           resolv(result);
           return;
@@ -439,25 +446,26 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     })
   }
-  public async updateBalance(account: string, token: string) {
-    return this.updateBalanceBasic(account, token, this.getBalanceInfo);
+  // ---------- 1 -----------
+  public async updateBalance(token: string, account: IName) {
+    return this.updateBalanceBasic(token, account, this.getBalanceInfo);
   }
-  private async updateBalances(accounts: string[]) {
-    return this.updateBalancesBaisc(accounts, SYS_TOKEN, this.updateBalance);
+  private async updateBalances(token: string, accounts: IName[]) {
+    return this.updateBalancesBaisc(SYS_TOKEN, accounts, this.updateBalance);
   }
-
-  private async updateTokenBalance(account: string, token: string) {
-    return this.updateBalanceBasic(account, token, this.getTokenBalanceInfo);
+  //---------------------------------------------------------------
+  private async updateTokenBalance(token: string, account: IName) {
+    return this.updateBalanceBasic(token, account, this.getTokenBalanceInfo);
   }
-  private async updateTokenBalances(token: string, accounts: string[]) {
-    return this.updateBalancesBaisc(accounts, token, this.updateTokenBalance)
+  private async updateTokenBalances(token: string, accounts: IName[]) {
+    return this.updateBalancesBaisc(token, accounts, this.updateTokenBalance)
   }
-
-  private async updateBancorTokenBalance(account: string, token: string) {
-    return this.updateBalanceBasic(account, token, this.getBancorTokenBalanceInfo);
+  // -------------------------------------------------------------
+  private async updateBancorTokenBalance(token: string, account: IName, ) {
+    return this.updateBalanceBasic(token, account, this.getBancorTokenBalanceInfo);
   }
-  private async updateBancorTokenBalances(token: string, accounts: string[]) {
-    return this.updateBalancesBaisc(accounts, token, this.updateBancorTokenBalance);
+  private async updateBancorTokenBalances(token: string, accounts: IName[]) {
+    return this.updateBalancesBaisc(token, accounts, this.updateBancorTokenBalance);
   }
 
 
@@ -493,6 +501,7 @@ export class Synchro {
     })
   }
   public async getBalanceInfo(token: string, strHash: string) {
+    console.log('\ngetBalanceInfo', token, ' ', strHash, '\n')
     let result = await getBalance(this.ctx, [strHash]);
     this.logger.info(JSON.stringify(result));
     this.logger.info('balance:', JSON.parse(result.resp!).value);
@@ -506,6 +515,7 @@ export class Synchro {
     return result;
   }
   public async getBancorTokenBalanceInfo(token: string, strHash: string) {
+    console.log('\ngetBancorTokenBalanceInfo', token, ' ', strHash, '\n')
     let result = await getBancorTokenBalance(this.ctx, [token, strHash]);
     this.logger.info(JSON.stringify(result));
     this.logger.info('bancor token balance:', JSON.parse(result.resp!).value);

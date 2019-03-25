@@ -75,8 +75,9 @@ async function maine() {
   // )
   console.log(cr);
   logger.info('\n');
-  cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
+  // cr = await client.callAsync('getTxsByAddress', { page: 1, pageSize: 1 });
   // cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
+  cr = await client.callAsync('getTokensByAddress', "1M5GrmyZKbakiXyBsvbcosRhYvpxQo4MGt");
   logger.info('\n')
   logger.info(cr);
 
