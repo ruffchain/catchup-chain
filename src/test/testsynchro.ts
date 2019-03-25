@@ -64,11 +64,11 @@ async function main() {
   // logger.info('libnumber:', parseInt(result.resp!))
   // logger.info('\n')
 
-  let result = await synchro.getLastestBlock();
-  logger.info(result);
-  logger.info('latest block:', parseInt(result.resp!));
-  let obj = JSON.parse(result.resp!)
-  logger.info(obj.block.number);
+  // let result = await synchro.getLastestBlock();
+  // logger.info(result);
+  // logger.info('latest block:', parseInt(result.resp!));
+  // let obj = JSON.parse(result.resp!)
+  // logger.info(obj.block.number);
 
   // let result = await synchro.getBalanceInfo(SYS_TOKEN, '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r')
   // logger.info(result);
@@ -102,16 +102,20 @@ async function main() {
   await statusDB.open();
   await storageDB.open();
 
-  let result2 = await storageDB.queryTxTable('cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4');
-  console.log(result2)
-  console.log(result2.data.content);
-  let data = result2.data.content;
-  const myobj = JSON.parse(data.toString())
-  console.log('\n')
-  console.log(myobj)
-  console.log('\n')
-  result2.data.content = myobj;
-  console.log(result2.data)
+  // let result2 = await storageDB.queryTxTable('cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4');
+  // console.log(result2)
+  // console.log(result2.data.content);
+  // let data = result2.data.content;
+  // const myobj = JSON.parse(data.toString())
+  // console.log('\n')
+  // console.log(myobj)
+  // console.log('\n')
+  // result2.data.content = myobj;
+  // console.log(result2.data)
+
+  let result2 = await storageDB.queryAccountTableByAddress('12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC');
+  console.log(result2);
+
 
   // console.log(result2.data.count!)
 

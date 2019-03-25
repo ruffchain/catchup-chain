@@ -124,6 +124,12 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getTokensByAddress') {
+      let result = await this.pStorageDb.queryAccountTableByAddress(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else if (task.request.funName === 'getLatestTxs' || task.request.funName === 'getTxsByAddress') {
       let result: any;
       if (!task.request.args) {

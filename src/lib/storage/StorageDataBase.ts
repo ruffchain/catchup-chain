@@ -136,7 +136,7 @@ export class StorageDataBase extends CUDataBase {
   // account
   public queryAccountTableByAddress(addr: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.accountTable, addr]);
-    return this.getRecord(sql);
+    return this.getAllRecords(sql);
   }
   public queryAllAccountTableByAddress(addr: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.accountTable, addr])
