@@ -114,10 +114,11 @@ async function main() {
   // console.log(result2.data)
 
   // let result2 = await storageDB.queryAccountTableByAddress('1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a');
-  let result2 = await storageDB.queryLatestTxTable();
+  // let result2 = await storageDB.queryLatestTxTable();
+  // console.log(result2);
+
+  let result2 = await storageDB.queryTokenTable('hdba');
   console.log(result2);
-
-
   // console.log(result2.data.count!)
 
   // logger.info('\n')

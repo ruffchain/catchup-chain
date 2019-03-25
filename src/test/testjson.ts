@@ -77,10 +77,12 @@ async function maine() {
   logger.info('\n');
   // cr = await client.callAsync('getTxsByAddress', { page: 1, pageSize: 1 });
   // cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
-  cr = await client.callAsync('getTokensByAddress', "1M5GrmyZKbakiXyBsvbcosRhYvpxQo4MGt");
+  cr = await client.callAsync('getTokensByAddress', "1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a");
   logger.info('\n')
   logger.info(cr);
-
+  cr = await client.callAsync('getTokenInfo', "hdba");
+  logger.info('\n')
+  logger.info(cr);
 
 }
 

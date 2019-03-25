@@ -124,6 +124,13 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    // get info from token table
+    else if (task.request.funName === 'getTokenInfo') {
+      let result = await this.taskGetTokenInfo(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else if (task.request.funName === 'getTokensByAddress') {
       let result = await this.pStorageDb.queryAccountTableByAddress(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
@@ -299,6 +306,14 @@ export class WRQueue extends EventEmitter {
   }
 
   private async taskGetToken(token: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryTokenTable(token);
+      resolv(result);
+    });
+  }
+
+  private async taskGetTokenInfo(token: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       // check account table, 
       let result = await this.pStorageDb.queryTokenTable(token);
