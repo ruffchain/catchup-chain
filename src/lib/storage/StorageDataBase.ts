@@ -14,6 +14,7 @@ export const HASH_TYPE = {
   NONE: 'none'
 };
 export const SYS_TOKEN = 's';
+export const SYS_TOKEN_SYMBOL = 'SYS';
 
 export const TOKEN_TYPE = {
   NORMAL: 'normal',
@@ -226,6 +227,15 @@ export class StorageDataBase extends CUDataBase {
 
     return this.getAllRecords(sql)
   }
+  public queryLatestTxTable() {
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 50;', [this.txTable])
+    return this.getAllRecords(sql)
+  }
+
+  public queryTxTableCount() {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ?;', [this.txTable]);
+    return this.getRecord(sql)
+  }
   public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime,$content1);', [this.txTable]);
@@ -236,18 +246,10 @@ export class StorageDataBase extends CUDataBase {
       $blocknumber: SqlString.escape(blocknumber),
       $address: SqlString.escape(address),
       $datetime: SqlString.escape(datetime),
-      $content1: SqlString.escape(content1)
+      $content1: content1
     });
   }
-  public queryLatestTxTable() {
-    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 50;', [this.txTable])
-    return this.getAllRecords(sql)
-  }
 
-  public queryTxTableCount() {
-    let sql = SqlString.format('SELECT COUNT(*) as count FROM ?;', [this.txTable]);
-    return this.getRecord(sql)
-  }
 
   // token table
   public queryTokenTable(name: string) {

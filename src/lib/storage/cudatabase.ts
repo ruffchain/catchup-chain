@@ -123,7 +123,7 @@ export abstract class CUDataBase {
   public getAllRecords(sql: string): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {
       this.db.all(sql, (err: any, rows: any) => {
-        this.logger.info('getAllRecords', err, rows)
+        // this.logger.info('getAllRecords', err, rows)
         if (err) {
           resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: err })
         } else if (!rows) {

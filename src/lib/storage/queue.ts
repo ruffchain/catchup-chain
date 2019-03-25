@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { CUDataBase, IfCUDataBaseOptions } from './cudatabase';
 import winston = require('winston');
 import { StatusDataBase } from './statusdb';
-import { StorageDataBase, HASH_TYPE } from './StorageDataBase';
+import { StorageDataBase, HASH_TYPE, SYS_TOKEN, SYS_TOKEN_SYMBOL } from './StorageDataBase';
 import { IfReq } from '../catchup/inquiro'
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 import { isNumber } from 'util';
@@ -127,6 +127,11 @@ export class WRQueue extends EventEmitter {
     else if (task.request.funName === 'getTokensByAddress') {
       let result = await this.pStorageDb.queryAccountTableByAddress(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
+        // for (let i = 0; i < result.data.length; i++) {
+        //   if (result.data[i].token === "s") {
+        //     result.data[i].token = SYS_TOKEN_SYMBOL;
+        //   }
+        // }
         arr = result.data;
       }
     }
@@ -143,8 +148,11 @@ export class WRQueue extends EventEmitter {
           this.logger.error('Wrong getLatestTxs ARGS');
         }
       }
+
       if (result.err === ErrorCode.RESULT_OK) {
         try {
+          console.log('received result.data')
+          console.log(result.data);
           for (let i = 0; i < result.data.length; i++) {
             result.data[i].content = JSON.parse(result.data[i].content);
           }

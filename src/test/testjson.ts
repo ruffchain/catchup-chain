@@ -51,9 +51,13 @@ async function maine() {
   logger.info(cr);
   logger.info(cr.resp)
 
-  cr = await client.callAsync('getTokensByAddress', '1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a')
+  // cr = await client.callAsync('getTxsByAddress', {
+  //   address: '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r',
+  //   page: 1,
+  //   pageSize: 3
+  // });
   logger.info('\n')
-  logger.info(cr);
+  // logger.info(cr);
 
   // let cr = await client.callAsync('getTx', 'cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4')
   // logger.info('\n')
@@ -69,8 +73,10 @@ async function maine() {
   //   pageSize: 20
   // }
   // )
+  console.log(cr);
   logger.info('\n');
   cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
+  // cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
   logger.info('\n')
   logger.info(cr);
 
