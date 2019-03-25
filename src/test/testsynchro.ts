@@ -117,7 +117,9 @@ async function main() {
   // let result2 = await storageDB.queryLatestTxTable();
   // console.log(result2);
 
-  let result2 = await storageDB.queryTokenTable('hdba');
+  // let result2 = await storageDB.queryTokenTable('hdba');
+  // console.log(result2);
+  let result2 = await storageDB.queryFortuneRanking('hdba');
   console.log(result2);
   // console.log(result2.data.count!)
 

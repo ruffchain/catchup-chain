@@ -131,6 +131,12 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getFortuneRanking') {
+      let result = await this.taskGetFortuneRanking(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else if (task.request.funName === 'getTokensByAddress') {
       let result = await this.pStorageDb.queryAccountTableByAddress(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
@@ -317,6 +323,13 @@ export class WRQueue extends EventEmitter {
     return new Promise<IFeedBack>(async (resolv) => {
       // check account table, 
       let result = await this.pStorageDb.queryTokenTable(token);
+      resolv(result);
+    });
+  }
+  private async taskGetFortuneRanking(token: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // check account table, 
+      let result = await this.pStorageDb.queryFortuneRanking(token);
       resolv(result);
     });
   }
