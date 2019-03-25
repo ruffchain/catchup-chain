@@ -6,6 +6,7 @@ import { StatusDataBase } from "../lib/storage/statusdb";
 import { StorageDataBase } from "../lib/storage/StorageDataBase";
 import { Synchro } from "../lib/catchup/synchro";
 import { WRQueue } from "../lib/storage/queue";
+import * as SqlString from 'sqlstring';
 
 const logger = Logger.init({
   path: './data/log/'
@@ -73,17 +74,24 @@ async function maine() {
   //   pageSize: 20
   // }
   // )
-  console.log(cr);
-  logger.info('\n');
-  // cr = await client.callAsync('getTxsByAddress', { page: 1, pageSize: 1 });
-  // cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
-  cr = await client.callAsync('getTokensByAddress', "1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a");
-  logger.info('\n')
-  logger.info(cr);
-  cr = await client.callAsync('getFortuneRanking', { token: "s", page: 1, pageSize: 2 });
+  // console.log(cr);
+  // logger.info('\n');
+  cr = await client.callAsync('getTxsByAddress', { page: 1, pageSize: 2 });
+  // // cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 3 });
+  // cr = await client.callAsync('getTokensByAddress', "1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a");
   logger.info('\n')
   logger.info(cr);
 
+  let tempStr = SqlString.escape('hello').replace(/\'/g, '');
+  console.log(tempStr);
+  console.log(typeof tempStr)
+
+  // cr = await client.callAsync('getFortuneRanking', { token: "s", page: 1, pageSize: 2 });
+  // logger.info('\n')
+  // logger.info(cr);
+  // cr = await client.callAsync('getTokenInfo', "hdba");
+  // logger.info('\n')
+  // logger.info(cr);
 }
 
 maine();

@@ -12,6 +12,9 @@ import { type } from 'os';
 import { getBalance } from '../../api/getbalance';
 import { getTokenBalance } from '../../api/getTokenBalance';
 import { getBancorTokenBalance } from '../../api/getBancorTokenBalance';
+import { getBancorTokenFactor } from '../../api/getBancorTokenFactor';
+import { getBancorTokenReserve } from '../../api/getBancorTokenReserve';
+import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 /**
  * This is a client , always syncing with the Chain
  */
@@ -521,5 +524,19 @@ export class Synchro {
     this.logger.info('bancor token balance:', JSON.parse(result.resp!).value);
     return result;
   }
-
+  public async getFactor(token: string) {
+    this.logger.info('getFactor of bankor token');
+    let result = await getBancorTokenFactor(this.ctx, [token])
+    return result
+  }
+  public async getReserve(token: string) {
+    this.logger.info('getReserve of bankor token');
+    let result = await getBancorTokenReserve(this.ctx, [token])
+    return result
+  }
+  public async getSupply(token: string) {
+    this.logger.info('getSupply of bankor token');
+    let result = await getBancorTokenSupply(this.ctx, [token])
+    return result
+  }
 }

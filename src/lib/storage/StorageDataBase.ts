@@ -245,10 +245,10 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime,$content1);', [this.txTable]);
 
     return this.insertOrReplaceRecord(sql, {
-      $hash: SqlString.escape(hash),
-      $blockhash: SqlString.escape(blockhash),
+      $hash: SqlString.escape(hash).replace(/\'/g, ''),
+      $blockhash: SqlString.escape(blockhash).replace(/\'/g, ''),
       $blocknumber: SqlString.escape(blocknumber),
-      $address: SqlString.escape(address),
+      $address: SqlString.escape(address).replace(/\'/g, ''),
       $datetime: SqlString.escape(datetime),
       $content1: content1
     });

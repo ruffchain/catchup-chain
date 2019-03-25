@@ -131,6 +131,12 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getTokenPrice') {
+      let result = await this.taskGetTokenPrice(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else if (task.request.funName === 'getFortuneRanking') {
       let result = await this.taskGetFortuneRanking(task.request.args);
       if (result.err === ErrorCode.RESULT_OK) {
@@ -270,6 +276,7 @@ export class WRQueue extends EventEmitter {
     this.emit('execRead');
     return;
   }
+  // ---------------------------------------------------------------------------
   // commands
   // getName
   private async taskGetName(args: string, num: number) {
@@ -318,7 +325,38 @@ export class WRQueue extends EventEmitter {
       resolv(result);
     });
   }
+  private async taskGetTokenPrice(token: string) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // compute token price 
+      // Price = R/SF
+      // or SF/R, supply.F/reserve, 
+      let F: number;
+      let S: number;
+      let R: number;
 
+      try {
+        let result = await this.pSynchro.getFactor(token);
+        // logger.info(result);
+        let obj = JSON.parse(result.resp!.toString());
+        //logger.info(obj.value);
+        F = parseFloat(obj.value.replace('n', ''))
+        // logger.info('\n')
+
+        result = await this.pSynchro.getReserve(token);
+        obj = JSON.parse(result.resp!.toString());
+        R = parseFloat(obj.value.replace('n', ''))
+
+
+        result = await this.pSynchro.getSupply(token);
+        obj = JSON.parse(result.resp!.toString());
+        S = parseFloat(obj.value.replace('n', ''))
+
+      } catch (e) {
+        this.logger.error('')
+      }
+      resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+    });
+  }
   private async taskGetTokenInfo(token: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       // check account table, 

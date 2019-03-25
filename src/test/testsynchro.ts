@@ -59,6 +59,24 @@ const txLst = [
 ]
 // synchro.getBlock(0);
 async function main() {
+  let result = await synchro.getFactor('hdba');
+  logger.info(result);
+  let obj = JSON.parse(result.resp!.toString());
+  logger.info(obj.value);
+  logger.info('\n')
+
+  result = await synchro.getReserve('hdba');
+  logger.info(result);
+  obj = JSON.parse(result.resp!.toString());
+  logger.info(obj.value);
+  logger.info('\n')
+
+  result = await synchro.getSupply('hdba');
+  logger.info(result);
+  obj = JSON.parse(result.resp!.toString());
+  logger.info(obj.value);
+  logger.info('\n')
+
   // let result = await synchro.getLIBNumber()
   // logger.info(result);
   // logger.info('libnumber:', parseInt(result.resp!))
@@ -119,8 +137,8 @@ async function main() {
 
   // let result2 = await storageDB.queryTokenTable('hdba');
   // console.log(result2);
-  let result2 = await storageDB.queryFortuneRanking('hdba');
-  console.log(result2);
+  // let result2 = await storageDB.queryFortuneRanking('hdba');
+  // console.log(result2);
   // console.log(result2.data.count!)
 
   // logger.info('\n')
