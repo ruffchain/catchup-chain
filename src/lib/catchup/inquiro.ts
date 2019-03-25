@@ -82,7 +82,12 @@ export class Inquiro {
       // this.testAsync();
       let result = await this.handleMessageAsync(msg);
 
-      resolv({ err: ErrorCode.RESULT_OK, data: { data: result.data } });
+      if (result.data.total) {
+        resolv({ err: ErrorCode.RESULT_OK, data: result.data });
+      }
+      else {
+        resolv({ err: ErrorCode.RESULT_OK, data: result.data });
+      }
     });
   }
 
