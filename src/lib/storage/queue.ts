@@ -348,6 +348,10 @@ export class WRQueue extends EventEmitter {
 
       try {
         let result = await this.pSynchro.getFactor(token);
+        if (result.ret !== 200) {
+          resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+          return;
+        }
         // logger.info(result);
         let obj = JSON.parse(result.resp!.toString());
         //logger.info(obj.value);
@@ -355,13 +359,26 @@ export class WRQueue extends EventEmitter {
         // logger.info('\n')
 
         result = await this.pSynchro.getReserve(token);
+        if (result.ret !== 200) {
+          resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+          return;
+        }
         obj = JSON.parse(result.resp!.toString());
         R = parseFloat(obj.value.replace('n', ''))
 
 
         result = await this.pSynchro.getSupply(token);
+        if (result.ret !== 200) {
+          resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+          return;
+        }
         obj = JSON.parse(result.resp!.toString());
         S = parseFloat(obj.value.replace('n', ''))
+
+        let price: number = S * F / R;
+
+        resolv({ err: ErrorCode.RESULT_OK, data: price.toFixed(6) });
+        return;
 
       } catch (e) {
         this.logger.error('')

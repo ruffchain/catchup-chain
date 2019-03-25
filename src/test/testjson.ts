@@ -92,7 +92,11 @@ async function maine() {
   // cr = await client.callAsync('getTokenInfo', "hdba");
   // logger.info('\n')
   // logger.info(cr);
-  cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 2 });
+  // cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 2 });
+  // logger.info('\n')
+  // logger.info(cr);
+
+  cr = await client.callAsync('getTokenPrice', 'hdba');
   logger.info('\n')
   logger.info(cr);
 }
