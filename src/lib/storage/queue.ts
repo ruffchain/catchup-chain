@@ -175,7 +175,13 @@ export class WRQueue extends EventEmitter {
           for (let i = 0; i < result.data.length; i++) {
             result.data[i].content = JSON.parse(result.data[i].content);
           }
-          arr = result.data;
+          arr = {};
+          arr.data = result.data;
+
+          let result1 = await this.pStorageDb.queryTxTableByPageTotal();
+          let nTxCount = parseInt(result1.data.count)
+          arr.total = nTxCount; // something read from the database
+
         } catch (e) {
           this.logger.info('Wrong getLatestTxs result parsing')
         }

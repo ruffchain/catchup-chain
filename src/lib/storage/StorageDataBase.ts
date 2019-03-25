@@ -217,6 +217,11 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT ? OFFSET ?;', [this.txTable, size, index * size]);
     return this.getAllRecords(sql);
   }
+  public queryTxTableByPageTotal() {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ?;', [this.txTable]);
+    return this.getRecord(sql)
+  }
+
   public queryTxTableByDatetime(from: number, to: number) {
     let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE  timestamp >= ? AND timestamp < ?;', [this.txTable, from, to])
     return this.getAllRecords(sql);
