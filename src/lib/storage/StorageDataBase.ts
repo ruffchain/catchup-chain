@@ -139,6 +139,10 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE token = ? ORDER BY value DESC LIMIT 50;', [this.accountTable, token]);
     return this.getAllRecords(sql);
   }
+  public queryFortuneRankingByPage(token: string, index: number, size: number) {
+    let sql = SqlString.format('SELECT * FROM ? WHERE token = ?  ORDER BY value DESC LIMIT ? OFFSET ?;', [this.accountTable, token, size, index * size]);
+    return this.getAllRecords(sql);
+  }
   public queryAccountTableByAddress(addr: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.accountTable, addr]);
     return this.getAllRecords(sql);

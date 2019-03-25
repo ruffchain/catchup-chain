@@ -80,7 +80,7 @@ async function maine() {
   cr = await client.callAsync('getTokensByAddress', "1Lj2e7BEf17FSJ5tL4h4qS1yX9yfMMiW4a");
   logger.info('\n')
   logger.info(cr);
-  cr = await client.callAsync('getFortuneRanking', "s");
+  cr = await client.callAsync('getFortuneRanking', { token: "s", page: 1, pageSize: 2 });
   logger.info('\n')
   logger.info(cr);
 

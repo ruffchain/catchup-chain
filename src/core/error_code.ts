@@ -70,6 +70,7 @@ export enum ErrorCode {
 
     RESULT_SYNC_PARSE_JSON_QUERY_FAILED = 11201,
     RESULT_SYNC_GETTXSBYADDRESS_FAILED = 11202,
+    RESULT_SYNC_GETFORTUNERANKING_PARSING_FAILED = 11203,
 }
 
 export interface IFeedBack { err: ErrorCode; data: any; }

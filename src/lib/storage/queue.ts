@@ -326,10 +326,26 @@ export class WRQueue extends EventEmitter {
       resolv(result);
     });
   }
-  private async taskGetFortuneRanking(token: string) {
+  private async taskGetFortuneRanking(args: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       // check account table, 
-      let result = await this.pStorageDb.queryFortuneRanking(token);
+      let result: any;
+      if (typeof args === 'string') {
+        result = await this.pStorageDb.queryFortuneRanking(args);
+      } else if (typeof args === 'object') {
+        try {
+          let tokenName: string = args.token;
+          let page: number = (args.page > 0) ? (args.page - 1) : 0;
+          let pageSize: number = args.pageSize;
+          result = await this.pStorageDb.queryFortuneRankingByPage(tokenName, page, pageSize);
+        } catch (e) {
+          this.logger.error('taskGetFortuneRanking failed')
+          result = { err: ErrorCode.RESULT_SYNC_GETFORTUNERANKING_PARSING_FAILED, data: null }
+        }
+      } else {
+        result = { err: ErrorCode.RESULT_SYNC_GETFORTUNERANKING_PARSING_FAILED, data: null }
+      }
+
       resolv(result);
     });
   }
