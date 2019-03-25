@@ -143,6 +143,10 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE token = ?  ORDER BY value DESC LIMIT ? OFFSET ?;', [this.accountTable, token, size, index * size]);
     return this.getAllRecords(sql);
   }
+  public queryAccountTotalByToken(token: string) {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE token = ?;', [this.accountTable, token]);
+    return this.getRecord(sql)
+  }
   public queryAccountTableByAddress(addr: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ?;', [this.accountTable, addr]);
     return this.getAllRecords(sql);

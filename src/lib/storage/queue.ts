@@ -374,7 +374,7 @@ export class WRQueue extends EventEmitter {
     return new Promise<IFeedBack>(async (resolv) => {
       // check account table, 
       let result: any;
-      if (typeof args === 'string') {
+      if (typeof args === 'string') { // tokenName
         result = await this.pStorageDb.queryFortuneRanking(args);
       } else if (typeof args === 'object') {
         try {
@@ -382,6 +382,15 @@ export class WRQueue extends EventEmitter {
           let page: number = (args.page > 0) ? (args.page - 1) : 0;
           let pageSize: number = args.pageSize;
           result = await this.pStorageDb.queryFortuneRankingByPage(tokenName, page, pageSize);
+
+          let result2 = await this.pStorageDb.queryAccountTotalByToken(tokenName);
+          let total = parseInt(result2.data.count);
+          let newObj: any = {}
+          newObj.total = total;
+          newObj.data = result.data;
+
+          resolv({ err: ErrorCode.RESULT_OK, data: newObj });
+          return;
         } catch (e) {
           this.logger.error('taskGetFortuneRanking failed')
           result = { err: ErrorCode.RESULT_SYNC_GETFORTUNERANKING_PARSING_FAILED, data: null }
