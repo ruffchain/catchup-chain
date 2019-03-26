@@ -75,8 +75,12 @@ export class Inquiro {
   }
   private handleMessageAsync(msg: IfReq): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {
-      this.queue.emit('read', createTask(msg, resolv));
-      // resolv({ err: ErrorCode.RESULT_OK, data: 'OK' });
+      if (['getCandy'].indexOf(msg.funName) !== -1) {
+        this.queue.emit('write', createTask(msg, resolv))
+      } else {
+        this.queue.emit('read', createTask(msg, resolv));
+      }
+
     })
   }
 
