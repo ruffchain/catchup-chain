@@ -13,6 +13,12 @@ interface IPreBalance {
   amount: number;
 }
 
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled rejection：', p, '原因：', reason);
+  throw new Error('unhandled rejection')
+  // 记录日志、抛出错误、或其他逻辑。
+});
+
 function assert(flag: IFeedBack, infoLog: string, log: winston.LoggerInstance) {
   if (flag.err) {
     throw new Error(infoLog);
