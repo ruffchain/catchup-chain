@@ -32,7 +32,7 @@ export class StatusDataBase extends CUDataBase {
   public getLoadGenesisFileBool(): Promise<IFeedBack> {
     return this.getSomeStatus(this.nameLoadGenesisFile, async (resolv: (a: IFeedBack) => void) => {
       this.logger.info('insert records from ', this.nameLoadGenesisFile);
-      let result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameLoadGenesisFile}", 0, 0)`, {});
+      let result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameLoadGenesisFile}", 0, 0);`, {});
       if (result.err) {
         resolv(result);
       } else {
@@ -45,7 +45,7 @@ export class StatusDataBase extends CUDataBase {
   }
   private getSomeStatus(name: string, failCB: (res: () => void) => void): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${name}"`);
+      let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${name}";`);
 
       if (!result.err) {
         this.logger.info('-- get ', name, ' ok');
@@ -62,7 +62,7 @@ export class StatusDataBase extends CUDataBase {
   public getCurrentHeight(): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
       // read current height if fail
-      let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${this.nameCurrentHeight}"`);
+      let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${this.nameCurrentHeight}";`);
 
       if (!result.err) {
         this.logger.info('-- get height ok')
@@ -92,7 +92,7 @@ export class StatusDataBase extends CUDataBase {
       if (result.err === ErrorCode.RESULT_DB_TABLE_FAILED) {
         resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_FAILED, data: result.err })
       } else if (result.err === ErrorCode.RESULT_OK) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_ALREADY_DONE, data: null })
+        resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_ALREADY_DONE, data: result.data })
       } else if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_NOT_YET, data: null });
       }
@@ -110,7 +110,7 @@ export class StatusDataBase extends CUDataBase {
 
   // test purpose
   public setAuthor(author: string) {
-    return this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${author}", 10, 0)`, {});
+    return this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${author}", 10, 0);`, {});
   }
   public updateAuthor(author: string, value: number) {
     return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${value} WHERE name="${author}";`);

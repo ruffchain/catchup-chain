@@ -14,7 +14,8 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
         if (args.length < 3) {
             resolve({
                 ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong args"
+                resp: "Wrong args",
+
             });
             return;
         }
@@ -22,7 +23,8 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
         if (!checkAddress(args[0])) {
             resolve({
                 ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong address"
+                resp: "Wrong address",
+
             });
             return;
         }
@@ -30,7 +32,8 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
         if (!checkAmount(args[1])) {
             resolve({
                 ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong amount"
+                resp: "Wrong amount",
+
             });
             return;
         }
@@ -38,7 +41,8 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
         if (!checkFee(args[2])) {
             resolve({
                 ret: ErrorCode.RESULT_WRONG_ARG,
-                resp: "Wrong fee"
+                resp: "Wrong fee",
+
             });
             return;
         }
@@ -59,7 +63,8 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
             console.error(`transferTo getNonce failed for ${err}`);
             resolve({
                 ret: ErrorCode.RESULT_FAILED,
-                resp: `transferTo getNonce failed for ${err}`
+                resp: `transferTo getNonce failed for ${err}`,
+
             });
             return;
         }
@@ -76,7 +81,8 @@ export async function transferTo(ctx: IfContext, args: string[]): Promise<IfResu
             console.error(`transferTo failed for ${sendRet.err}`);
             resolve({
                 ret: ErrorCode.RESULT_FAILED,
-                resp: `transferTo failed for ${sendRet.err}`
+                resp: `transferTo failed for ${sendRet.err}`,
+
             });
             return;
         }

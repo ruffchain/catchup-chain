@@ -280,10 +280,16 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
-    else if (task.request.funName === 'getCandy') {
+    else if (task.request.funName == 'getCandy') {
+      this.logger.info('getCandy received');
+
       let result = await this.taskGetCandy(task.request.args);
+      // let result = { err: ErrorCode.RESULT_OK, data: task.request.args };
       if (result.err === ErrorCode.RESULT_OK) {
+        this.logger.info('getCandy result OK', result.data)
         arr = result.data;
+      } else {
+        this.logger.info('getCandy result wrong: ', result)
       }
     }
     else {
@@ -435,6 +441,8 @@ export class WRQueue extends EventEmitter {
   }
   // getLatestTxCount
   private async taskGetLatestTxCount(args: any) {
+    this.logger.info('taskGetLatestTxCount');
+
     return new Promise<IFeedBack>(async (resolv) => {
       let obj: any;
       try {
@@ -463,6 +471,7 @@ export class WRQueue extends EventEmitter {
       } catch (e) {
         this.logger.error('taskGetLatestTxCount input JSON parse fail');
       }
+      this.logger.info('taskGetLatestTxCount failed')
       resolv({ err: ErrorCode.RESULT_SYNC_PARSE_JSON_QUERY_FAILED, data: [] })
 
     });
@@ -479,42 +488,66 @@ export class WRQueue extends EventEmitter {
   private async taskGetCandy(args: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       // if it's empty , so it is SYS 
+      this.logger.info('transfer candy task ...')
+      // resolv({ err: ErrorCode.RESULT_OK, data: args })
+
+      let obj: any;
       try {
-        let obj = JSON.parse(JSON.stringify(args));
-        let tokenName = obj.token;
-        let addr = obj.address;
-
-        if (!obj.token || obj.token === 's' || obj.token === 'SYS') {
-          tokenName = 's'
-        }
-
-        let reuslt = await this.pStatusDb.getCandyTable(addr, tokenName);
-        if (reuslt.err === ErrorCode.RESULT_SYNC_GETCANDY_FAILED) {
-          resolv({ err: ErrorCode.RESULT_OK, data: 'Server error' })
-        } else if (reuslt.err === ErrorCode.RESULT_SYNC_GETCANDY_ALREADY_DONE) {
-          resolv({ err: ErrorCode.RESULT_OK, data: reuslt.data })
-        } else if (reuslt.err === ErrorCode.RESULT_SYNC_GETCANDY_NOT_YET) {
-          let result2 = await this.pStatusDb.insertCandyTable(addr, tokenName, CANDY_AMOUNT, new Date().getTime());
-          if (result2.err === ErrorCode.RESULT_OK) {
-            // resolv({ err: ErrorCode.RESULT_OK, data: 'Success' })
-            let result1 = await this.pSynchro.transferCandy(addr, CANDY_AMOUNT);
-            if (result1.ret === 0) {
-              this.logger.info('transfer candy 1000 succeed')
-            } else {
-              // how to do with it? If remove failed
-              await this.pStatusDb.removeCandyTable(addr, tokenName);
-              resolv({ err: ErrorCode.RESULT_OK, data: 'Server error' });
-              return;
-            }
-          } else {
-            resolv({ err: ErrorCode.RESULT_OK, data: 'Server error' })
-          }
-        } else {
-          resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_OPERATION_FAILED, data: null })
-        }
+        obj = JSON.parse(JSON.stringify(args));
       } catch (e) {
         this.logger.error('taskGetCandy parsing failed')
-        resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_PARSING_FAILED, data: null })
+        resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_PARSING_FAILED, data: { status: 1, hash: '' } })
+        return;
+      }
+
+      let tokenName = '';
+      let addr = obj.address;
+
+      if (obj.token === undefined || obj.token === 's' || obj.token === 'SYS') {
+        tokenName = 's'
+      }
+      this.logger.info('getCandy:' + tokenName + ' ' + addr);
+
+      let result = await this.pStatusDb.getCandyTable(addr, tokenName);
+      // resolv(result);
+      // return;
+      this.logger.info('getCandy: result ->', result);
+
+      if (result.err === ErrorCode.RESULT_SYNC_GETCANDY_FAILED) {
+        resolv({ err: ErrorCode.RESULT_OK, data: { status: 1, hash: '' } })
+      }
+      else if (result.err === ErrorCode.RESULT_SYNC_GETCANDY_ALREADY_DONE) {
+        resolv({ err: ErrorCode.RESULT_OK, data: { status: 1, hash: '' } })
+        return;
+      } else if (result.err === ErrorCode.RESULT_SYNC_GETCANDY_NOT_YET) {
+        // result data can not be null,it will stuck the JSON API
+        // resolv({ err: ErrorCode.RESULT_OK, data: "Not yet" })
+        let result2 = await this.pStatusDb.insertCandyTable(addr, tokenName, CANDY_AMOUNT, new Date().getTime());
+        this.logger.info('getCandy, result2', result2)
+
+        if (result2.err === ErrorCode.RESULT_OK) {
+          // resolv({ err: ErrorCode.RESULT_OK, data: 'Success' })
+          this.logger.info('getCandy: start to transferCandy');
+          let result1 = await this.pSynchro.transferCandy(addr, CANDY_AMOUNT);
+          this.logger.info('getCandy, result1', result1)
+          console.log(result);
+
+          if (result1.ret === 0) {
+            this.logger.info('getCandy, transfer candy 1000 succeed')
+            let tmpLst: string[] = result1.resp!.split(':');
+            console.log(tmpLst)
+            resolv({ err: ErrorCode.RESULT_OK, data: { stauts: 0, hash: tmpLst[1] } });
+            return;
+          } else {
+            // how to do with it? If remove failed
+            await this.pStatusDb.removeCandyTable(addr, tokenName);
+            resolv({ err: ErrorCode.RESULT_OK, data: { status: 1, hash: '' } });
+            return;
+          }
+        } else {
+          resolv({ err: ErrorCode.RESULT_OK, data: { status: 1, hash: '' } })
+          return;
+        }
       }
       // if it is not , 
     });

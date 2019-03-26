@@ -50,6 +50,8 @@ export function checkAddress(addr: string): boolean {
 
 export interface IfResult { resp: string | null, ret: number };
 
+export interface IfResultTransferTo { resp: string | null, ret: number, hash: string }
+
 export interface IfSysinfo {
     secret: string;
     address: string;

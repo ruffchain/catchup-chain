@@ -164,12 +164,12 @@ export class StorageDataBase extends CUDataBase {
 
 
   public queryAccountTableByTokenAndAddress(addr: string, token: string) {
-    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? AND token = ?', [this.accountTable, addr, token])
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? AND token = ?;', [this.accountTable, addr, token])
     return this.getRecord(sql);
   }
 
   public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    let sql = SqlString.format('INSERT INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?)', [this.accountTable, hash, token, amount, value]);
+    let sql = SqlString.format('INSERT INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?);', [this.accountTable, hash, token, amount, value]);
     return this.insertRecord(sql, {});
   }
 
@@ -277,7 +277,7 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
-    let sql = SqlString.format('INSERT INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?)', [this.tokenTable, tokenname, type, address, datetime])
+    let sql = SqlString.format('INSERT INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?);', [this.tokenTable, tokenname, type, address, datetime])
     return this.insertRecord(sql, {});
   }
 }

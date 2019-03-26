@@ -82,9 +82,9 @@ async function maine() {
   // logger.info('\n')
   // logger.info(cr);
 
-  let tempStr = SqlString.escape('hello').replace(/\'/g, '');
-  console.log(tempStr);
-  console.log(typeof tempStr)
+  // let tempStr = SqlString.escape('hello').replace(/\'/g, '');
+  // console.log(tempStr);
+  // console.log(typeof tempStr)
 
   // cr = await client.callAsync('getFortuneRanking', { token: "s", page: 1, pageSize: 2 });
   // logger.info('\n')
@@ -96,7 +96,25 @@ async function maine() {
   // logger.info('\n')
   // logger.info(cr);
 
+  logger.info('To getTokenPrice()');
   cr = await client.callAsync('getTokenPrice', 'hdba');
+  logger.info('\n')
+  logger.info(cr);
+
+  // cr = await client.callAsync('getTokenPrice', 'hdba');
+  // logger.info('\n')
+  // logger.info(cr);
+
+  // cr = await client.callAsync('getTokenPrice', 'hdba');
+  // logger.info('\n')
+  // logger.info(cr);
+
+  // cr = await client.callAsync('getLatestTxCount', {from: , to: });
+  // logger.info('\n')
+  // logger.info(cr);
+
+  logger.info('To getCandy()');
+  cr = await client.callAsync('getCandy', { address: '1NAbrmtA3yDr2CsRMKmav8aLLyqhnjobU1', token: 'SYS' });
   logger.info('\n')
   logger.info(cr);
 }
