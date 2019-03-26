@@ -59,9 +59,13 @@ export class Inquiro {
 
     this.server.on('message', async (reqobj, resp) => {
       let obj = reqobj as IfReq;
-      this.logger.info('receive msg req:', reqobj, '\n');
+      this.logger.info('\nreceive msg req:', reqobj, '\n');
+
+
+
       resp.writeHead(200, { 'Content-Type': 'application/json' });
       let result = await this.handle(obj);
+
       this.logger.info('send out');
       let strFb = JSON.stringify(result.data);
       this.logger.info(strFb, '\n');
@@ -82,22 +86,9 @@ export class Inquiro {
       // this.testAsync();
       let result = await this.handleMessageAsync(msg);
 
-      if (result.data.total) {
-        resolv({ err: ErrorCode.RESULT_OK, data: result.data });
-      }
-      else {
-        resolv({ err: ErrorCode.RESULT_OK, data: result.data });
-      }
+      resolv({ err: ErrorCode.RESULT_OK, data: result.data });
+
     });
   }
-
-  // private testAsync() {
-  //   setTimeout(() => {
-  //     if (lst.length > 0) {
-  //       lst[0]({ err: ErrorCode.RESULT_OK, data: 'OK' })
-  //     }
-  //     lst.shift();
-  //   }, 5000)
-  // }
 
 }
