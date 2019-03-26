@@ -3,7 +3,7 @@
 ## Change History
 - 1.0.0 To catchup with ruffchain main line, and provide account, tx information via HTTP port ; add winston log rotate
 - 1.0.2 Add getCandy interface, use sqlite3 to store related info
--  
+- 1.0.3 Test added
   
 
 ## dependency

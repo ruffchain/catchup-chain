@@ -235,7 +235,7 @@ export class StorageDataBase extends CUDataBase {
 
   public queryTxTableByDatetime(from: number, to: number) {
     let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE  timestamp >= ? AND timestamp < ?;', [this.txTable, from, to])
-    return this.getAllRecords(sql);
+    return this.getRecord(sql);
   }
 
   public queryTxTableByAddress(address: string) {

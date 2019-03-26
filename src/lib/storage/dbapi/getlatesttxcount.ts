@@ -15,20 +15,17 @@ export async function laGetLatestTxCount(handle: WRQueue, args: any) {
       let nTxCount = 0;
 
       let result2 = await handle.pStorageDb.queryTxTableByDatetime(nFrom, nTo);
-      if (!result2.err) {
-        try {
-          nTxCount = parseInt(result2.data.count)
+      console.log('getLatestTxCount -> ', result2)
+      if (result2.err === ErrorCode.RESULT_OK) {
 
-          resolv({
-            err: ErrorCode.RESULT_OK,
-            data: {
-              txCount: nTxCount
-            }
-          });
-          return;
-        } catch (e) {
-          handle.logger.error('taskGetLatestTxCount get tx count JSON parse fail');
-        }
+        // nTxCount = parseInt(result2.data.count)
+        nTxCount = result2.data.count;
+
+        resolv({
+          err: ErrorCode.RESULT_OK,
+          data: nTxCount
+        });
+        return;
       }
     } catch (e) {
       handle.logger.error('taskGetLatestTxCount input JSON parse fail');
