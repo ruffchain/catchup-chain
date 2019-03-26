@@ -15,6 +15,8 @@ import { getBancorTokenBalance } from '../../api/getBancorTokenBalance';
 import { getBancorTokenFactor } from '../../api/getBancorTokenFactor';
 import { getBancorTokenReserve } from '../../api/getBancorTokenReserve';
 import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
+import * as fs from 'fs';
+import { transferTo } from '../../api/transferto';
 /**
  * This is a client , always syncing with the Chain
  */
@@ -42,11 +44,20 @@ export class Synchro {
     this.port = options.port;
     this.logger = logger;
 
+    let boss = fs.readFileSync('./secret/boss.json')
+
+    let bossObj: any
+    try {
+      bossObj = JSON.parse(boss.toString());
+    } catch (e) {
+      throw new Error('Can not open secret json file')
+    }
+
     let SYSINFO: IfSysinfo = {
-      secret: '',
+      secret: bossObj.secret,
       host: this.ip,
       port: this.port,
-      address: '',
+      address: bossObj.address,
       verbose: false
     }
 
@@ -577,5 +588,9 @@ export class Synchro {
     this.logger.info('getSupply of bankor token');
     let result = await getBancorTokenSupply(this.ctx, [token])
     return result
+  }
+  public async transferCandy(address: string, value: number) {
+    let result = await transferTo(this.ctx, [address, value + '', 0.1 + '']);
+    return result;
   }
 }

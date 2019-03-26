@@ -65,7 +65,7 @@ export abstract class CUDataBase {
   // You can not insert a same priv key record
   public insertRecord(sql: string, params: any): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`${sql};`, params,
+      this.db.run(sql, params,
         (err: any) => {
           if (err) {
             this.logger.error(err);
@@ -79,7 +79,7 @@ export abstract class CUDataBase {
   // You should check if it exists!
   public updateRecord(sql: string) {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`${sql};`,
+      this.db.run(sql,
         (err: any) => {
           if (err) {
             this.logger.error(err);
@@ -92,7 +92,7 @@ export abstract class CUDataBase {
   }
   public insertOrReplaceRecord(sql: string, params: any) {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(`${sql};`, params,
+      this.db.run(sql, params,
         (err: any) => {
           if (err) {
             this.logger.error('Error =>', err);
@@ -103,8 +103,19 @@ export abstract class CUDataBase {
         });
     });
   }
-  public removeRecord() {
-
+  public removeRecord(sql: string, params: any) {
+    return new Promise<IFeedBack>((resolv) => {
+      this.db.run(sql,
+        params,
+        (err: any) => {
+          if (err) {
+            this.logger.error(err);
+            resolv({ err: ErrorCode.RESULT_DB_TABLE_REMOVE_FAILED, data: err });
+          } else {
+            resolv({ err: ErrorCode.RESULT_OK, data: null });
+          }
+        });
+    });
   }
   public getRecord(sql: string): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {

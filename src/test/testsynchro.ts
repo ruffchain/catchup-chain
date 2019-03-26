@@ -65,17 +65,20 @@ async function main() {
   logger.info(obj.value);
   logger.info('\n')
 
-  result = await synchro.getReserve('hdba');
-  logger.info(result);
-  obj = JSON.parse(result.resp!.toString());
-  logger.info(obj.value);
-  logger.info('\n')
+  // result = await synchro.getReserve('hdba');
+  // logger.info(result);
+  // obj = JSON.parse(result.resp!.toString());
+  // logger.info(obj.value);
+  // logger.info('\n')
 
-  result = await synchro.getSupply('hdba');
-  logger.info(result);
-  obj = JSON.parse(result.resp!.toString());
-  logger.info(obj.value);
-  logger.info('\n')
+  // result = await synchro.getSupply('hdba');
+  // logger.info(result);
+  // obj = JSON.parse(result.resp!.toString());
+  // logger.info(obj.value);
+  // logger.info('\n')
+
+  result = await synchro.transferCandy('1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw', 1000);
+  logger.info(result)
 
   // let result = await synchro.getLIBNumber()
   // logger.info(result);

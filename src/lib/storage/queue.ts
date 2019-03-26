@@ -9,6 +9,8 @@ import { ErrorCode, IFeedBack } from '../../core/error_code';
 import { isNumber } from 'util';
 import { Synchro } from '../catchup/synchro';
 
+const CANDY_AMOUNT = 1000;
+
 export interface IfTask {
   maxRetry: number;
   times: number;
@@ -474,12 +476,46 @@ export class WRQueue extends EventEmitter {
     "address": "xxxx"
   }
    */
-  private async taskGetCandy(args:any) {
+  private async taskGetCandy(args: any) {
     return new Promise<IFeedBack>(async (resolv) => {
-
       // if it's empty , so it is SYS 
+      try {
+        let obj = JSON.parse(JSON.stringify(args));
+        let tokenName = obj.token;
+        let addr = obj.address;
 
+        if (!obj.token || obj.token === 's' || obj.token === 'SYS') {
+          tokenName = 's'
+        }
 
+        let reuslt = await this.pStatusDb.getCandyTable(addr, tokenName);
+        if (reuslt.err === ErrorCode.RESULT_SYNC_GETCANDY_FAILED) {
+          resolv({ err: ErrorCode.RESULT_OK, data: 'Server error' })
+        } else if (reuslt.err === ErrorCode.RESULT_SYNC_GETCANDY_ALREADY_DONE) {
+          resolv({ err: ErrorCode.RESULT_OK, data: reuslt.data })
+        } else if (reuslt.err === ErrorCode.RESULT_SYNC_GETCANDY_NOT_YET) {
+          let result2 = await this.pStatusDb.insertCandyTable(addr, tokenName, CANDY_AMOUNT, new Date().getTime());
+          if (result2.err === ErrorCode.RESULT_OK) {
+            // resolv({ err: ErrorCode.RESULT_OK, data: 'Success' })
+            let result1 = await this.pSynchro.transferCandy(addr, CANDY_AMOUNT);
+            if (result1.ret === 0) {
+              this.logger.info('transfer candy 1000 succeed')
+            } else {
+              // how to do with it? If remove failed
+              await this.pStatusDb.removeCandyTable(addr, tokenName);
+              resolv({ err: ErrorCode.RESULT_OK, data: 'Server error' });
+              return;
+            }
+          } else {
+            resolv({ err: ErrorCode.RESULT_OK, data: 'Server error' })
+          }
+        } else {
+          resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_OPERATION_FAILED, data: null })
+        }
+      } catch (e) {
+        this.logger.error('taskGetCandy parsing failed')
+        resolv({ err: ErrorCode.RESULT_SYNC_GETCANDY_PARSING_FAILED, data: null })
+      }
       // if it is not , 
     });
   }
