@@ -48,7 +48,7 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 // logger.info(queue.isANumber("1B"));
 
 async function maine() {
-  let cr = await client.callAsync('getName', "1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J")
+  let cr = await client.callAsync('getName', "hdba")
   logger.info(cr);
   logger.info(cr.resp)
 

@@ -267,14 +267,27 @@ export class Synchro {
       let datetime = receipt.block.timestamp;
       let caller = receipt.tx.caller;
       let nameLst: IName[] = [];
+      let addrLst: string[] = [];
       // let amountAll: number = 0;
+      // put it into hash table
 
       preBalances.forEach((element: any) => {
         nameLst.push({
           address: element.address
         })
+        addrLst.push(element.address)
         // amountAll += parseInt(element.amount);
       });
+
+      addrLst.push(caller);
+
+      this.logger.info('checkCreateToken, updateNamesToHashTable')
+      // put address into hash table
+      let feedback = await this.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
@@ -284,7 +297,7 @@ export class Synchro {
           return;
         }
 
-        // get total balances, add token table
+        // add a new token to token table
         result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime);
         if (result.err) {
           resolv(result);
@@ -293,6 +306,13 @@ export class Synchro {
 
         // update accounts token account table
         result = await this.updateTokenBalances(tokenName, nameLst);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+
+        // put tokenname into hash table
+        result = await this.pStorageDb.updateNameToHashTable(tokenName, HASH_TYPE.TOKEN);
         if (result.err) {
           resolv(result);
           return;
@@ -342,11 +362,23 @@ export class Synchro {
       let caller = receipt.tx.caller;
       let nameLst: IName[] = [];
       // let amountAll: number = 0;
+      let addrLst: string[] = [];
+
+      // add it into hash table
 
       preBalances.forEach((element: any) => {
         nameLst.push({ address: element.address });
         // amountAll += parseInt(element.amount);
+        addrLst.push(element.address)
       });
+      addrLst.push(caller)
+
+      // put address into hashtable
+      let feedback = await this.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
@@ -365,6 +397,13 @@ export class Synchro {
 
         // update accounts token account table
         result = await this.updateBancorTokenBalances(tokenName, nameLst);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+
+        // put tokenname into hash table
+        result = await this.pStorageDb.updateNameToHashTable(tokenName, HASH_TYPE.TOKEN);
         if (result.err) {
           resolv(result);
           return;

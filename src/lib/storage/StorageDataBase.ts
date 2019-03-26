@@ -128,7 +128,7 @@ export class StorageDataBase extends CUDataBase {
       if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         let result = await this.insertOrReplaceHashTable(name, type);
         resolv(result);
-      } else {
+      } else { // failed or OK
         resolv(feedback);
       }
     });
@@ -160,7 +160,7 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(sql);
   }
 
-  
+
 
 
   public queryAccountTableByTokenAndAddress(addr: string, token: string) {

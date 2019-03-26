@@ -278,6 +278,12 @@ export class WRQueue extends EventEmitter {
         arr = result.data;
       }
     }
+    else if (task.request.funName === 'getCandy') {
+      let result = await this.taskGetCandy(task.request.args);
+      if (result.err === ErrorCode.RESULT_OK) {
+        arr = result.data;
+      }
+    }
     else {
       // arr.push({ error: 'unknown name' })
       this.logger.error('unknown name method:', task.request.funName);
@@ -457,6 +463,24 @@ export class WRQueue extends EventEmitter {
       }
       resolv({ err: ErrorCode.RESULT_SYNC_PARSE_JSON_QUERY_FAILED, data: [] })
 
+    });
+  }
+  // taskGetCandy
+  /**
+   * 
+   * @param args 
+   * "args": {
+    "token": "SYS",
+    "address": "xxxx"
+  }
+   */
+  private async taskGetCandy(args:any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+
+      // if it's empty , so it is SYS 
+
+
+      // if it is not , 
     });
   }
   private async taskGetChainOverview() {

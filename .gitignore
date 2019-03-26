@@ -4,4 +4,5 @@ dist/
 .tern-port
 package-lock.json
 data/*
+secret/*
 
