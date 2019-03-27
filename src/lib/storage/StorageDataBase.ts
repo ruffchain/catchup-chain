@@ -238,8 +238,8 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
 
-  public queryTxTableByAddress(address: string) {
-    let sql = SqlString.format('SELECT * FROM ? WHERE address = ?;', [this.txTable, address]);
+  public queryTxTableByAddress(address: string, index: number, size: number) {
+    let sql = SqlString.format('SELECT * FROM ? WHERE address = ?  ORDER BY timestamp DESC LIMIT ? OFFSET ?;', [this.txTable, address, size, index * size]);
     return this.getAllRecords(sql)
   }
   public queryTxTableByBlock(block: string) {
