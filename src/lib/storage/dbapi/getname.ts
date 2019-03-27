@@ -14,12 +14,14 @@ function isANumber(args: string) {
       return false;
     }
   }
+  return true;
 }
 export async function laGetName(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     let arr: any;
     arr = [];
     if (!isANumber(args)) {
+      handle.logger.info('getName: not a number:', args)
       // it is a token name
       let result = await handle.pStorageDb.queryHashTableFullName(args, 6);
       if (result.data) {
@@ -35,6 +37,7 @@ export async function laGetName(handle: WRQueue, args: any) {
     } else {
       // if it is a number
       let num = parseInt(args);
+      handle.logger.info('getName: num:', num)
       if (num >= 0 && num < handle.pStatusDb.nCurrentHeight) {
         resolv({ err: ErrorCode.RESULT_OK, data: [{ type: HASH_TYPE.HEIGHT }] });
       }
