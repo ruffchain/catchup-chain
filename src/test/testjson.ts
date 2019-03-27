@@ -71,31 +71,31 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-  /*
-  it('getAccount', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getAccount', "1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(obj[0].hash).to.equal("1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79");
-  })
-  it('getAccounts', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getAccounts', "")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(cr.ret).to.equal(200);
-  })
-  it('getToken', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getToken', "hdba")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(obj.name).to.equal("hdba");
-  })
+
+  // it('getAccount', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getAccount', "1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(obj[0].hash).to.equal("1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79");
+  // })
+  // it('getAccounts', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getAccounts', "")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(cr.ret).to.equal(200);
+  // })
+  // it('getToken', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getToken', "hdba")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(obj.name).to.equal("hdba");
+  // })
   it('getTokenInfo', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "hdba")
@@ -136,9 +136,17 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
-  it('getTxsByAddress', async () => {
+  // it('getTxsByAddress', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getTxsByAddress', { address: "12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC", page: 1, pageSize: 3 })
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  it('getTxs', async () => {
     this.timeout(33000);
-    let cr = await client.callAsync('getTxsByAddress', { address: "12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC", page: 1, pageSize: 3 })
+    let cr = await client.callAsync('getLatestTxs', "")
     // logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
@@ -146,44 +154,36 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   })
   it('getTxs', async () => {
     this.timeout(33000);
-    let cr = await client.callAsync('getTxs', "")
+    let cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 1 })
     // logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
-  it('getTxs', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTxs', { page: 1, pageSize: 1 })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTxsByBlock', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTxsByBlock', 'a5988bf51969d78615132e0102587486ab934010228cc476d9753608ec2768c5')
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTx', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTx', '2a286411a7c6b5c016e29d4780d50cee6832acefde165987621fbb68e85192e2')
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getBlocks', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getBlocks', '')
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
+  // it('getTxsByBlock', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getTxsByBlock', 'a5988bf51969d78615132e0102587486ab934010228cc476d9753608ec2768c5')
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTx', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getTx', '2a286411a7c6b5c016e29d4780d50cee6832acefde165987621fbb68e85192e2')
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getBlocks', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getBlocks', '')
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
   it('getLatestBlocks', async () => {
     this.timeout(33000);
     let cr = await client.callAsync('getLatestBlocks', '')
@@ -232,6 +232,6 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
-  */
+
 });
 

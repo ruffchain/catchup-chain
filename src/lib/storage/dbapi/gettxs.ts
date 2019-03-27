@@ -22,7 +22,13 @@ export async function laGetTxs(handle: WRQueue, args: any) {
           // console.log(JSON.parse(result.data[i].content))
         }
         arr = result.data;
-        resolv({ err: ErrorCode.RESULT_OK, data: arr })
+        let result1 = await handle.pStorageDb.queryTxTableCount();
+        let newObj: any;
+        newObj = {};
+        newObj.data = result.data;
+        newObj.total = parseInt(result1.data.count)
+
+        resolv({ err: ErrorCode.RESULT_OK, data: newObj })
         return;
       }
     } else {
@@ -40,7 +46,13 @@ export async function laGetTxs(handle: WRQueue, args: any) {
 
           }
           arr = result.data;
-          resolv({ err: ErrorCode.RESULT_OK, data: arr })
+          let result1 = await handle.pStorageDb.queryTxTableCount();
+          let newObj: any;
+          newObj = {};
+          newObj.data = result.data;
+          newObj.total = parseInt(result1.data.count)
+
+          resolv({ err: ErrorCode.RESULT_OK, data: newObj })
           return;
         }
       } catch (e) {

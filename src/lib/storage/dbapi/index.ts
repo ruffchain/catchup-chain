@@ -42,7 +42,7 @@ export function getFunc(funName: string) {
   else if (funName === 'getTxsByAddress') {
     return laGetTxsByAddress;
   }
-  else if (funName === 'getTxs') {
+  else if (funName === 'getTxs' || funName === 'getLatestTxs') {
     return laGetTxs;
   }
   else if (funName === 'getTxsByBlock') {

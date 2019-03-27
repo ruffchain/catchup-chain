@@ -10,7 +10,13 @@ export async function laLatestBlocks(handle: WRQueue, args: any) {
     if (!args) {
       result = await handle.pStorageDb.queryLatestBlockTable();
       if (result.err === ErrorCode.RESULT_OK) {
-        resolv(result);
+
+        let result1 = await handle.pStorageDb.queryBlockTotal();
+        let newObj: any;
+        newObj = {};
+        newObj.data = result.data;
+        newObj.total = parseInt(result1.data.count)
+        resolv({ err: ErrorCode.RESULT_OK, data: newObj });
         return;
       }
     } else {
@@ -20,7 +26,7 @@ export async function laLatestBlocks(handle: WRQueue, args: any) {
           (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
 
         if (result.err === ErrorCode.RESULT_OK) {
-          // arr = result.data;
+          // 
           let result1 = await handle.pStorageDb.queryBlockTotal();
           let newObj: any;
           newObj = {};
