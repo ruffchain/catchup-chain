@@ -138,7 +138,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   })
   it('getTxsByAddress', async () => {
     this.timeout(33000);
-    let cr = await client.callAsync('getTxsByAddress', { address: "12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC", page: 1, pageSize: 3 })
+    let cr = await client.callAsync('getTxsByAddress', { address: "12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC", page: 1, pageSize: 2 })
     // logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)

@@ -8,12 +8,13 @@ export async function laGetTxsByAddress(handle: WRQueue, args: any) {
 
     let result: any;
     let arr: any;
+    let argsObj: any;
 
     if (!args) {
       result = await handle.pStorageDb.queryLatestTxTable();
     } else {
       try {
-        let argsObj = JSON.parse(JSON.stringify(args));
+        argsObj = JSON.parse(JSON.stringify(args));
         result = await handle.pStorageDb.queryTxTableByAddress(argsObj.address,
           (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
       } catch (e) {
@@ -31,7 +32,7 @@ export async function laGetTxsByAddress(handle: WRQueue, args: any) {
         arr = {};
         arr.data = result.data;
 
-        let result1 = await handle.pStorageDb.queryTxTableByPageTotal();
+        let result1 = await handle.pStorageDb.queryTxTableByAddressTotal(argsObj.address);
         let nTxCount = parseInt(result1.data.count)
         arr.total = nTxCount; // something read from the database
 

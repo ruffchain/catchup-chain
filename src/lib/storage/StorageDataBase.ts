@@ -251,7 +251,10 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 50;', [this.txTable])
     return this.getAllRecords(sql)
   }
-
+  public queryTxTableByAddressTotal(address: string) {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE address = ? ;', [this.txTable, address]);
+    return this.getRecord(sql)
+  }
   public queryTxTableCount() {
     let sql = SqlString.format('SELECT COUNT(*) as count FROM ?;', [this.txTable]);
     return this.getRecord(sql)
