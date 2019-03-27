@@ -112,6 +112,14 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
+  it('getTokenInfo', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokenInfo', "ss")
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
   it('getTokenPrice', async () => {
     this.timeout(33000);
     let cr = await client.callAsync('getTokenPrice', "hdba")

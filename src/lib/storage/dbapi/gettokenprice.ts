@@ -17,7 +17,7 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
     try {
       let result = await handle.pSynchro.getFactor(token);
       if (result.ret !== 200) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
         return;
       } else {
         handle.logger.info(token, 'getTokenPrice F:', result)
@@ -28,13 +28,13 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
       F = parseFloat(obj.value.replace('n', ''))
       // logger.info('\n')
       if (F === 0) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
         return;
       }
 
       result = await handle.pSynchro.getReserve(token);
       if (result.ret !== 200) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
         return;
       } else {
         handle.logger.info('getTokenPrice R:', result)
@@ -45,7 +45,7 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
 
       result = await handle.pSynchro.getSupply(token);
       if (result.ret !== 200) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
         return;
       } else {
         handle.logger.info('getTokenPrice S:', result)
@@ -63,9 +63,8 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
 
     } catch (e) {
       handle.logger.error('getTokenPrice  error caught', e)
-      resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
+      resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
     }
-    // resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: [] });
 
   })
 }
