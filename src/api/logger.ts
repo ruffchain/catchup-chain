@@ -23,10 +23,10 @@ export class Logger {
         new DailyRotateFile({
           dirname: options.path,
           filename: 'info-%DATE%.log',
-          datePattern: 'YYYY-MM-DD-HH',
+          datePattern: 'YYYY-MM-DD',
           zippedArchive: true,
           maxSize: '100m',
-          maxFiles: '5'
+          maxFiles: '15'
         })
       ]
     });

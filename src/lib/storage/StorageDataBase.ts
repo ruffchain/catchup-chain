@@ -181,18 +181,18 @@ export class StorageDataBase extends CUDataBase {
     return new Promise<IFeedBack>(async (resolv) => {
       // if address token is not empty, update it
       let result = await this.queryAccountTableByTokenAndAddress(address, token);
-      console.log('updateAccountTable result:', result)
+      //console.log('updateAccountTable result:', result)
       if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         // insert into it
         let result1 = await this.insertAccountTable(address, token, amount, value);
-        console.log('updateAccountTable result1:', result1)
+        //console.log('updateAccountTable result1:', result1)
         resolv(result1);
       } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
         resolv(result);
       } else {
         // update it
         let result2 = await this.updateAccountTableByTokenAndAddress(address, token, amount, value)
-        console.log('updateAccountTable result2: ', result2)
+        //console.log('updateAccountTable result2: ', result2)
         resolv(result2);
       }
     })
@@ -284,5 +284,22 @@ export class StorageDataBase extends CUDataBase {
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?);', [this.tokenTable, tokenname, type, address, datetime])
     return this.insertRecord(sql, {});
+  }
+  public updateTokenTable(tokenname: string, type: string, address: string, datetime: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await this.queryTokenTable(tokenname)
+
+      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+        // insert into it
+        let result1 = await this.insertTokenTable(tokenname, type, address, datetime);
+        //console.log('updateAccountTable result1:', result1)
+        resolv(result1);
+      } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+        resolv(result);
+      } else {
+        console.log('ERROR: updateTokenTable result2: ', tokenname, ' already exist in db!')
+        resolv({ err: ErrorCode.RESULT_OK, data: '' });
+      }
+    });
   }
 }

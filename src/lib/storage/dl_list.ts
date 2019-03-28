@@ -116,20 +116,7 @@ export class DLList {
     }
     return null;
   }
-  // Search from tail, prev, prev, ... 
-  // public next(item: DLItem | null | undefined): DLItem | null {
-  //   let currItem: DLItem;
-  //   if (item === null || item === undefined) {
-  //     currItem = this.tail.prev!;
-  //   } else {
-  //     currItem = item.prev!;
-  //   }
-  //   if (currItem === this.head) {
-  //     return null;
-  //   } else {
-  //     return currItem;
-  //   }
-  // }
+
   public checkTailPrev() {
     return this.tail.prev!.task!.id === this.head.task!.id;
   }
@@ -139,10 +126,6 @@ export class DLList {
   public getTasks() {
     let arr: IfTask[] = []
     let item: DLItem = this.tail.prev!;
-
-    // this.logger.info('item:', item.task!.id)
-    // this.logger.info('tail:', this.tail.task!.id);
-    // this.logger.info('head:', this.head.task!.id);
 
     while (item.task!.id !== this.head.task!.id) {
       let task = item.task!;
