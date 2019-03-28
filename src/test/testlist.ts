@@ -25,6 +25,15 @@ describe('To test Catchup v1.0.2 double link list', async function () {
     logger.info('Is it empty? ', lst.bEmpty(), '\n')
     expect(lst.bEmpty()).to.equal(true);
   })
+  it('list empty length test', async () => {
+    logger.info('Is it empty? ', lst.bEmpty(), '\n')
+    expect(lst.length()).to.equal(0);
+  })
+  it('check pointer at first', async () => {
+    logger.info(lst.checkHeadNext())
+    logger.info(lst.checkTailPrev())
+    expect(5).to.equal(5);
+  })
   it('Add to list', async () => {
 
     lst.push(task1)
@@ -66,6 +75,24 @@ describe('To test Catchup v1.0.2 double link list', async function () {
       lst.deleteItem(item);
     }
     lst.print()
+    expect(5).to.equal(5);
+  })
+  it('search task5', async () => {
+    let item = lst.searchBackward(task5);
+    if (item !== null) {
+      lst.deleteItem(item);
+    }
+    lst.print()
+    expect(5).to.equal(5);
+  })
+  it('get tasks', async () => {
+    let arr = lst.getTasks();
+    arr.forEach((item) => { logger.info(item.id); });
+    expect(5).to.equal(5);
+  })
+  it('check pointer in the end', async () => {
+    logger.info(lst.checkHeadNext())
+    logger.info(lst.checkTailPrev())
     expect(5).to.equal(5);
   })
 });

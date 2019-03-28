@@ -8,6 +8,7 @@ import { IfReq } from '../catchup/inquiro'
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 import { Synchro } from '../catchup/synchro';
 import { getFunc } from './dbapi';
+import { DLList } from './dl_list';
 
 const CANDY_AMOUNT = 1000;
 let global_counter = 1;
@@ -41,8 +42,8 @@ export function createTask(req: IfReq, cb: (res: IFeedBack) => void): IfTask {
 
 export class WRQueue extends EventEmitter {
   // First In First Out
-  private queueWrite: IfTask[];
-  private queueRead: IfTask[];
+  private queueWrite: DLList;
+  private queueRead: DLList;
   public logger: any;
   public pStatusDb: StatusDataBase;
   public pStorageDb: StorageDataBase;
@@ -52,8 +53,8 @@ export class WRQueue extends EventEmitter {
 
   constructor(loggerpath: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase, synchro: Synchro) {
     super();
-    this.queueWrite = [];
-    this.queueRead = [];
+    this.queueWrite = new DLList(loggerpath);
+    this.queueRead = new DLList(loggerpath);
     this.logger = loggerpath;
     this.pStatusDb = statusdb;
     this.pStorageDb = storagedb;
@@ -63,7 +64,7 @@ export class WRQueue extends EventEmitter {
     this.on('write', (data: IfTask) => {
       this.logger.info('WRQueue receives "write" event\n');
       this.queueWrite.push(data);
-      if (this.queueWrite.length === 1) {
+      if (this.queueWrite.length() === 1) {
         this.emit('execWrite');
       }
     });
@@ -73,67 +74,97 @@ export class WRQueue extends EventEmitter {
     this.on('read', (data: IfTask) => {
       this.logger.info('WRQueue receives "read" event\n');
       this.queueRead.push(data);
-      if (this.queueRead.length === 1) {
+
+      if (this.queueRead.length() === 1) {
         this.emit('execRead');
       }
     });
     // remove 
-    this.on('removeRead', () => {
+    this.on('removeRead', (task) => {
       this.logger.info('WRQueue receives removeRead event\n');
-      if (this.queueRead.length < 1) {
+      if (this.queueRead.length() < 1) {
         this.logger.info('empty read queue\n');
         return;
       }
-      let tmp: IfTask[] = []
-      this.queueRead.forEach((task) => {
-        if (task.finished == false) {
-          tmp.push(task);
-        }
-      })
-      this.queueRead = tmp;
+      // let tmp: IfTask[] = []
+      // this.queueRead.forEach((task) => {
+      //   if (task.finished == false) {
+      //     tmp.push(task);
+      //   }
+      // })
+      // this.queueRead = tmp;
+      let item = this.queueRead.searchItem(task);
+      if (item !== null) {
+        this.queueRead.deleteItem(item);
+      }
     });
-    this.on('removeWrite', () => {
+    this.on('removeWrite', (task) => {
       this.logger.info('WRQueue receives removeWrite event\n');
-      if (this.queueWrite.length < 1) {
+      if (this.queueWrite.length() < 1) {
         this.logger.info('empty write queue\n');
         return;
       }
-      let tmp: IfTask[] = []
-      this.queueWrite.forEach((task) => {
-        if (task.finished == false) {
-          tmp.push(task);
-        }
-      })
-      this.queueWrite = tmp;
+      // let tmp: IfTask[] = []
+      // this.queueWrite.forEach((task) => {
+      //   if (task.finished == false) {
+      //     tmp.push(task);
+      //   }
+      // })
+      // this.queueWrite = tmp;
+      let item = this.queueWrite.searchItem(task);
+      if (item !== null) {
+        this.queueRead.deleteItem(item);
+      }
     });
 
     this.on('execRead', () => {
-      if (this.queueRead.length < 1) {
+      if (this.queueRead.length() < 1) {
         this.logger.info('empty read queue\n');
         return;
       }
       this.logger.info('execRead');
       // this.execQueueRead(this.queueRead);
-      for (let i = 0; i < this.queueRead.length; i++) {
-        let task = this.queueRead[i]
+      // iterate the list to execute 
+      // for (let i = 0; i < this.queueRead.length; i++) {
+      //   let task = this.queueRead[i]
+      //   if (task.running === false) {
+      //     this.execRead(task);
+      //   }
+      // } 
+      // let item = this.queueRead.next(null);
+      // while (item !== null) {
+      //   let task = item.task;
+      //   if (task!.running === false) {
+      //     this.execRead(task!);
+      //   }
+      // }
+      let tasks = this.queueRead.getTasks();
+      tasks.forEach((task) => {
         if (task.running === false) {
           this.execRead(task);
         }
-      }
+      })
+
     });
     this.on('execWrite', () => {
-      if (this.queueWrite.length < 1) {
+      if (this.queueWrite.length() < 1) {
         this.logger.info('empty write queue\n');
         return;
       }
       this.logger.info('execWrite');
       // this.execQueueRead(this.queueRead);
-      for (let i = 0; i < this.queueWrite.length; i++) {
-        let task = this.queueWrite[i]
+      // for (let i = 0; i < this.queueWrite.length; i++) {
+      //   let task = this.queueWrite[i]
+      //   if (task.running === false) {
+      //     this.execWrite(task);
+      //   }
+      // }
+      let tasks = this.queueWrite.getTasks();
+      tasks.forEach((task) => {
         if (task.running === false) {
           this.execWrite(task);
         }
-      }
+      })
     });
   }
 
@@ -145,7 +176,7 @@ export class WRQueue extends EventEmitter {
     task.callback({ err: ErrorCode.RESULT_OK, data: result.data })
     task.finished = true;
 
-    this.emit('removeRead');
+    this.emit('removeRead', task);
     this.emit('execRead');
   }
 
@@ -158,7 +189,7 @@ export class WRQueue extends EventEmitter {
     task.callback({ err: ErrorCode.RESULT_OK, data: result.data })
     task.finished = true;
 
-    this.emit('removeWrite');
+    this.emit('removeWrite', task);
     this.emit('execWrite');
   }
 

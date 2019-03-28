@@ -32,13 +32,26 @@ class DLItem {
   public prev: DLItem | null;
   public task: IfTask | null;
 
-  constructor(task: IfTask | null) {
-    this.task = task;
+  constructor(task: IfTask) {
+
+    this.task = {
+      id: task.id,
+      running: task.running,
+      finished: task.finished,
+      maxRetry: task.maxRetry,
+      times: task.times,
+      timeout: task.timeout,
+      request: task.request,
+      callback: task.callback,
+    };
+
     this.next = null;
     this.prev = null;
 
   }
 }
+const HEAD_ID = -1;
+const TAIL_ID = -2;
 // double link list
 export class DLList {
   private head: DLItem;
@@ -47,8 +60,32 @@ export class DLList {
 
   constructor(loggerPath: winston.LoggerInstance) {
     this.logger = loggerPath;
-    this.head = new DLItem(null);
-    this.tail = new DLItem(null);
+    this.head = new DLItem({
+      id: HEAD_ID,
+      running: false,
+      finished: false,
+      maxRetry: 1,
+      times: 0,
+      timeout: 3000,
+      request: {
+        funName: "1",
+        args: 1,
+      },
+      callback: () => { }
+    });
+    this.tail = new DLItem({
+      id: TAIL_ID,
+      running: false,
+      finished: false,
+      maxRetry: 1,
+      times: 0,
+      timeout: 3000,
+      request: {
+        funName: "1",
+        args: 1,
+      },
+      callback: () => { }
+    });
 
     this.head.next = this.tail;
     this.tail.prev = this.head;
@@ -65,17 +102,6 @@ export class DLList {
     item.prev = this.head;
 
   }
-  // public pop() {
-  //   if (this.bEmpty()) {
-  //     this.logger.info('DLList is empty')
-  //   } else {
-  //     let tempEnd = this.tail!.prev;
-  //     let tempEndNew = tempEnd!.prev;
-
-  //     tempEndNew!.next = this.tail;
-  //     this.tail.prev = tempEndNew;
-  //   }
-  // }
   public bEmpty() {
     return (this.head.next === this.tail && this.tail.prev == this.head)
   }
@@ -83,22 +109,58 @@ export class DLList {
     let item: DLItem = this.head.next!;
 
     while (item !== this.tail) {
-      if (item.task === task) {
+      if (item.task!.id === task.id) {
         return item;
       }
       item = item.next!;
-
     }
     return null;
+  }
+  // Search from tail, prev, prev, ... 
+  // public next(item: DLItem | null | undefined): DLItem | null {
+  //   let currItem: DLItem;
+  //   if (item === null || item === undefined) {
+  //     currItem = this.tail.prev!;
+  //   } else {
+  //     currItem = item.prev!;
+  //   }
+  //   if (currItem === this.head) {
+  //     return null;
+  //   } else {
+  //     return currItem;
+  //   }
+  // }
+  public checkTailPrev() {
+    return this.tail.prev!.task!.id === this.head.task!.id;
+  }
+  public checkHeadNext() {
+    return this.head.next!.task!.id === this.tail.task!.id;
+  }
+  public getTasks() {
+    let arr: IfTask[] = []
+    let item: DLItem = this.tail.prev!;
+
+    // this.logger.info('item:', item.task!.id)
+    // this.logger.info('tail:', this.tail.task!.id);
+    // this.logger.info('head:', this.head.task!.id);
+
+    while (item.task!.id !== this.head.task!.id) {
+      let task = item.task!;
+      if (task.running === false) {
+        arr.push(task);
+      }
+      item = item.prev!;
+    }
+    return arr;
   }
   public searchItem(task: IfTask) {
     return this.searchBackward(task);
   }
-  public searchBackward(task: IfTask) {
+  public searchBackward(task: IfTask): DLItem | null {
     let item: DLItem = this.tail.prev!;
 
     while (item !== this.head) {
-      if (item.task === task) {
+      if (item.task!.id === task.id) {
         return item;
       }
       item = item.prev!;
