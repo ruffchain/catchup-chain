@@ -5,10 +5,10 @@ import { StatusDataBase } from "../lib/storage/statusdb";
 import { StorageDataBase } from "../lib/storage/StorageDataBase";
 import { Synchro } from "../lib/catchup/synchro";
 import { WRQueue } from "../lib/storage/queue";
-import * as SqlString from 'sqlstring';
+// import * as SqlString from 'sqlstring';
 
 import { describe, it } from 'mocha';
-import { BlockExecutorExternParamCreator } from "../core";
+// import { BlockExecutorExternParamCreator } from "../core";
 // var assert = require('assert');
 let expect = require('chai').expect;
 

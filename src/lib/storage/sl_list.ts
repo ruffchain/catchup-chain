@@ -2,11 +2,9 @@ import { IfTask } from "./queue";
 import winston = require("winston");
 
 
-
 class SLNode {
   public next: SLNode | null;
   public task: IfTask | null;
-
 
   constructor(task: IfTask | null) {
     this.task = task;

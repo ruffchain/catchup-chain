@@ -1,11 +1,12 @@
 {
   "name": "catchup",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "catchup for RFC",
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Run test specified\"",
     "testjson": "./node_modules/.bin/mocha ./dist/test/testjson.js",
+    "testlist": "./node_modules/.bin/mocha ./dist/test/testlist.js",
     "compile": "tsc -p ./",
     "start": "node ./dist/index.js",
     "clean": "rm -rf ./data/log && mkdir -p ./data/log",
