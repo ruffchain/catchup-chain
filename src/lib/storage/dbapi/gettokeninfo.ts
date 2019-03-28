@@ -12,6 +12,5 @@ export async function laGetTokenInfo(handle: WRQueue, args: any) {
     } else {
       resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENINFO_FAILED, data: [] })
     }
-
   })
 }

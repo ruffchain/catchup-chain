@@ -160,9 +160,6 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(sql);
   }
 
-
-
-
   public queryAccountTableByTokenAndAddress(addr: string, token: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? AND token = ?;', [this.accountTable, addr, token])
     return this.getRecord(sql);

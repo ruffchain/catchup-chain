@@ -310,7 +310,7 @@ export class Synchro {
 
         // add a new token to token table
         result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime);
-        this.logger.info('insertTokenTable , result:', result)
+        this.logger.info('createToken insertTokenTable , result:', result)
         if (result.err) {
           resolv(result);
           return;
@@ -400,8 +400,9 @@ export class Synchro {
           return;
         }
 
-        // get total balances, add token table
+        // get add token table
         result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime);
+        this.logger.info('checkCreateBancorToken insert token table')
         if (result.err) {
           resolv(result);
           return;

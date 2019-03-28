@@ -96,7 +96,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   //   let obj = JSON.parse(cr.resp!)
   //   expect(obj.name).to.equal("hdba");
   // })
-  it('getTokenInfo', async () => {
+  it('getTokenInfo hdba', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "hdba")
     // logger.info(cr);
@@ -104,7 +104,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
-  it('getTokenInfo', async () => {
+  it('getTokenInfo ssss', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "ssss")
     // logger.info(cr);
@@ -112,9 +112,17 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
-  it('getTokenInfo', async () => {
+  it('getTokenInfo ss', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "ss")
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
+  it('getTokenInfo sys', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokenInfo', "sys")
     // logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
@@ -147,6 +155,14 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   it('getFortuneRanking', async () => {
     this.timeout(33000);
     let cr = await client.callAsync('getFortuneRanking', "sys")
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
+  it('getFortuneRanking', async () => {
+    this.timeout(33000);
+    let cr = await client.callAsync('getFortuneRanking', { token: 'sys', page: 1, pageSize: 2 })
     // logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
