@@ -181,16 +181,18 @@ export class StorageDataBase extends CUDataBase {
     return new Promise<IFeedBack>(async (resolv) => {
       // if address token is not empty, update it
       let result = await this.queryAccountTableByTokenAndAddress(address, token);
-
+      console.log('updateAccountTable result:', result)
       if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         // insert into it
         let result1 = await this.insertAccountTable(address, token, amount, value);
+        console.log('updateAccountTable result1:', result1)
         resolv(result1);
       } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
         resolv(result);
       } else {
         // update it
         let result2 = await this.updateAccountTableByTokenAndAddress(address, token, amount, value)
+        console.log('updateAccountTable result2: ', result2)
         resolv(result2);
       }
     })
