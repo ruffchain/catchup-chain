@@ -174,7 +174,7 @@ export class StorageDataBase extends CUDataBase {
   }
 
   private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string, value: number) {
-    let sql = SqlString.format('UPDATE ? SET amount = ? , value = ? WHERE hash=? AND token = ?;', [this.accountTable, amount, value, addr, token])
+    let sql = SqlString.format('UPDATE ? SET amount = ? , value = ? WHERE hash=? AND token = ? ;', [this.accountTable, amount, value, addr, token])
     return this.updateRecord(sql);
   }
   public updateAccountTable(address: string, token: string, amount: string, value: number) {
@@ -282,7 +282,7 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
-    let sql = SqlString.format('INSERT INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?);', [this.tokenTable, tokenname, type, address, datetime])
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?);', [this.tokenTable, tokenname, type, address, datetime])
     return this.insertRecord(sql, {});
   }
 }

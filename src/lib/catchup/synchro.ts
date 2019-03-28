@@ -310,6 +310,7 @@ export class Synchro {
 
         // add a new token to token table
         result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime);
+        this.logger.info('insertTokenTable , result:', result)
         if (result.err) {
           resolv(result);
           return;
