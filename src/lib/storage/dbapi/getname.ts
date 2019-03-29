@@ -23,7 +23,7 @@ export async function laGetName(handle: WRQueue, args: any) {
     if (!isANumber(args)) {
       handle.logger.info('getName: not a number:', args)
       // it is a token name
-      let result = await handle.pStorageDb.queryHashTableFullName(args, 6);
+      let result = await handle.pStorageDb.queryHashTableFullName(args.toLowerCase(), 6);
       if (result.data) {
         result.data.forEach((item: any) => {
           arr.push({ type: item.type });
