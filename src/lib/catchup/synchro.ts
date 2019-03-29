@@ -423,7 +423,8 @@ export class Synchro {
   }
   private fetchBancorTokenNumber(tokenName: string, func: (token: string) => Promise<IfResult>) {
     return new Promise<IFeedBack>(async (resolv) => {
-      let result = await func(tokenName);
+      this.logger.info('fetchBancorTokenNumber')
+      let result = await func.call(this, tokenName);
       if (result.ret === 200) {
         let obj = JSON.parse(result.resp!.toString());
         let value = obj.value.replace('n', '')
@@ -454,7 +455,7 @@ export class Synchro {
   private handleBancorTokenParameters(tokenName: string, func: (token: string, f: number, r: number, s: number) => Promise<IFeedBack>) {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor);
+      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor.call);
       if (result.err) {
         resolv(result);
         return;
