@@ -275,6 +275,10 @@ export class Synchro {
       || tx.method === 'mortgage'
       || tx.method === 'unmortgage'
       || tx.method === 'register'
+      || tx.method === 'setUserCode'
+      || tx.method === 'getUserCode'
+      || tx.method === 'runUserMethod'
+
     ) {
       return this.checkDefaultCommand(recet);
     }
@@ -611,13 +615,15 @@ export class Synchro {
   public async getBalanceInfo(token: string, strHash: string) {
     console.log('\ngetBalanceInfo', token, ' ', strHash, '\n')
     let result = await getBalance(this.ctx, [strHash]);
+    if (result.ret === 10001) {
+
+    }
     if (result.ret !== 200) {
       this.logger.error('wrong result', result)
     } else {
       this.logger.info(JSON.stringify(result));
       this.logger.info('balance:', JSON.parse(result.resp!).value);
     }
-
     return result;
   }
   public async getTokenBalanceInfo(token: string, strHash: string) {
