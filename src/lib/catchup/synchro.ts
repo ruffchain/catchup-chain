@@ -453,6 +453,7 @@ export class Synchro {
   // get R, S, F parameters
   private handleBancorTokenParameters(tokenName: string, func: (token: string, f: number, r: number, s: number) => Promise<IFeedBack>) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('handleBancorTokenParameters')
       let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor);
       if (result.err) {
         resolv(result);
@@ -474,7 +475,7 @@ export class Synchro {
       }
       let R: number = result.data;
 
-      result = await func(tokenName, F, R, S);
+      result = await func.call(this, tokenName, F, R, S);
       if (result.err) {
         resolv(result);
         return;
@@ -483,9 +484,11 @@ export class Synchro {
     });
   }
   private insertBancorTokenParameters(tokenName: string) {
+    this.logger.info('insertBancorTokenParameters, with: ', tokenName)
     return this.handleBancorTokenParameters(tokenName, this.pStorageDb.insertBancorTokenTable);
   }
   private updateBancorTokenParameters(tokenName: string) {
+    this.logger.info('updateBancorTokenParameters, with:', tokenName)
     return this.handleBancorTokenParameters(tokenName, this.pStorageDb.updateBancorTokenTable);
   }
   // it will record the R, S, F参数
