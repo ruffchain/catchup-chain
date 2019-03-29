@@ -20,10 +20,16 @@ export async function laGetName(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     let arr: any;
     arr = [];
+
     if (!isANumber(args)) {
       handle.logger.info('getName: not a number:', args)
+      // if it is sys
+      if (args === 'sys' || args === 'SYS') {
+        resolv({ err: ErrorCode.RESULT_OK, data: { hash: 'sys', type: HASH_TYPE.TOKEN, verified: 0 } });
+        return;
+      }
       // it is a token name
-      let result = await handle.pStorageDb.queryHashTableFullName(args.toLowerCase(), 6);
+      let result = await handle.pStorageDb.queryHashTableFullName(args, 6);
       if (result.data) {
         result.data.forEach((item: any) => {
           arr.push({ type: item.type });
