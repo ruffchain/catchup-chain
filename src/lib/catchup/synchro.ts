@@ -486,11 +486,71 @@ export class Synchro {
   }
   private insertBancorTokenParameters(tokenName: string) {
     this.logger.info('insertBancorTokenParameters, with: ', tokenName)
-    return this.handleBancorTokenParameters(tokenName, this.pStorageDb.insertBancorTokenTable);
+    // return this.handleBancorTokenParameters(tokenName, this.pStorageDb.insertBancorTokenTable);
+    return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('handleBancorTokenParameters')
+      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor.call);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let F = result.data;
+
+      result = await this.fetchBancorTokenNumber(tokenName, this.getSupply);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let S = result.data;
+
+      result = await this.fetchBancorTokenNumber(tokenName, this.getReserve);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let R: number = result.data;
+
+      result = await this.pStorageDb.insertBancorTokenTable(tokenName, F, R, S);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
   }
   private updateBancorTokenParameters(tokenName: string) {
     this.logger.info('updateBancorTokenParameters, with:', tokenName)
-    return this.handleBancorTokenParameters(tokenName, this.pStorageDb.updateBancorTokenTable);
+    // return this.handleBancorTokenParameters(tokenName, this.pStorageDb.updateBancorTokenTable);
+    return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('handleBancorTokenParameters')
+      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor.call);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let F = result.data;
+
+      result = await this.fetchBancorTokenNumber(tokenName, this.getSupply);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let S = result.data;
+
+      result = await this.fetchBancorTokenNumber(tokenName, this.getReserve);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let R: number = result.data;
+
+      result = await this.pStorageDb.updateBancorTokenTable(tokenName, F, R, S);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
   }
   // it will record the R, S, F参数
   private checkCreateBancorToken(receipt: any, tokenType: string) {
