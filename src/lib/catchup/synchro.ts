@@ -421,29 +421,29 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
-  private fetchBancorTokenNumber(tokenName: string, func: (token: string) => Promise<IfResult>) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('fetchBancorTokenNumber')
-      let result = await func.call(this, tokenName);
-      if (result.ret === 200) {
-        let obj = JSON.parse(result.resp!.toString());
-        let value = obj.value.replace('n', '')
-        let out: number;
-        try {
-          let num = parseFloat(value);
-          let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
-          resolv({ err: ErrorCode.RESULT_OK, data: num1 });
-          return;
-        } catch (e) {
-          this.logger.error('getbancortokeninfo failed:', e);
-          resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-        }
-      } else {
-        this.logger.error('getbancortokeninfo failed:', result)
-        resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-      }
-    });
-  }
+  // private fetchBancorTokenNumber(tokenName: string, func: (token: string) => Promise<IfResult>) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     this.logger.info('fetchBancorTokenNumber')
+  //     let result = await func.call(this, tokenName);
+  //     if (result.ret === 200) {
+  //       let obj = JSON.parse(result.resp!.toString());
+  //       let value = obj.value.replace('n', '')
+  //       let out: number;
+  //       try {
+  //         let num = parseFloat(value);
+  //         let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
+  //         resolv({ err: ErrorCode.RESULT_OK, data: num1 });
+  //         return;
+  //       } catch (e) {
+  //         this.logger.error('getbancortokeninfo failed:', e);
+  //         resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+  //       }
+  //     } else {
+  //       this.logger.error('getbancortokeninfo failed:', result)
+  //       resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+  //     }
+  //   });
+  // }
   // private fetchBancorTokenNumbers(tokenName: string) {
   //   return new Promise<IFeedBack>(async (resolv) => {
   private fetchBancorTokenNumberSupply(tokenName: string) {
@@ -556,21 +556,21 @@ export class Synchro {
     // return this.handleBancorTokenParameters(tokenName, this.pStorageDb.insertBancorTokenTable);
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor.call);
+      let result = await this.fetchBancorTokenNumberFactor(tokenName);
       if (result.err) {
         resolv(result);
         return;
       }
       let F = result.data;
 
-      result = await this.fetchBancorTokenNumber(tokenName, this.getSupply);
+      result = await this.fetchBancorTokenNumberSupply(tokenName);
       if (result.err) {
         resolv(result);
         return;
       }
       let S = result.data;
 
-      result = await this.fetchBancorTokenNumber(tokenName, this.getReserve);
+      result = await this.fetchBancorTokenNumberReserve(tokenName);
       if (result.err) {
         resolv(result);
         return;
@@ -590,21 +590,21 @@ export class Synchro {
     // return this.handleBancorTokenParameters(tokenName, this.pStorageDb.updateBancorTokenTable);
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor.call);
+      let result = await this.fetchBancorTokenNumberFactor(tokenName);
       if (result.err) {
         resolv(result);
         return;
       }
       let F = result.data;
 
-      result = await this.fetchBancorTokenNumber(tokenName, this.getSupply);
+      result = await this.fetchBancorTokenNumberSupply(tokenName);
       if (result.err) {
         resolv(result);
         return;
       }
       let S = result.data;
 
-      result = await this.fetchBancorTokenNumber(tokenName, this.getReserve);
+      result = await this.fetchBancorTokenNumberReserve(tokenName);
       if (result.err) {
         resolv(result);
         return;
