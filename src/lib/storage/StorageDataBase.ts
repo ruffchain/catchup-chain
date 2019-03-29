@@ -29,12 +29,14 @@ export class StorageDataBase extends CUDataBase {
   private blockTable: string;
   private txTable: string;
   private tokenTable: string;
+  private bancorTokenTable: string;
 
   private hashTableSchema: string;
   private accountTableSchema: string;
   private blockTableSchema: string;
   private txTableSchema: string;
   private tokenTableSchema: string;
+  private bancorTokenTableSchema: string;
 
   constructor(logger: winston.LoggerInstance, options: IfCUDataBaseOptions) {
     super(logger, options);
@@ -43,6 +45,7 @@ export class StorageDataBase extends CUDataBase {
     this.blockTable = 'blocktable';
     this.txTable = 'txtable';
     this.tokenTable = 'tokentable';
+    this.bancorTokenTable = 'bancortokentable';
 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
 
@@ -54,6 +57,8 @@ export class StorageDataBase extends CUDataBase {
     this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
     this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
+
+    this.bancorTokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "factor" INTEGER NOT NULL, "reserve" INTEGER NOT NULL,"supply" INTEGER NOT NULL);`;
   }
 
   public init(): Promise<IFeedBack> {
@@ -62,6 +67,7 @@ export class StorageDataBase extends CUDataBase {
       await this.createTable(this.accountTable, this.accountTableSchema);
       await this.createTable(this.blockTable, this.blockTableSchema);
       await this.createTable(this.txTable, this.txTableSchema);
+      await this.createTable(this.bancorTokenTable, this.bancorTokenTableSchema);
       result = await this.createTable(this.tokenTable, this.tokenTableSchema);
       this.logger.info('Create storage tables:', result);
       resolv({ err: 0, data: null });
@@ -296,6 +302,33 @@ export class StorageDataBase extends CUDataBase {
         resolv(result);
       } else {
         console.log('ERROR: updateTokenTable result2: ', tokenname, ' already exist in db!')
+        resolv({ err: ErrorCode.RESULT_OK, data: '' });
+      }
+    });
+  }
+
+  // bancorTokenTable
+  public queryBancorTokenTable(name: string) {
+    let sql = SqlString.format('SELECT * FROM ? WHERE name = ?;', [this.bancorTokenTable, name])
+    return this.getRecord(sql);
+  }
+  public insertBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, factor, reserve, supply) VALUES(?, ?, ?, ?);', [this.bancorTokenTable, tokenname, factor, reserve, supply])
+    return this.insertRecord(sql, {});
+  }
+  public updateBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await this.queryBancorTokenTable(tokenname)
+
+      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+        // insert into it
+        let result1 = await this.insertBancorTokenTable(tokenname, factor, reserve, supply);
+        //console.log('updateAccountTable result1:', result1)
+        resolv(result1);
+      } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+        resolv(result);
+      } else {
+        console.log('ERROR: updateBancorTokenTable result2: ', tokenname, ' already exist in db!')
         resolv({ err: ErrorCode.RESULT_OK, data: '' });
       }
     });

@@ -59,26 +59,26 @@ const txLst = [
 ]
 // synchro.getBlock(0);
 async function main() {
-  let result = await synchro.getFactor('hdba');
+  let result = await synchro.getFactor('chromesmart');
   logger.info(result);
   let obj = JSON.parse(result.resp!.toString());
-  logger.info(obj.value);
+  logger.info(obj.value.replace('n', ''));
   logger.info('\n')
 
-  // result = await synchro.getReserve('hdba');
-  // logger.info(result);
-  // obj = JSON.parse(result.resp!.toString());
-  // logger.info(obj.value);
-  // logger.info('\n')
+  result = await synchro.getReserve('chromesmart');
+  logger.info(result);
+  obj = JSON.parse(result.resp!.toString());
+  logger.info(obj.value.replace('n', ''));
+  logger.info('\n')
 
-  // result = await synchro.getSupply('hdba');
-  // logger.info(result);
-  // obj = JSON.parse(result.resp!.toString());
-  // logger.info(obj.value);
-  // logger.info('\n')
+  result = await synchro.getSupply('chromesmart');
+  logger.info(result);
+  obj = JSON.parse(result.resp!.toString());
+  logger.info(obj.value.replace('n', ''));
+  logger.info('\n')
 
-  result = await synchro.transferCandy('1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw', 1000);
-  logger.info(result)
+  // result = await synchro.transferCandy('1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw', 1000);
+  // logger.info(result)
 
   // let result = await synchro.getLIBNumber()
   // logger.info(result);

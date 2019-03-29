@@ -35,7 +35,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1'
+  host: '40.73.1.241', // ,     '40.73.1.241'    '127.0.0.1'
   port: 18080,
   address: '',
   verbose: false
@@ -62,15 +62,15 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-  it('getName', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getName', "1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79")
-    //logger.info(cr);
-    logger.info(cr.resp)
+  // it('getName', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getName', "1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79")
+  //   //logger.info(cr);
+  //   logger.info(cr.resp)
 
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
+  //   let obj = JSON.parse(cr.resp!);
+  //   expect(1).to.equal(1);
+  // })
 
   // it('getAccount', async () => {
   //   this.timeout(3000);
@@ -96,30 +96,6 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   //   let obj = JSON.parse(cr.resp!)
   //   expect(obj.name).to.equal("hdba");
   // })
-  it('getTokenInfo hdba', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "hdba")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTokenInfo ssss', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "ssss")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTokenInfo ss', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "ss")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
   it('getTokenInfo sys', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "sys")
@@ -128,158 +104,182 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
   })
-  it('getTokenPrice', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTokenPrice', "hdba")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
+  // it('getTokenInfo ssss', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getTokenInfo', "ssss")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTokenInfo ss', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getTokenInfo', "ss")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTokenInfo sys', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getTokenInfo', "sys")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
   // it('getTokenPrice', async () => {
   //   this.timeout(33000);
-  //   let cr = await client.callAsync('getTokenPrice', "ss")
+  //   let cr = await client.callAsync('getTokenPrice', "hdba")
   //   // logger.info(cr);
   //   logger.info(cr.resp)
   //   let obj = JSON.parse(cr.resp!)
   //   expect(1).to.equal(1);
   // })
-  it('getTokenPrice', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTokenPrice', "ssss")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getFortuneRanking', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getFortuneRanking', "sys")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getFortuneRanking', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getFortuneRanking', { token: 'sys', page: 1, pageSize: 2 })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTokensByAddress', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTokensByAddress', "154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTxsByAddress', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTxsByAddress', "")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTxsByAddress', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getTxsByAddress', { address: "12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC", page: 1, pageSize: 2 })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTxs', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getLatestTxs', "")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTxs', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 1 })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  // it('getTxsByBlock', async () => {
+  // // it('getTokenPrice', async () => {
+  // //   this.timeout(33000);
+  // //   let cr = await client.callAsync('getTokenPrice', "ss")
+  // //   // logger.info(cr);
+  // //   logger.info(cr.resp)
+  // //   let obj = JSON.parse(cr.resp!)
+  // //   expect(1).to.equal(1);
+  // // })
+  // it('getTokenPrice', async () => {
   //   this.timeout(33000);
-  //   let cr = await client.callAsync('getTxsByBlock', 'a5988bf51969d78615132e0102587486ab934010228cc476d9753608ec2768c5')
+  //   let cr = await client.callAsync('getTokenPrice', "ssss")
   //   // logger.info(cr);
   //   logger.info(cr.resp)
   //   let obj = JSON.parse(cr.resp!)
   //   expect(1).to.equal(1);
   // })
-  // it('getTx', async () => {
+  // it('getFortuneRanking', async () => {
   //   this.timeout(33000);
-  //   let cr = await client.callAsync('getTx', '2a286411a7c6b5c016e29d4780d50cee6832acefde165987621fbb68e85192e2')
+  //   let cr = await client.callAsync('getFortuneRanking', "sys")
   //   // logger.info(cr);
   //   logger.info(cr.resp)
   //   let obj = JSON.parse(cr.resp!)
   //   expect(1).to.equal(1);
   // })
-  // it('getBlocks', async () => {
+  // it('getFortuneRanking', async () => {
   //   this.timeout(33000);
-  //   let cr = await client.callAsync('getBlocks', '')
+  //   let cr = await client.callAsync('getFortuneRanking', { token: 'sys', page: 1, pageSize: 2 })
   //   // logger.info(cr);
   //   logger.info(cr.resp)
   //   let obj = JSON.parse(cr.resp!)
   //   expect(1).to.equal(1);
   // })
-  it('getLatestBlocks', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getLatestBlocks', '')
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getLatestBlocks', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 2 })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getChainOverview', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getChainOverview', {})
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getLatestTxCount', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getLatestTxCount', { from: '1970-01-12T14:42:49.476Z', to: '1970-01-18T23:29:29.476Z' })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getCandy', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('default', async () => {
-    this.timeout(33000);
-    let cr = await client.callAsync('default', {})
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
+  // it('getTokensByAddress', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getTokensByAddress', "154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTxsByAddress', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getTxsByAddress', "")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTxsByAddress', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getTxsByAddress', { address: "12nP8vFGBJd4MBu6uAD5YckZLXDyPCbcbC", page: 1, pageSize: 2 })
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTxs', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getLatestTxs', "")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTxs', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getLatestTxs', { page: 1, pageSize: 1 })
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // // it('getTxsByBlock', async () => {
+  // //   this.timeout(33000);
+  // //   let cr = await client.callAsync('getTxsByBlock', 'a5988bf51969d78615132e0102587486ab934010228cc476d9753608ec2768c5')
+  // //   // logger.info(cr);
+  // //   logger.info(cr.resp)
+  // //   let obj = JSON.parse(cr.resp!)
+  // //   expect(1).to.equal(1);
+  // // })
+  // // it('getTx', async () => {
+  // //   this.timeout(33000);
+  // //   let cr = await client.callAsync('getTx', '2a286411a7c6b5c016e29d4780d50cee6832acefde165987621fbb68e85192e2')
+  // //   // logger.info(cr);
+  // //   logger.info(cr.resp)
+  // //   let obj = JSON.parse(cr.resp!)
+  // //   expect(1).to.equal(1);
+  // // })
+  // // it('getBlocks', async () => {
+  // //   this.timeout(33000);
+  // //   let cr = await client.callAsync('getBlocks', '')
+  // //   // logger.info(cr);
+  // //   logger.info(cr.resp)
+  // //   let obj = JSON.parse(cr.resp!)
+  // //   expect(1).to.equal(1);
+  // // })
+  // it('getLatestBlocks', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getLatestBlocks', '')
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getLatestBlocks', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 2 })
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getChainOverview', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getChainOverview', {})
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getLatestTxCount', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getLatestTxCount', { from: '1970-01-12T14:42:49.476Z', to: '1970-01-18T23:29:29.476Z' })
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getCandy', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('default', async () => {
+  //   this.timeout(33000);
+  //   let cr = await client.callAsync('default', {})
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
 
 });
 

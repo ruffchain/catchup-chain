@@ -14,57 +14,16 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
 
     let token = args;
 
-    try {
-      let result = await handle.pSynchro.getFactor(token);
-      if (result.ret !== 200) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
-        return;
-      } else {
-        handle.logger.info(token, 'getTokenPrice F:', result)
-      }
-      // logger.info(result);
-      let obj = JSON.parse(result.resp!.toString());
-      //logger.info(obj.value);
-      F = parseFloat(obj.value.replace('n', ''))
-      // logger.info('\n')
-      if (F === 0) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
-        return;
-      }
+    let result = await handle.pStorageDb.queryBancorTokenTable(token);
 
-      result = await handle.pSynchro.getReserve(token);
-      if (result.ret !== 200) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
-        return;
-      } else {
-        handle.logger.info('getTokenPrice R:', result)
-      }
-      obj = JSON.parse(result.resp!.toString());
-      R = parseFloat(obj.value.replace('n', ''))
-
-
-      result = await handle.pSynchro.getSupply(token);
-      if (result.ret !== 200) {
-        resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
-        return;
-      } else {
-        handle.logger.info('getTokenPrice S:', result)
-      }
-
-      obj = JSON.parse(result.resp!.toString());
-      S = parseFloat(obj.value.replace('n', ''))
-
-      let price: number = S * F / R;
-
-      handle.logger.info('getTokenPrice price:', price)
-
-      resolv({ err: ErrorCode.RESULT_OK, data: price.toFixed(6) });
+    if (result.err) {
+      resolv(result);
       return;
-
-    } catch (e) {
-      handle.logger.error('getTokenPrice  error caught', e)
-      resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENPRICE_PARSING_FAILED, data: '' });
+    } else {
+      F = result.data.factor;
+      S = result.data.supply;
+      R = result.data.reserve;
     }
-
+    resolv({ err: ErrorCode.RESULT_OK, data: result.data })
   })
 }

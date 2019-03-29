@@ -18,6 +18,7 @@ import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
 import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } from '../storage/dbapi/scoop';
+import { isUndefined } from 'util';
 /**
  * This is a client , always syncing with the Chain
  */
@@ -358,15 +359,28 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
+  // Check bancor R, F, S parameters
   private checkBuyBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       let tokenName = receipt.tx.input.tokenid;
       let caller = receipt.tx.caller;
 
+
+
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
         if (result.err) {
           resolv(result);
+          return;
+        }
+        result = await this.updateBancorTokenParameters(tokenName);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+        let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
+        if (feedback.err) {
+          resolv(feedback);
           return;
         }
       }
@@ -407,6 +421,74 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
+  private fetchBancorTokenNumber(tokenName: string, func: (token: string) => Promise<IfResult>) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await func(tokenName);
+      if (result.ret === 200) {
+        let obj = JSON.parse(result.resp!.toString());
+        let value = obj.value.replace('n', '')
+        let out: number;
+        try {
+          let num = parseFloat(value);
+          let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
+          resolv({ err: ErrorCode.RESULT_OK, data: num1 });
+          return;
+        } catch (e) {
+          this.logger.error('getbancortokeninfo failed:', e);
+          resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+        }
+      } else {
+        this.logger.error('getbancortokeninfo failed:', result)
+        resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+      }
+    });
+  }
+  // private fetchBancorTokenNumbers(tokenName: string) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+
+
+
+  //   });
+  // }
+  // get R, S, F parameters
+  private handleBancorTokenParameters(tokenName: string, func: (token: string, f: number, r: number, s: number) => Promise<IFeedBack>) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await this.fetchBancorTokenNumber(tokenName, this.getFactor);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let F = result.data;
+
+      result = await this.fetchBancorTokenNumber(tokenName, this.getSupply);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let S = result.data;
+
+      result = await this.fetchBancorTokenNumber(tokenName, this.getReserve);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      let R: number = result.data;
+
+      result = await func(tokenName, F, R, S);
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
+  private insertBancorTokenParameters(tokenName: string) {
+    return this.handleBancorTokenParameters(tokenName, this.pStorageDb.insertBancorTokenTable);
+  }
+  private updateBancorTokenParameters(tokenName: string) {
+    return this.handleBancorTokenParameters(tokenName, this.pStorageDb.updateBancorTokenTable);
+  }
+  // it will record the R, S, F参数
   private checkCreateBancorToken(receipt: any, tokenType: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       let tokenName = receipt.tx.input.tokenid;
@@ -462,16 +544,22 @@ export class Synchro {
           resolv(result);
           return;
         }
+
+        result = await this.insertBancorTokenParameters(tokenName);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
       }
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
+  // check R, S, F parameters
   private checkSellBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       let caller = receipt.tx.caller;
       let tokenName = receipt.tx.input.tokenid;
-
 
       if (receipt.receipt.returnCode === 0) {
         // update caller token account
@@ -480,7 +568,17 @@ export class Synchro {
           resolv(result);
           return;
         }
+        result = await this.updateBancorTokenParameters(tokenName);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
 
+        let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
+        if (feedback.err) {
+          resolv(feedback);
+          return;
+        }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
