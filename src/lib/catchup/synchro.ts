@@ -17,6 +17,7 @@ import { getBancorTokenReserve } from '../../api/getBancorTokenReserve';
 import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
+import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } from '../storage/dbapi/scoop';
 /**
  * This is a client , always syncing with the Chain
  */
@@ -98,7 +99,11 @@ export class Synchro {
     if (nCurrentHeight < this.nCurrentLIBHeight) {
       let result2 = await this.updateBlockRange(nCurrentHeight, this.nCurrentLIBHeight);
       this.logger.info(JSON.stringify(result2));
-    } else {
+    }
+    else if (nCurrentHeight > this.nCurrentLIBHeight) {
+      throw new Error('Obsolete storage!')
+    }
+    else {
       this.logger.info('height equal \n');
     }
     // delay 10s
@@ -263,11 +268,14 @@ export class Synchro {
     else if (tx.method === 'transferTokenTo') {
       return this.checkTransferTokenTo(recet);
     }
+    else if (tx.method === 'transferBancorTokenTo') {
+      return this.checkTransferBancorTokenTo(recet);
+    }
     else if (tx.method === 'vote'
       || tx.method === 'mortgage'
       || tx.method === 'unmortgage'
       || tx.method === 'register'
-      || tx.method === 'transferBancorTokenTo') {
+    ) {
       return this.checkDefaultCommand(recet);
     }
     else {
@@ -362,6 +370,23 @@ export class Synchro {
     });
   }
   private checkTransferTokenTo(receipt: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+
+      let tokenName = receipt.tx.input.tokenid;
+      let caller = receipt.tx.caller;
+      let to = receipt.tx.input.to;
+
+      if (receipt.receipt.returnCode === 0) {
+        let result = await this.updateTokenBalances(tokenName, [{ address: caller }, { address: to }]);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  private checkTransferBancorTokenTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
 
       let tokenName = receipt.tx.input.tokenid;
@@ -485,13 +510,29 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
-  private updateBalanceBasic(token: string, account: IName, funcGetBalance: (token1: string, address1: string) => Promise<IfResult>) {
+  private updateBalanceBasic(token: string, type: string, account: IName, funcGetBalance: (token1: string, address1: string) => Promise<IfResult>) {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await funcGetBalance.call(this, token, account.address);
 
       if (result.ret === 200) {
         let amount: string = JSON.parse(result.resp!).value.replace('n', '');
-        let value: number = parseFloat(amount)
+        let laAmount: number = parseFloat(amount);
+
+        let value: number = 0;
+
+        if (type === TOKEN_TYPE.NORMAL) {
+          value = parseFloat(parseFloat(amount).toFixed(NORMAL_TOKEN_PRECISION));
+          amount = laAmount.toFixed(NORMAL_TOKEN_PRECISION);
+        } else if (type === TOKEN_TYPE.BANCOR) {
+          value = parseFloat(parseFloat(amount).toFixed(BANCOR_TOKEN_PRECISION));
+          amount = laAmount.toFixed(BANCOR_TOKEN_PRECISION);
+        } else if (type === TOKEN_TYPE.SYS) {
+          value = parseFloat(parseFloat(amount).toFixed(SYS_TOKEN_PRECISION));
+          amount = laAmount.toFixed(SYS_TOKEN_PRECISION)
+        } else {
+          resolv({ err: ErrorCode.RESULT_SYNC_UPDATEBALANCE_BASIC_FAILED, data: null });
+        }
+
         this.logger.info('updateAccountTable ->\n')
         console.log("value:", value);
         let result2 = await this.pStorageDb.updateAccountTable(account.address, token, amount, value);
@@ -501,7 +542,7 @@ export class Synchro {
       }
     });
   }
-  private updateBalancesBaisc(token: string, accounts: IName[], funcUpdate: (token1: string, account1: IName) => Promise<IFeedBack>) {
+  private updateBalancesBasic(token: string, accounts: IName[], funcUpdate: (token1: string, account1: IName) => Promise<IFeedBack>) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = 0; i < accounts.length; i++) {
         let result = await funcUpdate.call(this, token, accounts[i]);
@@ -515,24 +556,24 @@ export class Synchro {
   }
   // ---------- 1 -----------
   public async updateBalance(token: string, account: IName) {
-    return this.updateBalanceBasic(token, account, this.getBalanceInfo);
+    return this.updateBalanceBasic(token, TOKEN_TYPE.NORMAL, account, this.getBalanceInfo);
   }
   private async updateBalances(token: string, accounts: IName[]) {
-    return this.updateBalancesBaisc(SYS_TOKEN, accounts, this.updateBalance);
+    return this.updateBalancesBasic(SYS_TOKEN, accounts, this.updateBalance);
   }
   //---------------------------------------------------------------
   private async updateTokenBalance(token: string, account: IName) {
-    return this.updateBalanceBasic(token, account, this.getTokenBalanceInfo);
+    return this.updateBalanceBasic(token, TOKEN_TYPE.NORMAL, account, this.getTokenBalanceInfo);
   }
   private async updateTokenBalances(token: string, accounts: IName[]) {
-    return this.updateBalancesBaisc(token, accounts, this.updateTokenBalance)
+    return this.updateBalancesBasic(token, accounts, this.updateTokenBalance)
   }
   // -------------------------------------------------------------
   private async updateBancorTokenBalance(token: string, account: IName) {
-    return this.updateBalanceBasic(token, account, this.getBancorTokenBalanceInfo);
+    return this.updateBalanceBasic(token, TOKEN_TYPE.BANCOR, account, this.getBancorTokenBalanceInfo);
   }
   private async updateBancorTokenBalances(token: string, accounts: IName[]) {
-    return this.updateBalancesBaisc(token, accounts, this.updateBancorTokenBalance);
+    return this.updateBalancesBasic(token, accounts, this.updateBancorTokenBalance);
   }
 
 
@@ -570,22 +611,36 @@ export class Synchro {
   public async getBalanceInfo(token: string, strHash: string) {
     console.log('\ngetBalanceInfo', token, ' ', strHash, '\n')
     let result = await getBalance(this.ctx, [strHash]);
-    this.logger.info(JSON.stringify(result));
-    this.logger.info('balance:', JSON.parse(result.resp!).value);
+    if (result.ret !== 200) {
+      this.logger.error('wrong result', result)
+    } else {
+      this.logger.info(JSON.stringify(result));
+      this.logger.info('balance:', JSON.parse(result.resp!).value);
+    }
+
     return result;
   }
   public async getTokenBalanceInfo(token: string, strHash: string) {
     console.log('\ngetTokenBalanceInfo', token, ' ', strHash, '\n')
     let result = await getTokenBalance(this.ctx, [token, strHash]);
-    this.logger.info(JSON.stringify(result));
-    this.logger.info('token balance:', JSON.parse(result.resp!).value);
+    if (result.ret !== 200) {
+      this.logger.error('wrong result', result)
+    } else {
+      this.logger.info(JSON.stringify(result));
+      this.logger.info('token balance:', JSON.parse(result.resp!).value);
+    }
+
     return result;
   }
   public async getBancorTokenBalanceInfo(token: string, strHash: string) {
     console.log('\ngetBancorTokenBalanceInfo', token, ' ', strHash, '\n')
     let result = await getBancorTokenBalance(this.ctx, [token, strHash]);
-    this.logger.info(JSON.stringify(result));
-    this.logger.info('bancor token balance:', JSON.parse(result.resp!).value);
+    if (result.ret !== 200) {
+      this.logger.error('wrong result', result)
+    } else {
+      this.logger.info(JSON.stringify(result));
+      this.logger.info('bancor token balance:', JSON.parse(result.resp!).value);
+    }
     return result;
   }
   public async getFactor(token: string) {

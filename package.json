@@ -1,6 +1,6 @@
 {
   "name": "catchup",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "catchup for RFC",
   "main": "src/index.ts",
   "scripts": {

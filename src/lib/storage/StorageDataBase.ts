@@ -18,7 +18,8 @@ export const SYS_TOKEN_SYMBOL = 'SYS';
 
 export const TOKEN_TYPE = {
   NORMAL: 'normal',
-  BANCOR: 'bancor'
+  BANCOR: 'bancor',
+  SYS: 'sys'
 }
 
 

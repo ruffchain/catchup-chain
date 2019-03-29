@@ -91,6 +91,7 @@ export enum ErrorCode {
     RESULT_SYNC_GETACCOUNT_FAILED = 11307,
     RESULT_SYNC_GETTOKEN_FAILED = 11308,
     RESULT_SYNC_GETTOKENINFO_FAILED = 11308,
+    RESULT_SYNC_UPDATEBALANCE_BASIC_FAILED = 11309,
 }
 
 export interface IFeedBack { err: ErrorCode; data: any; }
