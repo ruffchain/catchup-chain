@@ -6,8 +6,8 @@ import { TOKEN_TYPE } from "../StorageDataBase";
 
 export async function laGetTokenInfo(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
-    let token = args.toUpperCase();
-    if (token === 'SYS') {
+    let token = args.toLowerCase();
+    if (token === 'sys') {
       resolv({ err: ErrorCode.RESULT_OK, data: { name: 'SYS', type: TOKEN_TYPE.SYS, address: '-', timestamp: 0 } })
       return;
     }
