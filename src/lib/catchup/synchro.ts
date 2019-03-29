@@ -647,6 +647,7 @@ export class Synchro {
       }
 
       if (receipt.receipt.returnCode === 0) {
+
         // update caller balance
         let result = await this.updateBalance(tokenName, { address: caller });
         if (result.err) {
