@@ -5,6 +5,7 @@
 - 1.0.2 Add getCandy interface, use sqlite3 to store related info
 - 1.0.3 Test added
 - 1.0.4 to add double link list instead of array
+- 1.0.5 to add precesion checking to user
   
 
 ## dependency

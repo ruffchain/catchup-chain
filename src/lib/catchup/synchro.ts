@@ -263,12 +263,24 @@ export class Synchro {
     else if (tx.method === 'transferTokenTo') {
       return this.checkTransferTokenTo(recet);
     }
+    else if (tx.method === 'vote'
+      || tx.method === 'mortgage'
+      || tx.method === 'unmortgage'
+      || tx.method === 'register'
+      || tx.method === 'transferBancorTokenTo') {
+      return this.checkDefaultCommand(recet);
+    }
     else {
       return new Promise<IFeedBack>(async (resolv) => {
         this.logger.error('Unrecognized account and token method:');
         resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
       });
     }
+  }
+  private checkDefaultCommand(recet: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
   }
   private checkCreateToken(receipt: any, tokenType: string) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -516,7 +528,7 @@ export class Synchro {
     return this.updateBalancesBaisc(token, accounts, this.updateTokenBalance)
   }
   // -------------------------------------------------------------
-  private async updateBancorTokenBalance(token: string, account: IName, ) {
+  private async updateBancorTokenBalance(token: string, account: IName) {
     return this.updateBalanceBasic(token, account, this.getBancorTokenBalanceInfo);
   }
   private async updateBancorTokenBalances(token: string, accounts: IName[]) {
