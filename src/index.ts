@@ -97,6 +97,8 @@ async function main() {
       assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, preBalance.amount.toString(), preBalance.amount), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
+
+      assert(await storageDB.insertHashTable('sys', HASH_TYPE.TOKEN), 'add to nameHash table' + 'sys', logger);
     }
     assert(await statusDB.setLoadGenesisFileBool(1), 'set load genesis bool to :' + 1, logger);
   }
