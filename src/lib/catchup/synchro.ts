@@ -23,6 +23,8 @@ import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } f
  * This is a client , always syncing with the Chain
  */
 
+const PERIOD = 5;
+
 interface IfSynchroOptions {
   ip: string;
   port: number;
@@ -108,8 +110,8 @@ export class Synchro {
       this.logger.info('height equal \n');
     }
     // delay 10s
-    this.logger.info('Delay 10 seconds\n');
-    await DelayPromise(5);
+    this.logger.info('Delay ', PERIOD, ' seconds\n');
+    await DelayPromise(PERIOD);
     this.loopTask();
   }
   // main task
