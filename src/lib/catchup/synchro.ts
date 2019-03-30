@@ -318,7 +318,7 @@ export class Synchro {
       let nameLst: IName[] = [];
       let addrLst: string[] = [];
       // let amountAll: number = 0;
-      // put it into hash table
+      // put it into hash table–––
 
       preBalances.forEach((element: any) => {
         nameLst.push({
@@ -340,7 +340,7 @@ export class Synchro {
 
       if (receipt.receipt.returnCode === 0) {
         // update caller balance
-        let result = await this.updateBalance(tokenName, { address: caller });
+        let result = await this.updateBalance(SYS_TOKEN, { address: caller });
         if (result.err) {
           resolv(result);
           return;
@@ -681,7 +681,7 @@ export class Synchro {
       if (receipt.receipt.returnCode === 0) {
 
         // update caller balance
-        let result = await this.updateBalance(tokenName, { address: caller });
+        let result = await this.updateBalance(SYS_TOKEN, { address: caller });
         if (result.err) {
           resolv(result);
           return;
