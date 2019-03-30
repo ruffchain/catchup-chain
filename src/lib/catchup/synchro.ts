@@ -109,7 +109,7 @@ export class Synchro {
     }
     // delay 10s
     this.logger.info('Delay 10 seconds\n');
-    await DelayPromise(10);
+    await DelayPromise(5);
     this.loopTask();
   }
   // main task
