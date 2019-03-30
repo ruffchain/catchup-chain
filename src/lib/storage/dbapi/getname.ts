@@ -25,7 +25,7 @@ export async function laGetName(handle: WRQueue, args: any) {
       handle.logger.info('getName: not a number:', args)
       // if it is sys
       if (args === 'sys' || args === 'SYS') {
-        resolv({ err: ErrorCode.RESULT_OK, data: { hash: 'sys', type: HASH_TYPE.TOKEN, verified: 0 } });
+        resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: 'sys', type: HASH_TYPE.TOKEN, verified: 0 }] });
         return;
       }
       // it is a token name
