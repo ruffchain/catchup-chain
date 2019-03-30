@@ -412,7 +412,13 @@ export class Synchro {
           resolv(result);
           return;
         }
+        result = await this.updateBalance(SYS_TOKEN, { address: caller });
+        if (result.err) {
+          resolv(result);
+          return;
+        }
       }
+
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
@@ -426,6 +432,11 @@ export class Synchro {
 
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalances(tokenName, [{ address: caller }, { address: to }]);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+        result = await this.updateBalance(SYS_TOKEN, { address: caller });
         if (result.err) {
           resolv(result);
           return;
