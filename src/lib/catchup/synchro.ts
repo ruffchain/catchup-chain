@@ -18,7 +18,7 @@ import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
 import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } from '../storage/dbapi/scoop';
-import { isUndefined } from 'util';
+
 /**
  * This is a client , always syncing with the Chain
  */
@@ -303,8 +303,21 @@ export class Synchro {
       });
     }
   }
-  private checkDefaultCommand(recet: any) {
+  private checkDefaultCommand(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+      // get caller balance
+      let caller = receipt.tx.caller;
+      // 
+      if (receipt.receipt.returnCode === 0) {
+        this.logger.info('checkTranserTo, updateBalances')
+        let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
+        if (feedback.err) {
+          resolv(feedback);
+          return;
+        }
+      }
+
+
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
