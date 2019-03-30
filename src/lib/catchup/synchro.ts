@@ -46,6 +46,7 @@ export class Synchro {
     this.port = options.port;
     this.logger = logger;
 
+    // get account secret for distributing candy
     let boss = fs.readFileSync('./secret/boss.json')
 
     let bossObj: any
@@ -91,7 +92,6 @@ export class Synchro {
       this.nCurrentLIBHeight = parseInt(result.resp!);
     }
 
-
     // get currentHeight
     let nCurrentHeight = this.pStatusDb.nCurrentHeight;
 
@@ -102,7 +102,7 @@ export class Synchro {
       this.logger.info(JSON.stringify(result2));
     }
     else if (nCurrentHeight > this.nCurrentLIBHeight) {
-      throw new Error('Obsolete storage!')
+      throw new Error('Obsolete storage! consider to clean by running: npm run clean && npm run cleandb')
     }
     else {
       this.logger.info('height equal \n');
@@ -112,17 +112,21 @@ export class Synchro {
     await DelayPromise(10);
     this.loopTask();
   }
+  // main task
   private updateBlockRange(nStart: number, nStop: number): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = nStart; i <= nStop; i++) {
+        // update database by block, one by one
         let result = await this.updateBlock(i);
         if (result.err) {
+          this.logger.error('UpdataeBlockRange block ', i, ' failed');
           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: i });
           return;
         } else {
           // update statusDB current Height
           let feedback = await this.pStatusDb.setCurrentHeight(i);
           if (feedback.err) {
+            this.logger.error('Save block ', i, ' to db failedd');
             resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: i });
             return;
           }
@@ -139,7 +143,7 @@ export class Synchro {
       let result = await this.getBlock(nBlock)
 
       if (result.ret === 200) {
-        this.logger.info(result.resp + '\n');
+        // this.logger.info(result.resp + '\n');
         // save resp to hashtable
         let obj: any;
         try {
@@ -149,7 +153,8 @@ export class Synchro {
           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_FAILED, data: null })
           return;
         }
-
+        // 
+        this.logger.info('Display block -->');
         console.log(obj);
 
         let hash = obj.block.hash;
@@ -163,6 +168,7 @@ export class Synchro {
         // save to hash table
         let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
         if (feedback.err) {
+          this.logger.error('updateBlock ', nBlock, ' number indertToHashTable failed')
           resolv({ err: feedback.err, data: null });
           return;
         }
@@ -170,13 +176,16 @@ export class Synchro {
         // save to block table
         feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, height, txno, address, timestamp);
         if (feedback.err) {
+          this.logger.error('updateBlock ', nBlock, ' put into block able failed')
           resolv({ err: feedback.err, data: null });
           return;
         }
 
         if (txno > 0) {
+          this.logger.info('UpdateTx -->')
           feedback = await this.updateTx(hash, hashnumber, timestamp, obj.transactions);
           if (feedback.err) {
+
             resolv({ err: feedback.err, data: null });
             return;
           }
@@ -202,7 +211,7 @@ export class Synchro {
         let blocknumber = nhash;
         let address = txs[j].caller;
         let datetime = dtime;
-        let fee = txs[j].fee;
+        // let fee = txs[j].fee;
         let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
         // console.log('updateTx:')
         // console.log(content);
@@ -211,6 +220,7 @@ export class Synchro {
         // put it into tx table, insertOrReplace
         let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
         if (feedback.err) {
+          this.logger.error('put tx into txtable failed')
           resolv({ err: feedback.err, data: null });
           return;
         }
@@ -225,13 +235,16 @@ export class Synchro {
         // get receipt
         feedback = await this.getReceiptInfo(hash);
         if (feedback.err) {
+          this.logger.error('getReceipt for tx failed')
           resolv({ err: feedback.err, data: null });
           return;
         }
+        this.logger.info('get receipt for tx -->\n')
         console.log(feedback.data)
 
         let feedback2 = await this.checkAccountAndToken(feedback.data);
         if (feedback2.err) {
+          this.logger.error('checkAccountAndToken() failed.')
           resolv({ err: feedback2.err, data: null });
           return;
         }
@@ -279,8 +292,8 @@ export class Synchro {
       || tx.method === 'setUserCode'
       || tx.method === 'getUserCode'
       || tx.method === 'runUserMethod'
-
     ) {
+      this.logger.info('We wont handle tx:', tx.method, '\n')
       return this.checkDefaultCommand(recet);
     }
     else {
@@ -362,10 +375,9 @@ export class Synchro {
   // Check bancor R, F, S parameters
   private checkBuyBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('checkBuyBancorToken -->\n')
       let tokenName = receipt.tx.input.tokenid;
       let caller = receipt.tx.caller;
-
-
 
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
@@ -406,6 +418,7 @@ export class Synchro {
   }
   private checkTransferBancorTokenTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('checkTransferBancorTokenTo -->');
 
       let tokenName = receipt.tx.input.tokenid;
       let caller = receipt.tx.caller;
@@ -421,99 +434,106 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
-  // private fetchBancorTokenNumber(tokenName: string, func: (token: string) => Promise<IfResult>) {
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     this.logger.info('fetchBancorTokenNumber')
-  //     let result = await func.call(this, tokenName);
-  //     if (result.ret === 200) {
-  //       let obj = JSON.parse(result.resp!.toString());
-  //       let value = obj.value.replace('n', '')
-  //       let out: number;
-  //       try {
-  //         let num = parseFloat(value);
-  //         let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
-  //         resolv({ err: ErrorCode.RESULT_OK, data: num1 });
-  //         return;
-  //       } catch (e) {
-  //         this.logger.error('getbancortokeninfo failed:', e);
-  //         resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-  //       }
-  //     } else {
-  //       this.logger.error('getbancortokeninfo failed:', result)
-  //       resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-  //     }
-  //   });
-  // }
+  private fetchBancorTokenNumber(tokenName: string, func: (token: string) => Promise<IfResult>) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('fetchBancorTokenNumber')
+      let result = await func.call(this, tokenName);
+      if (result.ret === 200) {
+        let obj = JSON.parse(result.resp!.toString());
+        let value = obj.value.replace('n', '')
+        let out: number;
+        try {
+          let num = parseFloat(value);
+          let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
+          resolv({ err: ErrorCode.RESULT_OK, data: num1 });
+          return;
+        } catch (e) {
+          this.logger.error('getbancortokeninfo failed:', e);
+          resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+        }
+      } else {
+        this.logger.error('getbancortokeninfo failed:', result)
+        resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+      }
+    });
+  }
   // private fetchBancorTokenNumbers(tokenName: string) {
   //   return new Promise<IFeedBack>(async (resolv) => {
   private fetchBancorTokenNumberSupply(tokenName: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('fetchBancorTokenNumberSupply')
-      let result = await this.getSupply(tokenName);
-      if (result.ret === 200) {
-        let obj = JSON.parse(result.resp!.toString());
-        let value = obj.value.replace('n', '')
-        let out: number;
-        try {
-          let num = parseFloat(value);
-          let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
-          resolv({ err: ErrorCode.RESULT_OK, data: num1 });
-          return;
-        } catch (e) {
-          this.logger.error('getbancortokeninfo failed:', e);
-          resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-        }
-      } else {
-        this.logger.error('getbancortokeninfo failed:', result)
-        resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-      }
-    });
+    this.logger.info('fetchBancorTokenNumberSupply')
+    return this.fetchBancorTokenNumber(tokenName, this.getSupply);
+    // return new Promise<IFeedBack>(async (resolv) => {
+
+    //   let result = await this.getSupply(tokenName);
+    //   if (result.ret === 200) {
+    //     let obj = JSON.parse(result.resp!.toString());
+    //     let value = obj.value.replace('n', '')
+    //     let out: number;
+    //     try {
+    //       let num = parseFloat(value);
+    //       let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
+    //       resolv({ err: ErrorCode.RESULT_OK, data: num1 });
+    //       return;
+    //     } catch (e) {
+    //       this.logger.error('getbancortokeninfo failed:', e);
+    //       resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+    //     }
+    //   } else {
+    //     this.logger.error('getbancortokeninfo failed:', result)
+    //     resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+    //   }
+    // });
   }
   private fetchBancorTokenNumberReserve(tokenName: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('fetchBancorTokenNumberReserve')
-      let result = await this.getReserve(tokenName);
-      if (result.ret === 200) {
-        let obj = JSON.parse(result.resp!.toString());
-        let value = obj.value.replace('n', '')
-        let out: number;
-        try {
-          let num = parseFloat(value);
-          let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
-          resolv({ err: ErrorCode.RESULT_OK, data: num1 });
-          return;
-        } catch (e) {
-          this.logger.error('getbancortokeninfo failed:', e);
-          resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-        }
-      } else {
-        this.logger.error('getbancortokeninfo failed:', result)
-        resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-      }
-    });
+    this.logger.info('fetchBancorTokenNumberReserve')
+    return this.fetchBancorTokenNumber(tokenName, this.getReserve);
+    // return new Promise<IFeedBack>(async (resolv) => {
+
+    //   let result = await this.getReserve(tokenName);
+    //   if (result.ret === 200) {
+    //     let obj = JSON.parse(result.resp!.toString());
+    //     let value = obj.value.replace('n', '')
+    //     let out: number;
+    //     try {
+    //       let num = parseFloat(value);
+    //       let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
+    //       resolv({ err: ErrorCode.RESULT_OK, data: num1 });
+    //       return;
+    //     } catch (e) {
+    //       this.logger.error('getbancortokeninfo failed:', e);
+    //       resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+    //     }
+    //   } else {
+    //     this.logger.error('getbancortokeninfo failed:', result)
+    //     resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+    //   }
+    // });
   }
   private fetchBancorTokenNumberFactor(tokenName: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('fetchBancorTokenNumberFactor')
-      let result = await this.getFactor(tokenName);
-      if (result.ret === 200) {
-        let obj = JSON.parse(result.resp!.toString());
-        let value = obj.value.replace('n', '')
-        let out: number;
-        try {
-          let num = parseFloat(value);
-          let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
-          resolv({ err: ErrorCode.RESULT_OK, data: num1 });
-          return;
-        } catch (e) {
-          this.logger.error('getbancortokeninfo failed:', e);
-          resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-        }
-      } else {
-        this.logger.error('getbancortokeninfo failed:', result)
-        resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
-      }
-    });
+    this.logger.info('fetchBancorTokenNumberFactor')
+    return this.fetchBancorTokenNumber(tokenName, this.getFactor)
+    //return new Promise<IFeedBack>(async (resolv) => {
+
+
+    // let result = await this.getFactor(tokenName);
+    // if (result.ret === 200) {
+    //   let obj = JSON.parse(result.resp!.toString());
+    //   let value = obj.value.replace('n', '')
+    //   let out: number;
+    //   try {
+    //     let num = parseFloat(value);
+    //     let num1 = parseFloat(num.toFixed(BANCOR_TOKEN_PRECISION));
+    //     resolv({ err: ErrorCode.RESULT_OK, data: num1 });
+    //     return;
+    //   } catch (e) {
+    //     this.logger.error('getbancortokeninfo failed:', e);
+    //     resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+    //   }
+    // } else {
+    //   this.logger.error('getbancortokeninfo failed:', result)
+    //   resolv({ err: ErrorCode.RESULT_SYNC_GETBANCORTOKENINFO_FAILED, data: '' })
+    // }
+    //});
   }
 
   //   });
@@ -613,6 +633,7 @@ export class Synchro {
 
       result = await this.pStorageDb.updateBancorTokenTable(tokenName, F, R, S);
       if (result.err) {
+        this.logger.error('updateBancorTokenTable failed:', F, R, R)
         resolv(result);
         return;
       }

@@ -23,6 +23,7 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
       F = result.data.factor;
       S = result.data.supply;
       R = result.data.reserve;
+      result.data.price = S * F / R;
     }
     resolv({ err: ErrorCode.RESULT_OK, data: result.data })
   })

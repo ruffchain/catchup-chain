@@ -35,7 +35,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.1.241', // ,     '40.73.1.241'    '127.0.0.1'
+  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1'
   port: 18080,
   address: '',
   verbose: false
@@ -99,6 +99,14 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   it('getTokenInfo sys', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "sys")
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
+  it('getTokenPrice virtual', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokenPrice', "virtual")
     // logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
