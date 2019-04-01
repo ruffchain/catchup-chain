@@ -20,7 +20,7 @@ let storageDB = new StorageDataBase(logger, {
 })
 
 let synchro = new Synchro({
-  ip: '139.219.184.44',
+  ip: '139.217.133.187', // '139.219.184.44'   '127.0.0.1'
   port: 18089
 }, logger, statusDB, storageDB);
 
@@ -59,23 +59,25 @@ const txLst = [
 ]
 // synchro.getBlock(0);
 async function main() {
-  let result = await synchro.getFactor('chromesmart');
+  let result = await synchro.getLIBNumber();
   logger.info(result);
-  let obj = JSON.parse(result.resp!.toString());
-  logger.info(obj.value.replace('n', ''));
-  logger.info('\n')
+  // let result = await synchro.getFactor('chromesmart');
+  // logger.info(result);
+  // let obj = JSON.parse(result.resp!.toString());
+  // logger.info(obj.value.replace('n', ''));
+  // logger.info('\n')
 
-  result = await synchro.getReserve('chromesmart');
-  logger.info(result);
-  obj = JSON.parse(result.resp!.toString());
-  logger.info(obj.value.replace('n', ''));
-  logger.info('\n')
+  // result = await synchro.getReserve('chromesmart');
+  // logger.info(result);
+  // obj = JSON.parse(result.resp!.toString());
+  // logger.info(obj.value.replace('n', ''));
+  // logger.info('\n')
 
-  result = await synchro.getSupply('chromesmart');
-  logger.info(result);
-  obj = JSON.parse(result.resp!.toString());
-  logger.info(obj.value.replace('n', ''));
-  logger.info('\n')
+  // result = await synchro.getSupply('chromesmart');
+  // logger.info(result);
+  // obj = JSON.parse(result.resp!.toString());
+  // logger.info(obj.value.replace('n', ''));
+  // logger.info('\n')
 
   // result = await synchro.transferCandy('1NsES7YKm8ZbRE4K5LaPGKeSELVtAwzoTw', 1000);
   // logger.info(result)

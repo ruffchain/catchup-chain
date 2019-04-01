@@ -28,7 +28,7 @@ export async function laGetName(handle: WRQueue, args: any) {
         resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: 'sys', type: HASH_TYPE.TOKEN, verified: 0 }] });
         return;
       }
-      // it is a token name
+      // it is a token name, getAllRecords()
       let result = await handle.pStorageDb.queryHashTableFullName(args, 6);
       if (result.data) {
         result.data.forEach((item: any) => {
@@ -45,7 +45,7 @@ export async function laGetName(handle: WRQueue, args: any) {
       let num = parseInt(args);
       handle.logger.info('getName: num:', num)
       if (num >= 0 && num < handle.pStatusDb.nCurrentHeight) {
-        resolv({ err: ErrorCode.RESULT_OK, data: [{ type: HASH_TYPE.HEIGHT }] });
+        resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.HEIGHT, verified: 0 }] });
       }
       else {
         resolv({ err: ErrorCode.RESULT_OK, data: [] });

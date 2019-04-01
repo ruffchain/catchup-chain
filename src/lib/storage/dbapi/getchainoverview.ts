@@ -5,8 +5,6 @@ import { WRQueue } from "../queue";
 
 export async function laGetChainOverview(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
-
-
     let nLib = 0;
 
     // get latestblock
@@ -25,6 +23,8 @@ export async function laGetChainOverview(handle: WRQueue, args: any) {
       }
       catch (e) {
         handle.logger.error('taskgetchainoverview get latest block JSON parse fail');
+        resolv({ err: ErrorCode.RESULT_SYNC_GETCHAINOVERVIEW_FAILED, data: {} });
+        return;
       }
     }
 
@@ -36,6 +36,8 @@ export async function laGetChainOverview(handle: WRQueue, args: any) {
         nTxCount = parseInt(result2.data.count)
       } catch (e) {
         handle.logger.error('taskgetchainoverview get tx count JSON parse fail');
+        resolv({ err: ErrorCode.RESULT_SYNC_GETCHAINOVERVIEW_FAILED, data: {} });
+        return;
       }
     }
     resolv({

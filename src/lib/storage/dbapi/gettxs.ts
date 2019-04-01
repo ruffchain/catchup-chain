@@ -14,6 +14,7 @@ export async function laGetTxs(handle: WRQueue, args: any) {
     let arr: any;
 
     if (args === "" || args === {} || args === undefined) {
+      // getAllRecords()
       result = await handle.pStorageDb.queryLatestTxTable();
       if (result.err === ErrorCode.RESULT_OK) {
 

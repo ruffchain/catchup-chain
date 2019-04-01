@@ -31,7 +31,7 @@ export async function laGetLatestTxCount(handle: WRQueue, args: any) {
       handle.logger.error('taskGetLatestTxCount input JSON parse fail');
     }
     handle.logger.info('taskGetLatestTxCount failed')
-    resolv({ err: ErrorCode.RESULT_SYNC_PARSE_JSON_QUERY_FAILED, data: [] })
+    resolv({ err: ErrorCode.RESULT_SYNC_PARSE_JSON_QUERY_FAILED, data: null })
 
 
   })

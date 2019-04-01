@@ -11,11 +11,12 @@ export async function laGetTokenInfo(handle: WRQueue, args: any) {
       resolv({ err: ErrorCode.RESULT_OK, data: { name: 'SYS', type: TOKEN_TYPE.SYS, address: '-', timestamp: 0 } })
       return;
     }
+    // getRecord()
     let result = await handle.pStorageDb.queryTokenTable(token);
     if (result.err === ErrorCode.RESULT_OK) {
       resolv(result);
     } else {
-      resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENINFO_FAILED, data: [] })
+      resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENINFO_FAILED, data: {} })
     }
   })
 }

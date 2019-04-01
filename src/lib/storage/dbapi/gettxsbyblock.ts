@@ -5,6 +5,7 @@ import { WRQueue } from "../queue";
 
 export async function laGetTxsByBlock(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
+    // getAllRecords()
     let result = await handle.pStorageDb.queryTxTableByBlock(args);
     let arr: any;
     if (result.err === ErrorCode.RESULT_OK) {

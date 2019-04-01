@@ -5,6 +5,7 @@ import { WRQueue } from "../queue";
 
 export async function laGetBlocks(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
+    // GetAllRecords()
     let result = await handle.pStorageDb.queryLatestBlockTable();
     if (result.err === ErrorCode.RESULT_OK) {
       resolv(result);

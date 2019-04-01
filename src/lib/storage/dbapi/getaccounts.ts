@@ -3,6 +3,7 @@ import { IFeedBack, ErrorCode } from "../../../core";
 
 export async function laGetAccounts(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
+    // getAllRecords()
     let result = await handle.pStorageDb.queryLatestAccountTable();
     if (result.err === ErrorCode.RESULT_OK) {
       let arr = result.data;

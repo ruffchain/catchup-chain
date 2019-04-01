@@ -28,7 +28,7 @@ let storageDB = new StorageDataBase(logger, {
 })
 
 let synchro = new Synchro({
-  ip: '139.219.184.44',
+  ip: '127.0.0.1',  // '127.0.0.1'    '139.219.184.44'
   port: 18089
 }, logger, statusDB, storageDB);
 
@@ -53,15 +53,24 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 
 describe('To test Catchup v1.0.2 JSON API', async function () {
   this.timeout(100000);
-  it('getName', async () => {
+  it('getLatestTxCount', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getName', "13")
+    let cr = await client.callAsync('getLatestTxCount', "")
     //logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
+  // it('getName', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getName', "13")
+  //   //logger.info(cr);
+  //   logger.info(cr.resp)
+
+  //   let obj = JSON.parse(cr.resp!);
+  //   expect(1).to.equal(1);
+  // })
   // it('getName', async () => {
   //   this.timeout(3000);
   //   let cr = await client.callAsync('getName', "1EYLLvMtXGeiBJ7AZ6KJRP2BdAQ2Bof79")
@@ -96,22 +105,22 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   //   let obj = JSON.parse(cr.resp!)
   //   expect(obj.name).to.equal("hdba");
   // })
-  it('getTokenInfo sys', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "sys")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
-  it('getTokenPrice virtual', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenPrice', "virtual")
-    // logger.info(cr);
-    logger.info(cr.resp)
-    let obj = JSON.parse(cr.resp!)
-    expect(1).to.equal(1);
-  })
+  // it('getTokenInfo sys', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getTokenInfo', "sys")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
+  // it('getTokenPrice virtual', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getTokenPrice', "virtual")
+  //   // logger.info(cr);
+  //   logger.info(cr.resp)
+  //   let obj = JSON.parse(cr.resp!)
+  //   expect(1).to.equal(1);
+  // })
   // it('getTokenInfo ssss', async () => {
   //   this.timeout(3000);
   //   let cr = await client.callAsync('getTokenInfo', "ssss")

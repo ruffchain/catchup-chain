@@ -14,6 +14,7 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
       if (args === 's' || args === 'SYS' || args === "sys") {
         args = "s";
       }
+      // getAllRecords()
       result = await handle.pStorageDb.queryFortuneRanking(args);
 
       handle.logger.info('getFortuneRanking 1 string')

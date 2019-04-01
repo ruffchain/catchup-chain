@@ -8,6 +8,7 @@ export async function laLatestBlocks(handle: WRQueue, args: any) {
 
     let result: any;
     if (!args) {
+      // getAllRecords()
       result = await handle.pStorageDb.queryLatestBlockTable();
       if (result.err === ErrorCode.RESULT_OK) {
 

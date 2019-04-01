@@ -82,7 +82,6 @@ export class Synchro {
   public async start() {
     this.logger.info('Synchro client started ...\n');
 
-
     this.loopTask();
   }
 
