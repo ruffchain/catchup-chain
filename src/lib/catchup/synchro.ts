@@ -308,7 +308,16 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       // get caller balance
       let caller = receipt.tx.caller;
+      let hash = receipt.tx.hash;
+      let time = receipt.block.timestamp;
       // 
+      // insert into txaddresstable
+      let feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, [caller], time);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
+
       if (receipt.receipt.returnCode === 0) {
         this.logger.info('checkTranserTo, updateBalances')
         let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
@@ -333,6 +342,9 @@ export class Synchro {
       let addrLst: string[] = [];
       let amountAll: number = 0;
       let precision: number = NORMAL_TOKEN_PRECISION;
+      let hash = receipt.tx.hash;
+      let time = receipt.block.timestamp;
+
       // put it into hash table–––
 
       preBalances.forEach((element: any) => {
@@ -348,6 +360,13 @@ export class Synchro {
       this.logger.info('checkCreateToken, updateNamesToHashTable')
       // put address into hash table
       let feedback = await this.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
+
+      // insert into txaddresstable
+      feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
       if (feedback.err) {
         resolv(feedback);
         return;
@@ -396,6 +415,16 @@ export class Synchro {
       this.logger.info('checkBuyBancorToken -->\n')
       let tokenName = receipt.tx.input.tokenid;
       let caller = receipt.tx.caller;
+      let hash = receipt.tx.hash;
+      let addrLst = [caller];
+      let time = receipt.block.timestamp;
+
+      // insert into txaddresstable
+      let feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
@@ -423,6 +452,15 @@ export class Synchro {
       let tokenName = receipt.tx.input.tokenid;
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
+      let hash = receipt.tx.hash;
+      let time = receipt.block.timestamp;
+
+      // insert into txaddresstable
+      let feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateTokenBalances(tokenName, [{ address: caller }, { address: to }]);
@@ -447,6 +485,15 @@ export class Synchro {
       let tokenName = receipt.tx.input.tokenid;
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
+      let hash = receipt.tx.hash;
+      let time = receipt.block.timestamp;
+
+      // insert into txaddresstable
+      let feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalances(tokenName, [{ address: caller }, { address: to }]);
@@ -621,6 +668,8 @@ export class Synchro {
       let nonliquidity: number = (receipt.tx.nonliquidity !== undefined) ? (parseFloat(receipt.tx.nonliquidity)) : (0);
       let factor = parseFloat(receipt.tx.input.factor);
       let reserve = parseFloat(receipt.tx.value)
+      let hash = receipt.tx.hash;
+      let time = receipt.block.timestamp;
       // add it into hash table
 
       preBalances.forEach((element: any) => {
@@ -632,6 +681,13 @@ export class Synchro {
 
       // put address into hashtable
       let feedback = await this.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
+
+      // insert into txaddresstable
+      feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
       if (feedback.err) {
         resolv(feedback);
         return;
@@ -688,6 +744,16 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       let caller = receipt.tx.caller;
       let tokenName = receipt.tx.input.tokenid;
+      let hash = receipt.tx.hash;
+      let addrLst = [caller];
+      let time = receipt.block.timestamp;
+
+      // insert into txaddresstable
+      let feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         // update caller token account
@@ -715,6 +781,8 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
+      let hash = receipt.tx.hash;
+      let time = receipt.block.timestamp;
 
       // let value = receipt.tx.value; // string
       // let fee = receipt.tx.fee;
@@ -728,6 +796,14 @@ export class Synchro {
         resolv(feedback);
         return;
       }
+
+      // insert into txaddresstable
+      feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
+
       if (receipt.receipt.returnCode === 0) {
         this.logger.info('checkTranserTo, updateBalances')
         feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }, { address: to }]);
@@ -765,7 +841,7 @@ export class Synchro {
 
         this.logger.info('updateAccountTable ->\n')
         console.log("value:", value);
-        let result2 = await this.pStorageDb.updateAccountTable(account.address, token, amount, value);
+        let result2 = await this.pStorageDb.updateAccountTable(account.address, token, type, amount, value);
         resolv(result2);
       } else {
         resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });

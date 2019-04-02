@@ -58,7 +58,7 @@ export class StorageDataBase extends CUDataBase {
 
     this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE,"number" INTEGER NOT NULL, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
 
-    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "fromaddress" CHAR(64) NOT NULL, "toaddress" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
+    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
     this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
@@ -181,8 +181,8 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
 
-  public insertAccountTable(hash: string, token: string, amount: string, value: number): Promise<IFeedBack> {
-    let sql = SqlString.format('INSERT INTO ? (hash, token, amount, value) VALUES(?, ?, ?, ?);', [this.accountTable, hash, token, amount, value]);
+  public insertAccountTable(hash: string, token: string, tokentype: string, amount: string, value: number): Promise<IFeedBack> {
+    let sql = SqlString.format('INSERT INTO ? (hash, token, tokentype, amount, value) VALUES(?, ?, ?, ?, ?);', [this.accountTable, hash, token, tokentype, amount, value]);
     return this.insertRecord(sql, {});
   }
 
@@ -190,14 +190,14 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('UPDATE ? SET amount = ? , value = ? WHERE hash=? AND token = ? ;', [this.accountTable, amount, value, addr, token])
     return this.updateRecord(sql);
   }
-  public updateAccountTable(address: string, token: string, amount: string, value: number) {
+  public updateAccountTable(address: string, token: string, tokentype: string, amount: string, value: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       // if address token is not empty, update it
       let result = await this.queryAccountTableByTokenAndAddress(address, token);
       //console.log('updateAccountTable result:', result)
       if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         // insert into it
-        let result1 = await this.insertAccountTable(address, token, amount, value);
+        let result1 = await this.insertAccountTable(address, token, tokentype, amount, value);
         //console.log('updateAccountTable result1:', result1)
         resolv(result1);
       } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
@@ -263,7 +263,7 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(sql)
   }
   public queryLatestTxTable() {
-    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 50;', [this.txTable])
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 15;', [this.txTable])
     return this.getAllRecords(sql)
   }
   public queryTxTableByAddressTotal(address: string) {
@@ -276,7 +276,7 @@ export class StorageDataBase extends CUDataBase {
   }
   public insertTxTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTable', hash, '\n');
-    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address,timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime,$content1);', [this.txTable]);
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1);', [this.txTable]);
 
     return this.insertOrReplaceRecord(sql, {
       $hash: SqlString.escape(hash).replace(/\'/g, ''),
@@ -342,14 +342,72 @@ export class StorageDataBase extends CUDataBase {
       }
     });
   }
-
+  //////////////////////
   // txaddress table
-  public async queryHashFromTx(addr: string): Promise<IFeedBack> {
-    return new Promise<IFeedBack>(async (resolv) => {
-      let sql = SqlString.format('SELECT * FROM ? WHERE address = ? ;', [this.txAddressTable, addr]);
+  //////////////////////
+  public async queryHashTxAddressTable(addr: string): Promise<IFeedBack> {
+    let sql = SqlString.format('SELECT * FROM ? WHERE address = ? ;', [this.txAddressTable, addr]);
 
-      let result = await this.getAllRecords(sql);
-      return result;
+    return this.getAllRecords(sql);
+  }
+  public async queryHashFromTx(hash: string, addr: string): Promise<IFeedBack> {
+    let sql = SqlString.format('SELECT * FROM ? WHERE address = ? AND hash = ? ;', [this.txAddressTable, addr, hash]);
+
+    return this.getRecord(sql);
+  }
+  public async insertTxAddressTable(hash: string, address: string, datetime: number) {
+    this.logger.info('insertTxAddressTable');
+    let sql = SqlString.format('INSERT INTO ? (hash, address, timestamp) VALUES($hash, $address, $datetime);', [this.txAddressTable]);
+    return this.insertRecord(sql, {
+      $hash: hash,
+      $address: address,
+      $datetime: datetime
+    })
+  }
+  public async updateTxAddressTable(hash: string, address: string, datetime: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await this.queryHashFromTx(hash, address);
+
+      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+
+        let result1 = await this.insertTxAddressTable(hash, address, datetime);
+        console.log('updateTxAddressTable result1:', result1)
+        resolv(result1);
+      } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+        resolv(result);
+      } else {
+        resolv({ err: ErrorCode.RESULT_OK, data: null })
+      }
+
+    });
+  }
+  // Query 2 tables
+  public async queryHashFromTxAddressTable(addr: string, index: number, size: number): Promise<IFeedBack> {
+
+    this.logger.info('queryHansFromTxAddressTable:', 'size:', size, ' index:', index)
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash IN ( SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? );', [this.txTable, this.txAddressTable, addr, size, index * size]);
+    // SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? ;
+    // "ad9d2f16ec9c0014b9036f7df3029ae783ba6a7e7cf5ba273c286eba36280c80" , "644d22c72f647fc79d02ce36e3b291154c02ad80c18713b0588cc679ba50ff7f"
+    //let sql = SqlString.format('SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? ;', [this.txAddressTable, addr, size, index * size]);
+    return this.getAllRecords(sql);
+  }
+
+  public async queryHashFromTxAddressTableTotal(addr: string) {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE address = ? ;', [this.txAddressTable, addr]);
+    return this.getRecord(sql)
+  }
+
+  public async updateHashToTxAddressTable(strHash: string, addrs: string[], timestamp: number) {
+    this.logger.info('updateHashToTxAddressTable()')
+    return new Promise<IFeedBack>(async (resolv) => {
+      for (let j = 0; j < addrs.length; j++) {
+        let result = await this.updateTxAddressTable(strHash, addrs[j], timestamp);
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
 }

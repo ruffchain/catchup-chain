@@ -53,15 +53,52 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 
 describe('To test Catchup v1.0.2 JSON API', async function () {
   this.timeout(100000);
-  it('getLatestTxCount', async () => {
+  it('getTokenInfo sys', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getLatestTxCount', "")
+    let cr = await client.callAsync('getTokenInfo', "sys")
     //logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
+  it('getTokenInfo token3', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokenInfo', "token3")
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+  it('getTokenInfo smarttoken tokens', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokenInfo', "tokens")
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+  it('getTxsByAddress ', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTxsByAddress', { address: '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy', page: 1, pageSize: 5 })
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+  it('getTokensByAddress ', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokensByAddress', '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy')
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
   // it('getName', async () => {
   //   this.timeout(3000);
   //   let cr = await client.callAsync('getName', "13")

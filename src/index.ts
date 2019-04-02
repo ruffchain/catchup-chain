@@ -101,7 +101,7 @@ async function main() {
       logger.info(preBalance);
 
       amountAll += preBalance.amount; // add it up
-      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, preBalance.amount.toString(), preBalance.amount), 'add to account table ', logger);
+      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, preBalance.amount.toString(), preBalance.amount), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 
