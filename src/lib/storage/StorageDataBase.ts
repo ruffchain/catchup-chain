@@ -38,6 +38,9 @@ export class StorageDataBase extends CUDataBase {
   private tokenTableSchema: string;
   private bancorTokenTableSchema: string;
 
+  private txAddressTable: string;
+  private txAddressTableSchema: string;
+
   constructor(logger: winston.LoggerInstance, options: IfCUDataBaseOptions) {
     super(logger, options);
     this.hashTable = 'hashtable';
@@ -46,19 +49,24 @@ export class StorageDataBase extends CUDataBase {
     this.txTable = 'txtable';
     this.tokenTable = 'tokentable';
     this.bancorTokenTable = 'bancortokentable';
+    this.txAddressTable = 'txaddresstable';
 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
 
     // hash-tokenname, value for search purpose!
-    this.accountTableSchema = `("hash" CHAR(64) NOT NULL, "token" CHAR(64) NOT NULL, "amount" TEXT NOT NULL, "value" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
+    this.accountTableSchema = `("hash" CHAR(64) NOT NULL, "token" CHAR(64) NOT NULL, "tokentype" CHAR(64) NOT NULL , "amount" TEXT NOT NULL, "value" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
 
     this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE,"number" INTEGER NOT NULL, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
 
-    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
+    this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "fromaddress" CHAR(64) NOT NULL, "toaddress" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
-    this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
+    this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
+    // This is the real-time parameter
     this.bancorTokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "factor" INTEGER NOT NULL, "reserve" INTEGER NOT NULL,"supply" INTEGER NOT NULL);`;
+
+    // tx-address table
+    this.txAddressTableSchema = `("hash" CHAR(64) NOT NULL ,"address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, PRIMARY KEY("hash", "address"));`;
   }
 
   public init(): Promise<IFeedBack> {
@@ -68,6 +76,7 @@ export class StorageDataBase extends CUDataBase {
       await this.createTable(this.blockTable, this.blockTableSchema);
       await this.createTable(this.txTable, this.txTableSchema);
       await this.createTable(this.bancorTokenTable, this.bancorTokenTableSchema);
+      await this.createTable(this.txAddressTable, this.txAddressTableSchema);
       result = await this.createTable(this.tokenTable, this.tokenTableSchema);
       this.logger.info('Create storage tables:', result);
       resolv({ err: 0, data: null });
@@ -285,29 +294,29 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE name = ?;', [this.tokenTable, name])
     return this.getRecord(sql);
   }
-  public insertTokenTable(tokenname: string, type: string, address: string, datetime: number) {
-    let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp) VALUES(?, ?, ?, ?);', [this.tokenTable, tokenname, type, address, datetime])
-    return this.insertRecord(sql, {});
+  public insertTokenTable(tokenname: string, type: string, address: string, datetime: number, content: Buffer) {
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp, content) VALUES(?, ?, ?, ?, $content);', [this.tokenTable, tokenname, type, address, datetime])
+    return this.insertRecord(sql, { $content: content });
   }
-  public updateTokenTable(tokenname: string, type: string, address: string, datetime: number) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.queryTokenTable(tokenname)
+  // public updateTokenTable(tokenname: string, type: string, address: string, datetime: number, content: Buffer) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     let result = await this.queryTokenTable(tokenname)
 
-      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-        // insert into it
-        let result1 = await this.insertTokenTable(tokenname, type, address, datetime);
-        //console.log('updateAccountTable result1:', result1)
-        resolv(result1);
-      } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
-        resolv(result);
-      } else {
-        console.log('ERROR: updateTokenTable result2: ', tokenname, ' already exist in db!')
-        resolv({ err: ErrorCode.RESULT_OK, data: '' });
-      }
-    });
-  }
+  //     if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+  //       // insert into it
+  //       let result1 = await this.insertTokenTable(tokenname, type, address, datetime, content);
+  //       //console.log('updateAccountTable result1:', result1)
+  //       resolv(result1);
+  //     } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+  //       resolv(result);
+  //     } else {
+  //       console.log('ERROR: updateTokenTable result2: ', tokenname, ' already exist in db!')
+  //       resolv({ err: ErrorCode.RESULT_OK, data: '' });
+  //     }
+  //   });
+  // }
 
-  // bancorTokenTable
+  // bancorTokenTable, for token price query 
   public queryBancorTokenTable(name: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE name = ?;', [this.bancorTokenTable, name])
     return this.getRecord(sql);
@@ -333,4 +342,16 @@ export class StorageDataBase extends CUDataBase {
       }
     });
   }
+
+  // txaddress table
+  public async queryHashFromTx(addr: string): Promise<IFeedBack> {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let sql = SqlString.format('SELECT * FROM ? WHERE address = ? ;', [this.txAddressTable, addr]);
+
+      let result = await this.getAllRecords(sql);
+      return result;
+    });
+  }
 }
+
+

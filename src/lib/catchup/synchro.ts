@@ -331,7 +331,8 @@ export class Synchro {
       let caller = receipt.tx.caller;
       let nameLst: IName[] = [];
       let addrLst: string[] = [];
-      // let amountAll: number = 0;
+      let amountAll: number = 0;
+      let precision: number = NORMAL_TOKEN_PRECISION;
       // put it into hash table–––
 
       preBalances.forEach((element: any) => {
@@ -339,7 +340,7 @@ export class Synchro {
           address: element.address
         })
         addrLst.push(element.address)
-        // amountAll += parseInt(element.amount);
+        amountAll += parseInt(element.amount);
       });
 
       addrLst.push(caller);
@@ -361,7 +362,10 @@ export class Synchro {
         }
 
         // add a new token to token table
-        result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime);
+        result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
+          supply: amountAll,
+          precision: precision
+        })));
         this.logger.info('createToken insertTokenTable , result:', result)
         if (result.err) {
           resolv(result);
@@ -612,14 +616,16 @@ export class Synchro {
       let datetime = receipt.block.timestamp;
       let caller = receipt.tx.caller;
       let nameLst: IName[] = [];
-      // let amountAll: number = 0;
+      let amountAll: number = 0;
       let addrLst: string[] = [];
-
+      let nonliquidity: number = (receipt.tx.nonliquidity !== undefined) ? (parseFloat(receipt.tx.nonliquidity)) : (0);
+      let factor = parseFloat(receipt.tx.input.factor);
+      let reserve = parseFloat(receipt.tx.value)
       // add it into hash table
 
       preBalances.forEach((element: any) => {
         nameLst.push({ address: element.address });
-        // amountAll += parseInt(element.amount);
+        amountAll += parseInt(element.amount);
         addrLst.push(element.address)
       });
       addrLst.push(caller)
@@ -641,7 +647,12 @@ export class Synchro {
         }
 
         // get add token table
-        result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime);
+        result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
+          factor: factor,
+          supply: amountAll,
+          nonliquidity: nonliquidity,
+          reserve: reserve
+        })));
         this.logger.info('checkCreateBancorToken insert token table')
         if (result.err) {
           resolv(result);

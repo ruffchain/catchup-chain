@@ -1,12 +1,13 @@
 import { Logger } from './api/logger';
 import { StatusDataBase } from './lib/storage/statusdb';
-import { StorageDataBase, SYS_TOKEN, HASH_TYPE } from './lib/storage/StorageDataBase';
+import { StorageDataBase, SYS_TOKEN, HASH_TYPE, TOKEN_TYPE } from './lib/storage/StorageDataBase';
 import { IFeedBack } from './core';
 import winston = require('winston');
 import * as fs from 'fs';
 import { Synchro } from './lib/catchup/synchro';
 import { Inquiro } from './lib/catchup/inquiro';
 import { WRQueue } from './lib/storage/queue';
+import { SYS_TOKEN_PRECISION } from './lib/storage/dbapi/scoop';
 
 interface IPreBalance {
   address: string;
@@ -94,15 +95,23 @@ async function main() {
 
     assert(await storageDB.insertHashTable('sys', HASH_TYPE.TOKEN), 'add to nameHash table' + 'sys', logger);
 
+    let amountAll = 0;
     for (let i = 0; i < arrPreBalances.length; i++) {
       let preBalance = arrPreBalances[i];
       logger.info(preBalance);
+
+      amountAll += preBalance.amount; // add it up
       assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, preBalance.amount.toString(), preBalance.amount), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 
 
     }
+    assert(await storageDB.insertTokenTable('sys', TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
+      supply: amountAll,
+      precision: SYS_TOKEN_PRECISION
+    }))), 'save sys to token table', logger)
+
     assert(await statusDB.setLoadGenesisFileBool(1), 'set load genesis bool to :' + 1, logger);
   }
 
