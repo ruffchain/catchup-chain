@@ -318,15 +318,14 @@ export class Synchro {
         return;
       }
 
-      if (receipt.receipt.returnCode === 0) {
-        this.logger.info('checkTranserTo, updateBalances')
-        let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
-        if (feedback.err) {
-          resolv(feedback);
-          return;
-        }
+      //if (receipt.receipt.returnCode === 0) {
+      this.logger.info('checkTranserTo, updateBalances')
+      feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
       }
-
+      //}
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
@@ -372,13 +371,14 @@ export class Synchro {
         return;
       }
 
+      // update caller balance
+      let result = await this.updateBalance(SYS_TOKEN, { address: caller });
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+
       if (receipt.receipt.returnCode === 0) {
-        // update caller balance
-        let result = await this.updateBalance(SYS_TOKEN, { address: caller });
-        if (result.err) {
-          resolv(result);
-          return;
-        }
 
         // add a new token to token table
         result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
@@ -425,6 +425,11 @@ export class Synchro {
         resolv(feedback);
         return;
       }
+      feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
@@ -437,11 +442,7 @@ export class Synchro {
           resolv(result);
           return;
         }
-        let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
-        if (feedback.err) {
-          resolv(feedback);
-          return;
-        }
+
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
@@ -462,17 +463,19 @@ export class Synchro {
         return;
       }
 
+      let result = await this.updateBalance(SYS_TOKEN, { address: caller });
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateTokenBalances(tokenName, [{ address: caller }, { address: to }]);
         if (result.err) {
           resolv(result);
           return;
         }
-        result = await this.updateBalance(SYS_TOKEN, { address: caller });
-        if (result.err) {
-          resolv(result);
-          return;
-        }
+
       }
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
@@ -495,17 +498,19 @@ export class Synchro {
         return;
       }
 
+      let result = await this.updateBalance(SYS_TOKEN, { address: caller });
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+
       if (receipt.receipt.returnCode === 0) {
         let result = await this.updateBancorTokenBalances(tokenName, [{ address: caller }, { address: to }]);
         if (result.err) {
           resolv(result);
           return;
         }
-        result = await this.updateBalance(SYS_TOKEN, { address: caller });
-        if (result.err) {
-          resolv(result);
-          return;
-        }
+
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
@@ -693,15 +698,14 @@ export class Synchro {
         return;
       }
 
+      // update caller balance
+      let result = await this.updateBalance(SYS_TOKEN, { address: caller });
+      if (result.err) {
+        resolv(result);
+        return;
+      }
+
       if (receipt.receipt.returnCode === 0) {
-
-        // update caller balance
-        let result = await this.updateBalance(SYS_TOKEN, { address: caller });
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-
         // get add token table
         result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
           factor: factor,
@@ -754,14 +758,15 @@ export class Synchro {
         resolv(feedback);
         return;
       }
+      // update caller token account
+      let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
+      if (result.err) {
+        resolv(result);
+        return;
+      }
 
       if (receipt.receipt.returnCode === 0) {
-        // update caller token account
-        let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
-        if (result.err) {
-          resolv(result);
-          return;
-        }
+
         result = await this.updateBancorTokenParameters(tokenName);
         if (result.err) {
           resolv(result);
@@ -804,14 +809,14 @@ export class Synchro {
         return;
       }
 
-      if (receipt.receipt.returnCode === 0) {
-        this.logger.info('checkTranserTo, updateBalances')
-        feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }, { address: to }]);
-        if (feedback.err) {
-          resolv(feedback);
-          return;
-        }
+      //if (receipt.receipt.returnCode === 0) {
+      this.logger.info('checkTranserTo, updateBalances')
+      feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }, { address: to }]);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
       }
+      //}
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
