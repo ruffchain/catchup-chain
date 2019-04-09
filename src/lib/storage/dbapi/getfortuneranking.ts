@@ -11,8 +11,10 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
     let result: any;
 
     if (typeof args === 'string') { // tokenName
-      if (args === 's' || args === 'SYS' || args === "sys") {
-        args = "s";
+      if (args === 's' || args === 'SYS' || args === 'sys') {
+        args = 's';
+      } else {
+        args = args.toUpperCase();
       }
       // getAllRecords()
       result = await handle.pStorageDb.queryFortuneRanking(args);
@@ -38,7 +40,7 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
       let pageSize: number;
 
       try {
-        tokenName = args.token;
+        tokenName = args.token.toUpperCase();
         page = (args.page > 0) ? (args.page - 1) : 0;
         pageSize = args.pageSize;
 

@@ -1,4 +1,4 @@
-import { Logger } from '../../api/logger';
+// import { Logger } from '../../api/logger';
 import winston = require('winston');
 import { RPCClient } from '../../client/client/rfc_client';
 import { IfSysinfo, IfContext, DelayPromise, IfResult } from '../../api/common'
@@ -8,7 +8,6 @@ import { getReceipt } from '../../api/getreceipt';
 import { StatusDataBase } from '../storage/statusdb';
 import { StorageDataBase, HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from '../storage/StorageDataBase';
 import { ErrorCode, IFeedBack } from '../../core';
-import { type } from 'os';
 import { getBalance } from '../../api/getbalance';
 import { getTokenBalance } from '../../api/getTokenBalance';
 import { getBancorTokenBalance } from '../../api/getBancorTokenBalance';
@@ -21,6 +20,7 @@ import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } f
 
 /**
  * This is a client , always syncing with the Chain
+ * 
  */
 
 const PERIOD = 5;
@@ -84,6 +84,17 @@ export class Synchro {
 
     this.loopTask();
   }
+  // add for miner balance sync
+  private async loopTask2() {
+    this.logger.info('loopTask2()\n');
+    // get miners list
+    
+
+    // update miner balance one by one
+
+    await DelayPromise(PERIOD);
+    this.loopTask();
+  }
 
   private async loopTask() {
     // get LIBNumber
@@ -108,10 +119,10 @@ export class Synchro {
     else {
       this.logger.info('height equal \n');
     }
-    // delay 10s
+    // delay 5s
     this.logger.info('Delay ', PERIOD, ' seconds\n');
     await DelayPromise(PERIOD);
-    this.loopTask();
+    this.loopTask2();
   }
   // main task
   private updateBlockRange(nStart: number, nStop: number): Promise<IFeedBack> {
@@ -155,8 +166,8 @@ export class Synchro {
           return;
         }
         // 
-        this.logger.info('Display block -->');
-        console.log(obj);
+        // this.logger.info('Display block -->');
+        // console.log(obj);
 
         let hash = obj.block.hash;
         let hashnumber = obj.block.number;
@@ -214,8 +225,8 @@ export class Synchro {
         let datetime = dtime;
         // let fee = txs[j].fee;
         let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
-        // console.log('updateTx:')
-        // console.log(content);
+        console.log('updateTx:')
+        console.log(content);
         // console.log(typeof content)
 
         // put it into tx table, insertOrReplace
@@ -333,7 +344,7 @@ export class Synchro {
   private checkCreateToken(receipt: any, tokenType: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       // 
-      let tokenName = receipt.tx.input.tokenid;
+      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
       let preBalances = receipt.tx.input.preBalances; // array
       let datetime = receipt.block.timestamp;
       let caller = receipt.tx.caller;
@@ -413,7 +424,7 @@ export class Synchro {
   private checkBuyBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('checkBuyBancorToken -->\n')
-      let tokenName = receipt.tx.input.tokenid;
+      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
       let caller = receipt.tx.caller;
       let hash = receipt.tx.hash;
       let addrLst = [caller];
@@ -450,7 +461,7 @@ export class Synchro {
   private checkTransferTokenTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
 
-      let tokenName = receipt.tx.input.tokenid;
+      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
       let hash = receipt.tx.hash;
@@ -485,7 +496,7 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('checkTransferBancorTokenTo -->');
 
-      let tokenName = receipt.tx.input.tokenid;
+      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
       let hash = receipt.tx.hash;
@@ -663,7 +674,7 @@ export class Synchro {
   // it will record the R, S, F参数
   private checkCreateBancorToken(receipt: any, tokenType: string) {
     return new Promise<IFeedBack>(async (resolv) => {
-      let tokenName = receipt.tx.input.tokenid;
+      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
       let preBalances = receipt.tx.input.preBalances; // array
       let datetime = receipt.block.timestamp;
       let caller = receipt.tx.caller;

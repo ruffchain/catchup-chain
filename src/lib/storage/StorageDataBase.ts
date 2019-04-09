@@ -51,21 +51,26 @@ export class StorageDataBase extends CUDataBase {
     this.bancorTokenTable = 'bancortokentable';
     this.txAddressTable = 'txaddresstable';
 
+    // Token is of uppercase, hash| tokenname - type 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
 
-    // hash-tokenname, value for search purpose!
+    // account hash-tokenname (UpperCase), value for search purpose!
     this.accountTableSchema = `("hash" CHAR(64) NOT NULL, "token" CHAR(64) NOT NULL, "tokentype" CHAR(64) NOT NULL , "amount" TEXT NOT NULL, "value" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
 
+    // block-height-txs num-address related -timestamp
     this.blockTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE,"number" INTEGER NOT NULL, "txs" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL);`;
 
+    // txhash-block hash-blocknumber-address-timestamp- content
     this.txTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
+    // name is UpperCase, tokenname-type-address-timestamp-content
     this.tokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL);`;
 
-    // This is the real-time parameter
+    // This is the real-time parameter, name is UpperCase
+    // for bancor token parameters, tokenname-factor-reserve-supply
     this.bancorTokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "factor" INTEGER NOT NULL, "reserve" INTEGER NOT NULL,"supply" INTEGER NOT NULL);`;
 
-    // tx-address table
+    // tx-address table - address
     this.txAddressTableSchema = `("hash" CHAR(64) NOT NULL ,"address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, PRIMARY KEY("hash", "address"));`;
   }
 

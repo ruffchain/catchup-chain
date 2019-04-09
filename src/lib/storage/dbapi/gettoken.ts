@@ -5,9 +5,9 @@ import { WRQueue } from "../queue";
 
 export async function laGetToken(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
-    let token = args;
+    let token: string = args;
     // getRecord
-    let result = await handle.pStorageDb.queryTokenTable(token);
+    let result = await handle.pStorageDb.queryTokenTable(token.toUpperCase());
     if (result.err === ErrorCode.RESULT_OK) {
       resolv(result);
     } else {

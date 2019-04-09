@@ -12,7 +12,7 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
     let S: number;
     let R: number;
 
-    let token = args;
+    let token: string = args.toUpperCase();
 
     let result = await handle.pStorageDb.queryBancorTokenTable(token);
 

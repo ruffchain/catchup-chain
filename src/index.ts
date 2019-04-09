@@ -93,7 +93,7 @@ async function main() {
     logger.info('\nShould load address into account table, hash table')
     let arrPreBalances = getPreBanaces('./config/genesis.json');
 
-    assert(await storageDB.insertHashTable('sys', HASH_TYPE.TOKEN), 'add to nameHash table' + 'sys', logger);
+    assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + 'SYS', logger);
 
     let amountAll = 0;
     for (let i = 0; i < arrPreBalances.length; i++) {
@@ -107,10 +107,10 @@ async function main() {
 
 
     }
-    assert(await storageDB.insertTokenTable('sys', TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
+    assert(await storageDB.insertTokenTable('SYS', TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
       supply: amountAll,
       precision: SYS_TOKEN_PRECISION
-    }))), 'save sys to token table', logger)
+    }))), 'save SYS to token table', logger)
 
     assert(await statusDB.setLoadGenesisFileBool(1), 'set load genesis bool to :' + 1, logger);
   }
