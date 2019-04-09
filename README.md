@@ -6,6 +6,7 @@
 - 1.0.3 Test added
 - 1.0.4 to add double link list instead of array
 - 1.0.5 to add precesion checking to user
+- 1.0.6 add getBalances
   
 
 ## dependency

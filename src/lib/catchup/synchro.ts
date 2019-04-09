@@ -96,7 +96,7 @@ export class Synchro {
       let obj = JSON.parse(result.resp!);
       if (obj.err === 0) {
         obj.value.forEach((item: string) => {
-          minerLst.push({ address: item });
+          minerLst.push({ address: item.substring(1) });
         })
 
         let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
