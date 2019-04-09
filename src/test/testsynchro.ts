@@ -59,8 +59,23 @@ const txLst = [
 ]
 // synchro.getBlock(0);
 async function main() {
+  let result;
   // let result = await synchro.getLIBNumber();
   // logger.info(result);
+  result = await synchro.laGetMiners();
+  logger.info(result);
+  if (result.ret === 200) {
+    let obj = JSON.parse(result.resp!);
+    logger.info(obj.err);
+    logger.info(obj.value);
+    let minerLst: string[] = []
+    obj.value.forEach((item: string) => {
+      minerLst.push(item);
+    })
+
+    console.log(minerLst);
+  }
+
   // let result = await synchro.getFactor('chromesmart');
   // logger.info(result);
   // let obj = JSON.parse(result.resp!.toString());
@@ -125,17 +140,17 @@ async function main() {
   await statusDB.open();
   await storageDB.open();
 
-  let result2 = await storageDB.queryHashFromTxAddressTable(
-    '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy', 1, 2);
+  // let result2 = await storageDB.queryHashFromTxAddressTable(
+  //   '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy', 1, 2);
 
-  console.log(result2);
-  logger.info('\n')
+  // console.log(result2);
+  // logger.info('\n')
 
-  result2 = await storageDB.queryHashTxAddressTable(
-    '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy'
-  );
+  // result2 = await storageDB.queryHashTxAddressTable(
+  //   '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy'
+  // );
 
-  logger.info(result2)
+  // logger.info(result2)
 
   // let result2 = await storageDB.queryTxTable('cf1217c575fa683d5d5b952e37991b546611d194a8d448898a3d84c925bc1ee4');
   // console.log(result2)

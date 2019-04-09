@@ -17,6 +17,7 @@ import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
 import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } from '../storage/dbapi/scoop';
+import { getMiners } from '../../api/getminers';
 
 /**
  * This is a client , always syncing with the Chain
@@ -88,9 +89,26 @@ export class Synchro {
   private async loopTask2() {
     this.logger.info('loopTask2()\n');
     // get miners list
-    
+    let minerLst: { address: string }[] = [];
+    let result = await this.laGetMiners();
 
-    // update miner balance one by one
+    if (result.ret === 200) {
+      let obj = JSON.parse(result.resp!);
+      if (obj.err === 0) {
+        obj.value.forEach((item: string) => {
+          minerLst.push({ address: item });
+        })
+
+        let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
+        if (feedback.err) {
+          this.logger.error('loopTask2 update miners balance fail!\n')
+        }
+      } else {
+        this.logger.error('loopTask2 fetch miners fail!\n');
+      }
+    }
+
+    // update miner balance one by one, we won't take time to retry here.
 
     await DelayPromise(PERIOD);
     this.loopTask();
@@ -984,6 +1002,11 @@ export class Synchro {
   }
   public async transferCandy(address: string, value: number) {
     let result = await transferTo(this.ctx, [address, value + '', 0.1 + '']);
+    return result;
+  }
+
+  public async laGetMiners() {
+    let result = await getMiners(this.ctx, []);
     return result;
   }
 }
