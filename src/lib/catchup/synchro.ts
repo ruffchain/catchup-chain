@@ -18,6 +18,9 @@ import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
 import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } from '../storage/dbapi/scoop';
 import { getMiners } from '../../api/getminers';
+import { getBalances } from '../../api/getbalances';
+import { getTokenBalances } from '../../api/getTokenBalances';
+import { getBancorTokenBalances } from '../../api/getBancorTokenBalances';
 
 /**
  * This is a client , always syncing with the Chain
@@ -32,6 +35,10 @@ interface IfSynchroOptions {
 }
 interface IName {
   address: string;
+}
+interface IBalance {
+  address: string;
+  balance: string;
 }
 
 export class Synchro {
@@ -98,7 +105,10 @@ export class Synchro {
         obj.value.forEach((item: string) => {
           minerLst.push({ address: item.substring(1) });
         })
-
+        // ?? Use getBalances to fetch multiple balances
+        // updateBatchBalances
+        // this.laGetBalances
+        // TOKEN_TYPE.SYS
         let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
         if (feedback.err) {
           this.logger.error('loopTask2 update miners balance fail!\n')
@@ -850,6 +860,20 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
+  // Yang Jun 2019-4-9
+  private updateBatchBalances(token: string, type: string, accounts: IBalance[]) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      for (let i = 0; i < accounts.length; i++) {
+        let strBalance = accounts[i].balance.substring(1);
+        let result = await this.pStorageDb.updateAccountTable(accounts[i].address, token, type, strBalance, parseFloat(strBalance));
+        if (result.err) {
+          resolv(result);
+          return;
+        }
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
   private updateBalanceBasic(token: string, type: string, account: IName, funcGetBalance: (token1: string, address1: string) => Promise<IfResult>) {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await funcGetBalance.call(this, token, account.address);
@@ -916,6 +940,13 @@ export class Synchro {
     return this.updateBalancesBasic(token, accounts, this.updateBancorTokenBalance);
   }
 
+  // ---------- 2 -----------
+
+
+
+
+  // -------------------------
+
 
   // Basic commands 
   public async getLastestBlock() {
@@ -962,6 +993,12 @@ export class Synchro {
     }
     return result;
   }
+  // Yang Jun 2019-4-9
+  public async laGetBalances(addrs: string[]) {
+    let result = await getBalances(this.ctx, [JSON.stringify(addrs)]);
+    return result;
+  }
+
   public async getTokenBalanceInfo(token: string, strHash: string) {
     console.log('\ngetTokenBalanceInfo', token, ' ', strHash, '\n')
     let result = await getTokenBalance(this.ctx, [token, strHash]);
@@ -974,6 +1011,12 @@ export class Synchro {
 
     return result;
   }
+  // Yang Jun 2019-4-9
+  public async laGetTokenBalances(token: string, addrs: string[]) {
+    let result = await getTokenBalances(this.ctx, [token, JSON.stringify(addrs)]);
+    return result;
+  }
+
   public async getBancorTokenBalanceInfo(token: string, strHash: string) {
     console.log('\ngetBancorTokenBalanceInfo', token, ' ', strHash, '\n')
     let result = await getBancorTokenBalance(this.ctx, [token, strHash]);
@@ -985,6 +1028,12 @@ export class Synchro {
     }
     return result;
   }
+  // Yang Jun 2019-4-9
+  public async laGetBancorTokenBalances(token: string, addrs: string[]) {
+    let result = await getBancorTokenBalances(this.ctx, [token, JSON.stringify(addrs)]);
+    return result;
+  }
+
   public async getFactor(token: string) {
     this.logger.info('getFactor of bankor token');
     let result = await getBancorTokenFactor(this.ctx, [token])
@@ -1009,4 +1058,5 @@ export class Synchro {
     let result = await getMiners(this.ctx, []);
     return result;
   }
+
 }

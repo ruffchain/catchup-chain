@@ -1,6 +1,6 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode, IFeedBack } from '../core/error_code';
-import { isValidAddress } from '../core';
+import { isValidAddress } from '../core/address';
 const BigNumber = require('bignumber.js');
 
 const MAX_CONFIRM_TIMES = 3;
@@ -59,7 +59,12 @@ export function checkAddressArray(addrStr: string): boolean {
     } catch (e) {
         return false;
     }
-    return addr.length !== undefined && addr.length > 0;
+    for (let i = 0; i < addr.length; i++) {
+        if (!isValidAddress(addr[i])) {
+            return false;
+        }
+    }
+    return addr.length > 0;
 }
 
 export interface IfResult { resp: string | null, ret: number };

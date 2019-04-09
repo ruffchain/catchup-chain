@@ -1,34 +1,46 @@
 import { RPCClient } from '../client/client/rfc_client';
 import { ErrorCode } from "../core";
-import { IfResult, IfContext, checkAddressArray } from './common';
+import { IfResult, IfContext, sysTokenSym, checkAddress, formatNumber, checkAddressArray, checkTokenid } from './common';
 import * as colors from 'colors';
 
 const FUNC_NAME = 'view';
 
-export async function getBalances(ctx: IfContext, args: string[]): Promise<IfResult> {
+export async function getTokenBalances(ctx: IfContext, args: string[]): Promise<IfResult> {
   return new Promise<IfResult>(async (resolve) => {
     let params: any;
     // check args
-    if (args.length < 1) {
+    if (args.length < 2) {
       resolve({
         ret: ErrorCode.RESULT_WRONG_ARG,
         resp: "Wrong args"
       });
       return;
     }
-    if (!checkAddressArray(args[0])) {
+
+    if (!checkTokenid(args[0])) {
       resolve({
         ret: ErrorCode.RESULT_WRONG_ARG,
-        resp: "Wrong addresses, no space in address array"
+        resp: "Wrong tokenid , length [3-12]"
       });
       return;
     }
-    let addrs = JSON.parse(args[0]);
+    if (!checkAddressArray(args[1])) {
+      resolve({
+        ret: ErrorCode.RESULT_WRONG_ARG,
+        resp: "Wrong addresses"
+      });
+      return;
+    }
+    let addrs = JSON.parse(args[1]);
+    let token = args[0].toUpperCase();
 
     params =
       {
-        method: 'getBalances',
-        params: { addresses: addrs }
+        method: 'getTokenBalances',
+        params: {
+          tokenid: token,
+          addresses: addrs
+        }
       }
 
 
@@ -41,7 +53,7 @@ export async function getBalances(ctx: IfContext, args: string[]): Promise<IfRes
     resolve(cr);
   });
 }
-export function prnGetBalances(ctx: IfContext, obj: IfResult) {
+export function prnGetTokenBalances(ctx: IfContext, obj: IfResult) {
   if (ctx.sysinfo.verbose) {
     console.log(obj);
   }
