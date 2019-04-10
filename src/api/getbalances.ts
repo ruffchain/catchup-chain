@@ -24,6 +24,10 @@ export async function getBalances(ctx: IfContext, args: string[]): Promise<IfRes
       return;
     }
     let addrs = JSON.parse(args[0]);
+    // console.log('args[0]:', typeof args[0])
+    // console.log(args[0])
+    // console.log('addrs:')
+    // console.log(addrs);
 
     params =
       {

@@ -96,22 +96,25 @@ export class Synchro {
   private async loopTask2() {
     this.logger.info('loopTask2()\n');
     // get miners list
-    let minerLst: { address: string }[] = [];
+    let minerLst: string[] = [];
     let result = await this.laGetMiners();
 
     if (result.ret === 200) {
       let obj = JSON.parse(result.resp!);
       if (obj.err === 0) {
         obj.value.forEach((item: string) => {
-          minerLst.push({ address: item.substring(1) });
+          minerLst.push(item.substring(1));
         })
         // ?? Use getBalances to fetch multiple balances
-        // updateBatchBalances
-        // this.laGetBalances
-        // TOKEN_TYPE.SYS
-        let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
+        // let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
+        let feedback = await this.getMinerBalances(minerLst);
         if (feedback.err) {
-          this.logger.error('loopTask2 update miners balance fail!\n')
+          this.logger.error('loopTask2 getMinerBalances fail!\n')
+        } else {
+          feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
+          if (feedback.err) {
+            this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
+          }
         }
       } else {
         this.logger.error('loopTask2 fetch miners fail!\n');
@@ -119,9 +122,33 @@ export class Synchro {
     }
 
     // update miner balance one by one, we won't take time to retry here.
-
+    this.logger.info('\n');
     await DelayPromise(PERIOD);
     this.loopTask();
+  }
+  private async getMinerBalances(addrs: string[]) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await this.laGetBalances(addrs);
+      if (result.ret === 200) {
+        try {
+          let obj = JSON.parse(result.resp!);
+          let outObj: IBalance[] = [];
+          if (obj.err === 0) {
+            for (let i = 0; i < obj.value.length; i++) {
+              outObj.push({
+                address: obj.value[i].address,
+                balance: obj.value[i].balance.substring(1)
+              })
+            }
+            resolv({ err: ErrorCode.RESULT_OK, data: outObj })
+            return;
+          }
+        } catch (e) {
+          this.logger.error('getMinerBalances parsing error')
+        }
+      }
+      resolv({ err: ErrorCode.RESULT_FAILED, data: null })
+    });
   }
 
   private async loopTask() {
@@ -864,7 +891,7 @@ export class Synchro {
   private updateBatchBalances(token: string, type: string, accounts: IBalance[]) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = 0; i < accounts.length; i++) {
-        let strBalance = accounts[i].balance.substring(1);
+        let strBalance = accounts[i].balance.replace('n', '');
         let result = await this.pStorageDb.updateAccountTable(accounts[i].address, token, type, strBalance, parseFloat(strBalance));
         if (result.err) {
           resolv(result);

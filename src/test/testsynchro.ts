@@ -20,7 +20,7 @@ let storageDB = new StorageDataBase(logger, {
 })
 
 let synchro = new Synchro({
-  ip: '139.217.133.187', // '139.219.184.44'   '127.0.0.1'
+  ip: '127.0.0.1', // '139.219.184.44'   '127.0.0.1'
   port: 18089
 }, logger, statusDB, storageDB);
 
@@ -75,6 +75,10 @@ async function main() {
 
     console.log(minerLst);
   }
+
+  result = await synchro.laGetBalances(["1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J", "159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1"]);
+
+  console.log(result);
 
   // let result = await synchro.getFactor('chromesmart');
   // logger.info(result);
