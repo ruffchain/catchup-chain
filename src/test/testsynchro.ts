@@ -76,8 +76,11 @@ async function main() {
     console.log(minerLst);
   }
 
-  result = await synchro.laGetBalances(["1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J", "159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1"]);
+  // result = await synchro.laGetBalances(["1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J", "159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1"]);
 
+  // console.log(result);
+
+  result = await synchro.laGetBancorTokenParams('virtual');
   console.log(result);
 
   // let result = await synchro.getFactor('chromesmart');

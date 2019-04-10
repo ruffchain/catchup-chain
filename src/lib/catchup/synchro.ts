@@ -21,6 +21,7 @@ import { getMiners } from '../../api/getminers';
 import { getBalances } from '../../api/getbalances';
 import { getTokenBalances } from '../../api/getTokenBalances';
 import { getBancorTokenBalances } from '../../api/getBancorTokenBalances';
+import { getBancorTokenParams } from '../../api/getBancorTokenParams';
 
 /**
  * This is a client , always syncing with the Chain
@@ -39,6 +40,12 @@ interface IName {
 interface IBalance {
   address: string;
   balance: string;
+}
+
+interface IBancorTokenParams {
+  F: string;
+  S: String;
+  R: string;
 }
 
 export class Synchro {
@@ -122,7 +129,7 @@ export class Synchro {
     }
 
     // update miner balance one by one, we won't take time to retry here.
-    this.logger.info('\n');
+    this.logger.info('-------- end of looptask2() -----------\n');
     await DelayPromise(PERIOD);
     this.loopTask();
   }
@@ -625,65 +632,90 @@ export class Synchro {
   //   });
   // }
   // get R, S, F parameters
-  private handleBancorTokenParameters(tokenName: string, func: (token: string, f: number, r: number, s: number) => Promise<IFeedBack>) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('handleBancorTokenParameters')
-      let result = await this.fetchBancorTokenNumberFactor(tokenName);
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-      let F = result.data;
+  // private handleBancorTokenParameters(tokenName: string, func: (token: string, f: number, r: number, s: number) => Promise<IFeedBack>) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     this.logger.info('handleBancorTokenParameters')
+  //     let result = await this.fetchBancorTokenNumberFactor(tokenName);
+  //     if (result.err) {
+  //       resolv(result);
+  //       return;
+  //     }
+  //     let F = result.data;
 
-      result = await this.fetchBancorTokenNumberSupply(tokenName);
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-      let S = result.data;
+  //     result = await this.fetchBancorTokenNumberSupply(tokenName);
+  //     if (result.err) {
+  //       resolv(result);
+  //       return;
+  //     }
+  //     let S = result.data;
 
-      result = await this.fetchBancorTokenNumberReserve(tokenName);
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-      let R: number = result.data;
+  //     result = await this.fetchBancorTokenNumberReserve(tokenName);
+  //     if (result.err) {
+  //       resolv(result);
+  //       return;
+  //     }
+  //     let R: number = result.data;
 
-      result = await func.call(this, tokenName, F, R, S);
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-      resolv({ err: ErrorCode.RESULT_OK, data: null })
-    });
-  }
+  //     result = await func.call(this, tokenName, F, R, S);
+  //     if (result.err) {
+  //       resolv(result);
+  //       return;
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_OK, data: null })
+  //   });
+  // }
   private insertBancorTokenParameters(tokenName: string) {
     this.logger.info('insertBancorTokenParameters, with: ', tokenName)
-    // return this.handleBancorTokenParameters(tokenName, this.pStorageDb.insertBancorTokenTable);
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      let result = await this.fetchBancorTokenNumberFactor(tokenName);
-      if (result.err) {
-        resolv(result);
+      // let result = await this.fetchBancorTokenNumberFactor(tokenName);
+      // if (result.err) {
+      //   resolv(result);
+      //   return;
+      // }
+      // let F = result.data;
+
+      // result = await this.fetchBancorTokenNumberSupply(tokenName);
+      // if (result.err) {
+      //   resolv(result);
+      //   return;
+      // }
+      // let S = result.data;
+
+      // result = await this.fetchBancorTokenNumberReserve(tokenName);
+      // if (result.err) {
+      //   resolv(result);
+      //   return;
+      // }
+      // let R: number = result.data;
+      let result0 = await this.laGetBancorTokenParams(tokenName);
+      if (result0.ret !== 200) {
+        this.logger.error("insertBancorTokenParameters, get params failed");
+        resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: null });
         return;
       }
-      let F = result.data;
-
-      result = await this.fetchBancorTokenNumberSupply(tokenName);
-      if (result.err) {
-        resolv(result);
+      let F: number = 0;
+      let S: number = 0;
+      let R: number = 0;
+      try {
+        let obj = JSON.parse(result0.resp!);
+        if (obj.err !== 0) {
+          this.logger.error("insertBancorTokenParameters, get params failed");
+          resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: null });
+          return;
+        } else {
+          F = parseFloat(obj.value.F.substring(1));
+          S = parseFloat(obj.value.S.substring(1));
+          R = parseFloat(obj.value.R.substring(1));
+        }
+      } catch (e) {
+        this.logger.error('updateBancorTokenParams parsing failed:', e);
+        resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: null });
         return;
       }
-      let S = result.data;
 
-      result = await this.fetchBancorTokenNumberReserve(tokenName);
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-      let R: number = result.data;
 
-      result = await this.pStorageDb.insertBancorTokenTable(tokenName, F, R, S);
+      let result = await this.pStorageDb.insertBancorTokenTable(tokenName, F, R, S);
       if (result.err) {
         resolv(result);
         return;
@@ -696,30 +728,54 @@ export class Synchro {
 
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      let result = await this.fetchBancorTokenNumberFactor(tokenName);
-      if (result.err) {
-        resolv(result);
+      // let result = await this.fetchBancorTokenNumberFactor(tokenName);
+      // if (result.err) {
+      //   resolv(result);
+      //   return;
+      // }
+      // let F = result.data;
+
+      // result = await this.fetchBancorTokenNumberSupply(tokenName);
+      // if (result.err) {
+      //   resolv(result);
+      //   return;
+      // }
+      // let S = result.data;
+
+      // result = await this.fetchBancorTokenNumberReserve(tokenName);
+      // if (result.err) {
+      //   resolv(result);
+      //   return;
+      // }
+      // let R: number = result.data;
+      let result0 = await this.laGetBancorTokenParams(tokenName);
+      if (result0.ret !== 200) {
+        this.logger.error("updateBancorTokenParameters, get params failed");
+        resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: null });
         return;
       }
-      let F = result.data;
-
-      result = await this.fetchBancorTokenNumberSupply(tokenName);
-      if (result.err) {
-        resolv(result);
+      let F: number = 0;
+      let S: number = 0;
+      let R: number = 0;
+      try {
+        let obj = JSON.parse(result0.resp!);
+        if (obj.err !== 0) {
+          resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: null });
+          return;
+        } else {
+          F = parseFloat(obj.value.F.substring(1));
+          S = parseFloat(obj.value.S.substring(1));
+          R = parseFloat(obj.value.R.substring(1));
+        }
+      } catch (e) {
+        this.logger.error('updateBancorTokenParams parsing failed:', e);
+        resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: null });
         return;
       }
-      let S = result.data;
 
-      result = await this.fetchBancorTokenNumberReserve(tokenName);
+      let result = await this.pStorageDb.updateBancorTokenTable(tokenName, F, R, S);
       if (result.err) {
-        resolv(result);
-        return;
-      }
-      let R: number = result.data;
-
-      result = await this.pStorageDb.updateBancorTokenTable(tokenName, F, R, S);
-      if (result.err) {
-        this.logger.error('updateBancorTokenTable failed:', F, R, R)
+        this.logger.error('updateBancorTokenTable failed:', F, R, S)
         resolv(result);
         return;
       }
@@ -1041,6 +1097,11 @@ export class Synchro {
   // Yang Jun 2019-4-9
   public async laGetTokenBalances(token: string, addrs: string[]) {
     let result = await getTokenBalances(this.ctx, [token, JSON.stringify(addrs)]);
+    return result;
+  }
+  // Yang Jun 2019-04-10
+  public async laGetBancorTokenParams(token: string) {
+    let result = await getBancorTokenParams(this.ctx, [token]);
     return result;
   }
 
