@@ -22,6 +22,7 @@ import { getBalances } from '../../api/getbalances';
 import { getTokenBalances } from '../../api/getTokenBalances';
 import { getBancorTokenBalances } from '../../api/getBancorTokenBalances';
 import { getBancorTokenParams } from '../../api/getBancorTokenParams';
+import { getBlocks } from '../../api/getblocks';
 
 /**
  * This is a client , always syncing with the Chain
@@ -174,9 +175,15 @@ export class Synchro {
 
     this.logger.info('currentHeight:', nCurrentHeight, ' currentLIB:', this.nCurrentLIBHeight);
 
-    if (nCurrentHeight < this.nCurrentLIBHeight) {
-      let result2 = await this.updateBlockRange(nCurrentHeight, this.nCurrentLIBHeight);
-      this.logger.info(JSON.stringify(result2));
+    let result2: any;
+    if (nCurrentHeight === 0) {
+      result2 = await this.updateBlockRangeBatch(nCurrentHeight, this.nCurrentLIBHeight);
+    }
+    else if (this.nCurrentLIBHeight - nCurrentHeight === 1) {
+      result2 = await this.updateBlockSingle(nCurrentHeight + 1);
+    }
+    else if (nCurrentHeight < this.nCurrentLIBHeight) {
+      result2 = await this.updateBlockRangeBatch(nCurrentHeight + 1, this.nCurrentLIBHeight);
     }
     else if (nCurrentHeight > this.nCurrentLIBHeight) {
       throw new Error('Obsolete storage! consider to clean by running: npm run clean && npm run cleandb')
@@ -184,10 +191,102 @@ export class Synchro {
     else {
       this.logger.info('height equal \n');
     }
+    this.logger.info(JSON.stringify(result2));
     // delay 5s
     this.logger.info('Delay ', PERIOD, ' seconds\n');
     await DelayPromise(PERIOD);
     this.loopTask2();
+  }
+  private updateBlockRangeBatch(nStart: number, nStop: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      for (let i = nStart; i <= nStop; i = i + 10) {
+        let result = await this.updateBlockRangeGroup(i, ((i + 9) > nStop) ? nStop : (i + 9));
+        if (result.err) {
+          resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
+          return;
+        }
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
+  private updateBlockRangeGroup(nStart: number, nStop: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await this.laGetBlocks(nStart, nStop, true);
+      if (result.ret === 200) {
+        try {
+          let objAll = JSON.parse(result.resp!);
+          if (objAll.err === 0) {
+            console.log(objAll.blocks);
+            for (let i = 0; i < objAll.blocks.length; i++) {
+              let obj = objAll.blocks[i];
+              console.log('\nobj:')
+              console.log(obj);
+              let feedback = await this.syncBlockData(obj);
+              if (feedback.err) {
+                break;
+              } else {
+                // update lib
+                // update statusDB current Height
+                let feedback2 = await this.pStatusDb.setCurrentHeight(obj.block.number);
+                if (feedback2.err) {
+                  this.logger.error('Save block ', i, ' to db failedd');
+                  resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: i });
+                  return;
+                }
+                this.pStatusDb.nCurrentHeight = obj.block.number;
+              }
+            }
+            resolv({ err: ErrorCode.RESULT_OK, data: null });
+            return;
+          }
+        } catch (e) {
+          this.logger.error('udpateBlockRangeBatch parsing error');
+        }
+
+      }
+      resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
+
+    });
+  }
+  private async syncBlockData(obj: any) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let hash = obj.block.hash;
+      let hashnumber = obj.block.number;
+      let timestamp = obj.block.timestamp;
+      let address = obj.block.creator;
+      let txno = obj.transactions.length;
+      let height = obj.block.number;
+
+      this.logger.info('save block hash to hash table')
+      // save to hash table
+      let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
+      if (feedback.err) {
+        this.logger.error('updateBlock ', hashnumber, ' number indertToHashTable failed')
+        resolv({ err: feedback.err, data: null });
+        return;
+      }
+
+      // save to block table
+      feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, height, txno, address, timestamp);
+      if (feedback.err) {
+        this.logger.error('updateBlock ', hashnumber, ' put into block able failed')
+        resolv({ err: feedback.err, data: null });
+        return;
+      }
+
+      if (txno > 0) {
+        this.logger.info('UpdateTx -->')
+        feedback = await this.updateTx(hash, hashnumber, timestamp, obj.transactions);
+        if (feedback.err) {
+
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+      }
+
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+
+    });
   }
   // main task
   private updateBlockRange(nStart: number, nStop: number): Promise<IFeedBack> {
@@ -211,6 +310,24 @@ export class Synchro {
         }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
+  private async updateBlockSingle(nBlock: number): Promise<IFeedBack> {
+    this.logger.info('updateBlockSingle()')
+    return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('Get block ' + nBlock + '\n')
+      let result = await this.updateBlock(nBlock);
+      if (result.err === 0) {
+        // update 
+        let feedback = await this.pStatusDb.setCurrentHeight(nBlock);
+        if (feedback.err === 0) {
+          this.pStatusDb.nCurrentHeight = nBlock;
+          resolv({ err: ErrorCode.RESULT_OK, data: null })
+          return;
+        }
+      }
+      this.logger.error('Save block ', nBlock, ' to db failedd');
+      resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_FAILED, data: nBlock });
     });
   }
   // get block
@@ -1149,5 +1266,11 @@ export class Synchro {
     let result = await getMiners(this.ctx, []);
     return result;
   }
+
+  public async laGetBlocks(min: number, max: number, flag: boolean) {
+    let result = await getBlocks(this.ctx, [min.toString(), max.toString(), flag.toString()]);
+    return result;
+  }
+
 
 }

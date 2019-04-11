@@ -83,6 +83,9 @@ async function main() {
   result = await synchro.laGetBancorTokenParams('virtual');
   console.log(result);
 
+  result = await synchro.laGetBlocks(1, 10, true);
+  console.log(result);
+
   // let result = await synchro.getFactor('chromesmart');
   // logger.info(result);
   // let obj = JSON.parse(result.resp!.toString());
