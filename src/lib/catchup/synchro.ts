@@ -99,6 +99,9 @@ export class Synchro {
 
     this.loopTask();
   }
+  /**
+   * loopTask2(), loopTask() triggered alternately
+   */
   // add for miner balance sync
   private async loopTask2() {
     this.logger.info('loopTask2()\n');
@@ -1003,7 +1006,7 @@ export class Synchro {
   }
   // ---------- 1 -----------
   public async updateBalance(token: string, account: IName) {
-    return this.updateBalanceBasic(token, TOKEN_TYPE.NORMAL, account, this.getBalanceInfo);
+    return this.updateBalanceBasic(token, TOKEN_TYPE.SYS, account, this.getBalanceInfo);
   }
   private async updateBalances(token: string, accounts: IName[]) {
     return this.updateBalancesBasic(SYS_TOKEN, accounts, this.updateBalance);
