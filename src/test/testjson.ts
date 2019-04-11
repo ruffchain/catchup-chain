@@ -29,7 +29,8 @@ let storageDB = new StorageDataBase(logger, {
 
 let synchro = new Synchro({
   ip: '127.0.0.1',  // '127.0.0.1'    '139.219.184.44'
-  port: 18089
+  port: 18089,
+  batch: 10
 }, logger, statusDB, storageDB);
 
 

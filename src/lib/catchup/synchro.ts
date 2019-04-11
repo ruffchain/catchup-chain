@@ -34,6 +34,7 @@ const PERIOD = 5;
 interface IfSynchroOptions {
   ip: string;
   port: number;
+  batch: number;
 }
 interface IName {
   address: string;
@@ -58,11 +59,13 @@ export class Synchro {
   private pStatusDb: StatusDataBase;
   private pStorageDb: StorageDataBase;
   private nCurrentLIBHeight: number;
+  private nBatch: number;
 
   constructor(options: IfSynchroOptions, logger: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase) {
     this.ip = options.ip;
     this.port = options.port;
     this.logger = logger;
+    this.nBatch = options.batch;
 
     // get account secret for distributing candy
     let boss = fs.readFileSync('./secret/boss.json')
@@ -177,7 +180,7 @@ export class Synchro {
 
     let result2: any;
     if (nCurrentHeight === 0) {
-      result2 = await this.updateBlockRangeBatch(nCurrentHeight, this.nCurrentLIBHeight);
+      result2 = await this.updateBlockRangeBatch(0, this.nCurrentLIBHeight);
     }
     else if (this.nCurrentLIBHeight - nCurrentHeight === 1) {
       result2 = await this.updateBlockSingle(nCurrentHeight + 1);
@@ -199,8 +202,8 @@ export class Synchro {
   }
   private updateBlockRangeBatch(nStart: number, nStop: number) {
     return new Promise<IFeedBack>(async (resolv) => {
-      for (let i = nStart; i <= nStop; i = i + 10) {
-        let result = await this.updateBlockRangeGroup(i, ((i + 9) > nStop) ? nStop : (i + 9));
+      for (let i = nStart; i <= nStop; i = i + this.nBatch) {
+        let result = await this.updateBlockRangeGroup(i, ((i + this.nBatch - 1) > nStop) ? nStop : (i + this.nBatch - 1));
         if (result.err) {
           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
           return;
