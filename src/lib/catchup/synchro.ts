@@ -219,10 +219,10 @@ export class Synchro {
         try {
           let objAll = JSON.parse(result.resp!);
           if (objAll.err === 0) {
-            console.log(objAll.blocks);
+            // console.log(objAll.blocks);
             for (let i = 0; i < objAll.blocks.length; i++) {
               let obj = objAll.blocks[i];
-              console.log('\nobj:')
+              // console.log('\nobj:')
               console.log(obj);
               let feedback = await this.syncBlockData(obj);
               if (feedback.err) {
