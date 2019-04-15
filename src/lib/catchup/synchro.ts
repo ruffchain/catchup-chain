@@ -122,6 +122,9 @@ export class Synchro {
         // ?? Use getBalances to fetch multiple balances
         // let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
         let feedback = await this.getMinerBalances(minerLst);
+
+        this.logger.info('feedback.data', feedback.data)
+
         if (feedback.err) {
           this.logger.error('loopTask2 getMinerBalances fail!\n')
         } else {
@@ -1084,7 +1087,7 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = 0; i < accounts.length; i++) {
         let strBalance = accounts[i].balance.replace('n', '');
-        let result = await this.pStorageDb.updateAccountTable(accounts[i].address, token, type, strBalance, parseFloat(strBalance));
+        let result = await this.pStorageDb.updateAccountTable(accounts[i].address.substring(1), token, type, strBalance, parseFloat(strBalance));
         if (result.err) {
           resolv(result);
           return;
