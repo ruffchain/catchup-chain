@@ -141,8 +141,11 @@ export class Synchro {
     this.loopTask();
   }
   private async getMinerBalances(addrs: string[]) {
+    console.log(addrs);
+
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await this.laGetBalances(addrs);
+      console.log(result);
       if (result.ret === 200) {
         try {
           let obj = JSON.parse(result.resp!);
@@ -408,22 +411,9 @@ export class Synchro {
         let blocknumber = nhash;
         let address = txs[j].caller;
         let datetime = dtime;
-        // let fee = txs[j].fee;
-        let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
-        console.log('updateTx:')
-        console.log(content);
-        // console.log(typeof content)
-
-        // put it into tx table, insertOrReplace
-        let feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
-        if (feedback.err) {
-          this.logger.error('put tx into txtable failed')
-          resolv({ err: feedback.err, data: null });
-          return;
-        }
 
         // insertOrReplace it into hash table
-        feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
+        let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
         if (feedback.err) {
           resolv({ err: feedback.err, data: null });
           return;
@@ -439,7 +429,30 @@ export class Synchro {
         this.logger.info('get receipt for tx -->\n')
         console.log(feedback.data)
 
-        let feedback2 = await this.checkAccountAndToken(feedback.data);
+        // put it into tx table, insertOrReplace
+        // let fee = txs[j].fee;
+        let recet: any;
+        try {
+          recet = JSON.parse(feedback.data.toString());
+          txs[j].cost = recet.receipt.cost;
+        } catch (e) {
+          this.logger.error('parse receipt failed')
+          resolv({ err: ErrorCode.RESULT_PARSE_ERROR, data: null });
+          return;
+        }
+
+        let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
+        feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
+        if (feedback.err) {
+          this.logger.error('put tx into txtable failed')
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+        console.log('updateTx:')
+        console.log(content);
+        // console.log(typeof content)
+
+        let feedback2 = await this.checkAccountAndToken(recet);
         if (feedback2.err) {
           this.logger.error('checkAccountAndToken() failed.')
           resolv({ err: feedback2.err, data: null });
@@ -454,7 +467,7 @@ export class Synchro {
   // 2, account table
   // 3, hash table
   private async checkAccountAndToken(receipt: any): Promise<IFeedBack> {
-    let recet = JSON.parse(receipt.toString());
+    let recet = receipt;
     this.logger.info('checkAccountAndToken\n')
     // this.logger.info(recet);
 
@@ -1033,7 +1046,7 @@ export class Synchro {
       let to = receipt.tx.input.to;
       let hash = receipt.tx.hash;
       let time = receipt.block.timestamp;
-
+      let cost = receipt.receipt.cost;
       // let value = receipt.tx.value; // string
       // let fee = receipt.tx.fee;
 
@@ -1261,7 +1274,7 @@ export class Synchro {
     return result
   }
   public async transferCandy(address: string, value: number) {
-    let result = await transferTo(this.ctx, [address, value + '', 0.1 + '']);
+    let result = await transferTo(this.ctx, [address, value + '', 0.001 + '']);
     return result;
   }
 
