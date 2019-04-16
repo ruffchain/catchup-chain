@@ -552,7 +552,7 @@ export class Synchro {
       let nameLst: IName[] = [];
       let addrLst: string[] = [];
       let amountAll: number = 0;
-      let precision: number = NORMAL_TOKEN_PRECISION;
+      let precision: number = receipt.tx.input.precision;
       let hash = receipt.tx.hash;
       let time = receipt.block.timestamp;
 
