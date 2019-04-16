@@ -28,7 +28,7 @@ let storageDB = new StorageDataBase(logger, {
 })
 
 let synchro = new Synchro({
-  ip: '127.0.0.1',  // '127.0.0.1'    '139.219.184.44'
+  ip: '139.219.184.44',  // '127.0.0.1'    '139.219.184.44'
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
@@ -54,60 +54,71 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 
 describe('To test Catchup v1.0.2 JSON API', async function () {
   this.timeout(100000);
-  it('getTokenInfo sys', async () => {
+
+  it('getBancorTokenParams', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "reality")
-    //logger.info(cr);
+    let cr = await client.callAsync('getBancorTokenParams', "VIRTUAL")
+    logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-  it('getTokenInfo token3', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "virtual")
-    //logger.info(cr);
-    logger.info(cr.resp)
 
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
-  it('getTokenInfo smarttoken tokens', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "sys")
-    //logger.info(cr);
-    logger.info(cr.resp)
-
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
-  it('getTxsByAddress ', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTxsByAddress', { address: '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy', page: 1, pageSize: 10 })
-    //logger.info(cr);
-    logger.info(cr.resp)
-
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
-  it('getTxsByAddress ', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTxsByAddress', { address: '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r', page: 1, pageSize: 10 })
-    //logger.info(cr);
-    logger.info(cr.resp)
-
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
-  it('getTokensByAddress ', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getTokensByAddress', '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy')
-    //logger.info(cr);
-    logger.info(cr.resp)
-
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
+  /*   it('getTokenInfo sys', async () => {
+      this.timeout(3000);
+      let cr = await client.callAsync('getTokenInfo', "reality")
+      //logger.info(cr);
+      logger.info(cr.resp)
+  
+      let obj = JSON.parse(cr.resp!);
+      expect(1).to.equal(1);
+    })
+    it('getTokenInfo token3', async () => {
+      this.timeout(3000);
+      let cr = await client.callAsync('getTokenInfo', "virtual")
+      //logger.info(cr);
+      logger.info(cr.resp)
+  
+      let obj = JSON.parse(cr.resp!);
+      expect(1).to.equal(1);
+    })
+    it('getTokenInfo smarttoken tokens', async () => {
+      this.timeout(3000);
+      let cr = await client.callAsync('getTokenInfo', "sys")
+      //logger.info(cr);
+      logger.info(cr.resp)
+  
+      let obj = JSON.parse(cr.resp!);
+      expect(1).to.equal(1);
+    })
+    it('getTxsByAddress ', async () => {
+      this.timeout(3000);
+      let cr = await client.callAsync('getTxsByAddress', { address: '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy', page: 1, pageSize: 10 })
+      //logger.info(cr);
+      logger.info(cr.resp)
+  
+      let obj = JSON.parse(cr.resp!);
+      expect(1).to.equal(1);
+    })
+    it('getTxsByAddress ', async () => {
+      this.timeout(3000);
+      let cr = await client.callAsync('getTxsByAddress', { address: '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r', page: 1, pageSize: 10 })
+      //logger.info(cr);
+      logger.info(cr.resp)
+  
+      let obj = JSON.parse(cr.resp!);
+      expect(1).to.equal(1);
+    })
+    it('getTokensByAddress ', async () => {
+      this.timeout(3000);
+      let cr = await client.callAsync('getTokensByAddress', '1GHzPAoYxzuT2aTwpwHx2z2rcaSo16pyUy')
+      //logger.info(cr);
+      logger.info(cr.resp)
+  
+      let obj = JSON.parse(cr.resp!);
+      expect(1).to.equal(1);
+    }) */
 
   // it('getName', async () => {
   //   this.timeout(3000);
