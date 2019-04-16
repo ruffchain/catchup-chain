@@ -16,19 +16,26 @@ import { laLatestBlocks } from "./getlatestblocks";
 import { laGetChainOverview } from "./getchainoverview";
 import { laGetLatestTxCount } from "./getlatesttxcount";
 import { laGetCandy } from "./getcandy";
+import { laGetBancorTokenParams } from "./getbancortokenparams";
 
 export function getFunc(funName: string) {
   if (funName === 'getName') {
     return laGetName;
-  } else if (funName === 'getAccount') {
+  }
+  else if (funName === 'getAccount') {
     return laGetAccount;
-  } else if (funName === 'getAccounts') {
+  }
+  else if (funName === 'getAccounts') {
     return laGetAccounts;
-  } else if (funName === 'getToken') {
+  }
+  else if (funName === 'getToken') {
     return laGetToken;
   }
   else if (funName === 'getTokenInfo') {
     return laGetTokenInfo;
+  }
+  else if (funName === 'getBancorTokenParams') {
+    return laGetBancorTokenParams;
   }
   else if (funName === 'getTokenPrice') {
     return laGetTokenPrice;

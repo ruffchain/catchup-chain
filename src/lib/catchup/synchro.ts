@@ -1015,10 +1015,19 @@ export class Synchro {
 
       // insert into txaddresstable
       let feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
+
       if (feedback.err) {
         resolv(feedback);
         return;
       }
+
+      // Should update balance of caller, because fee be costed by Chain
+      feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
+      if (feedback.err) {
+        resolv(feedback);
+        return;
+      }
+
       // update caller token account
       let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
       if (result.err) {
@@ -1031,12 +1040,6 @@ export class Synchro {
         result = await this.updateBancorTokenParameters(tokenName);
         if (result.err) {
           resolv(result);
-          return;
-        }
-
-        let feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
-        if (feedback.err) {
-          resolv(feedback);
           return;
         }
       }
