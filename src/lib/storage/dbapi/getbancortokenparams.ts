@@ -1,8 +1,11 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
-
-
+/**
+ * Get BancorToken parameters, Factor, Supply, Reserve, latest value
+ * @param handle 
+ * @param {string[]} args 
+ */
 export async function laGetBancorTokenParams(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // compute token price 

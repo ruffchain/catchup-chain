@@ -3,7 +3,9 @@ import winston = require('winston');
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 import * as SqlString from 'sqlstring';
 
-// for statu db , which store current state information
+/** for statu db , which store current state information
+ * 
+ */
 export class StatusDataBase extends CUDataBase {
   private statusTableName: string;
   private candyTableName: string;
@@ -14,7 +16,11 @@ export class StatusDataBase extends CUDataBase {
 
   public nCurrentHeight: number; // 
   public nLoadGenesisFile: number;
-
+  /**
+   * @constructor
+   * @param {winston.LoggerInstance} logger 
+   * @param {IfCUDataBaseOptions} options 
+   */
   constructor(logger: winston.LoggerInstance, options: IfCUDataBaseOptions) {
     super(logger, options);
     this.statusTableName = 'statustable';

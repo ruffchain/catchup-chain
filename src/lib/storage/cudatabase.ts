@@ -5,14 +5,22 @@ import { IfTask } from './queue';
 import winston = require('winston');
 import * as path from 'path';
 
+/**
+ * @var sqlite3 
+ */
 var sqlite3 = require('sqlite3').verbose();
 
 export interface IfCUDataBaseOptions {
   path: string;
   name: string;
 }
-
+/**
+ * @class CUDataBase
+ */
 export abstract class CUDataBase {
+  /**
+   * 
+   */
   public logger: any;
   public db: any;
   private options: IfCUDataBaseOptions;

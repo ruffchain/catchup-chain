@@ -1,6 +1,11 @@
 import { WRQueue } from "../queue";
 import { IFeedBack, ErrorCode } from "../../../core";
 
+/**
+ * Get accounts info by an arrary of addresses
+ * @param {WRQueue} handle 
+ * @param {string[]} args 
+ */
 export async function laGetAccounts(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // getAllRecords()

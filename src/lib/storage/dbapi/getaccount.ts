@@ -1,6 +1,11 @@
 import { WRQueue } from "../queue";
 import { IFeedBack, ErrorCode } from "../../../core";
 
+/**
+ * Get Account info, tokens in hand
+ * @param {WRQueue} handle 
+ * @param  {string} args - account address
+ */
 export async function laGetAccount(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // getAllRecords()

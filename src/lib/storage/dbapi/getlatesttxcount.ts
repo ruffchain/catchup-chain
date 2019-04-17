@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Get tx, transactions from a time span
+ * @param handle 
+ * @param {{from:string, to:string}} args  - time span
+ */
 export async function laGetLatestTxCount(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     handle.logger.info('taskGetLatestTxCount');

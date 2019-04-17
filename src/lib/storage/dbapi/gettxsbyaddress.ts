@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Get TXs under address
+ * @param handle 
+ * @param {{address:string, page:number, pageSize:number}} args - index 
+ */
 export async function laGetTxsByAddress(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
 

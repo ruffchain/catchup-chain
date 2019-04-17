@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Quicker way to get token price
+ * @param handle 
+ * @param {string} args - tokenid
+ */
 export async function laGetTokenPrice(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // compute token price 

@@ -16,6 +16,13 @@ function isANumber(args: string) {
   }
   return true;
 }
+
+/**
+ * 
+ * @param handle 
+ * @param {number | string} args 
+ * @returns {HASH_TYPE}
+ */
 export async function laGetName(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     let arr: any;

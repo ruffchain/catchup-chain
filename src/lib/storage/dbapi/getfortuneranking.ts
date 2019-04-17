@@ -3,7 +3,11 @@ import { WRQueue } from "../queue";
 import { resolve } from "dns";
 
 
-
+/**
+ * Get token holding ranking list
+ * @param handle 
+ * @param {string} args - tokenid
+ */
 export async function laGetFortuneRanking(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
 

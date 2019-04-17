@@ -2,7 +2,12 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * 
+ * @param handle 
+ * @param {string} args  - 
+ * @returns {{err:number, data:{blockHeight:number, irreversibleBlockHeight:number, txCount:number }}} - 
+ */
 export async function laGetChainOverview(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     let nLib = 0;

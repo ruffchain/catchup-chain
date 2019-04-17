@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "request": "^2.88.0",
-    "tslint": "^5.14.0"
+    "tslint": "^5.14.0",
+    "typedoc": "^0.14.2"
   }
 }

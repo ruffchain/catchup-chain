@@ -18,6 +18,10 @@ import { laGetLatestTxCount } from "./getlatesttxcount";
 import { laGetCandy } from "./getcandy";
 import { laGetBancorTokenParams } from "./getbancortokenparams";
 
+/**
+ * Get function by name
+ * @param {string} funName 
+ */
 export function getFunc(funName: string) {
   if (funName === 'getName') {
     return laGetName;

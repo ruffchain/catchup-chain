@@ -1,12 +1,17 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
-function transformContent(arr: any[]) {
-  for (let i = 0; i < arr.length; i++) {
-    arr[i].content = JSON.parse(arr[i].content.toString())
-  }
-}
+// function transformContent(arr: any[]) {
+//   for (let i = 0; i < arr.length; i++) {
+//     arr[i].content = JSON.parse(arr[i].content.toString())
+//   }
+// }
 
+/**
+ * Query multiple tx at a time
+ * @param handle 
+ * @param {{page:number, pageSize:number}| null}args 
+ */
 export async function laGetTxs(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
 

@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Get all tx in a block
+ * @param handle 
+ * @param {string} args - block hash
+ */
 export async function laGetTxsByBlock(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // getAllRecords()

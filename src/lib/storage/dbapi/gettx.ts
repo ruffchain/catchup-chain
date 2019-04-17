@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Get TX info
+ * @param handle 
+ * @param {string} args - address
+ */
 export async function laGetTx(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
 

@@ -390,7 +390,7 @@ export class StorageDataBase extends CUDataBase {
   public async queryHashFromTxAddressTable(addr: string, index: number, size: number): Promise<IFeedBack> {
 
     this.logger.info('queryHansFromTxAddressTable:', 'size:', size, ' index:', index)
-    let sql = SqlString.format('SELECT * FROM ? WHERE hash IN ( SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? );', [this.txTable, this.txAddressTable, addr, size, index * size]);
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash IN ( SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? ) ORDER BY timestamp DESC;', [this.txTable, this.txAddressTable, addr, size, index * size]);
     // SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? ;
     // "ad9d2f16ec9c0014b9036f7df3029ae783ba6a7e7cf5ba273c286eba36280c80" , "644d22c72f647fc79d02ce36e3b291154c02ad80c18713b0588cc679ba50ff7f"
     //let sql = SqlString.format('SELECT hash FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ? ;', [this.txAddressTable, addr, size, index * size]);

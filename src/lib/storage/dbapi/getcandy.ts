@@ -1,18 +1,14 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
-// taskGetCandy
+/** @type {number} - Candy to distribute to one address */
+const CANDY_AMOUNT: number = 1000;
+
 /**
- * 
- * @param args 
- * "args": {
-  "token": "SYS",
-  "address": "xxxx"
-}
+ * Get Candy, which is SYS token
+ * @param handle 
+ * @param {{token:string, address:string}} args 
  */
-
-const CANDY_AMOUNT = 1000;
-
 export async function laGetCandy(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // if it's empty , so it is SYS 

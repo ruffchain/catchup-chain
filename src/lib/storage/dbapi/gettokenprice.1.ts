@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Abandoned API.
+ * @param handle 
+ * @param args 
+ */
 export async function laGetTokenPrice(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     // compute token price 

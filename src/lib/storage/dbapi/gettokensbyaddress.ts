@@ -2,7 +2,11 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * Query some address's token holding info
+ * @param handle 
+ * @param {string} args - address
+ */
 export async function laGetTokensByAddress(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
     let arr: any;

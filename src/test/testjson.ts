@@ -27,6 +27,7 @@ let storageDB = new StorageDataBase(logger, {
   path: './data/db/'
 })
 
+// Operation on RuffChain
 let synchro = new Synchro({
   ip: '139.219.184.44',  // '127.0.0.1'    '139.219.184.44'
   port: 18089,
@@ -76,8 +77,18 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
 
   it('getTokenInfo REGTOKEN', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "REGTOKEN")
+    let cr = await client.callAsync('getTokenInfo', "language")
     logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
+  it('getTxsByAddress ', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTxsByAddress', { address: '1A3FVyxnENWa5w62xvHJ84RPFJT7N8u7vq', page: 1, pageSize: 10 })
+    //logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);

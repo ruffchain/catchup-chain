@@ -2,7 +2,10 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 
 
-
+/**
+ * @param {WRQue} handle - 
+ * @param {string |{page:number, pageIndex:number}} args - blocks index
+ */
 export async function laLatestBlocks(handle: WRQueue, args: any) {
   return new Promise<IFeedBack>(async (resolv) => {
 
