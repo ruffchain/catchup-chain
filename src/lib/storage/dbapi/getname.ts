@@ -37,7 +37,7 @@ export async function laGetName(handle: WRQueue, args: any) {
       }
       let queryName: string = args.toString();
       // it is a token name, getAllRecords()
-      let result = await handle.pStorageDb.queryHashTableFullName(queryName.toUpperCase(), 6);
+      let result = await handle.pStorageDb.queryHashTableFullName(queryName, 6);
       if (result.data) {
         result.data.forEach((item: any) => {
           arr.push({ type: item.type });

@@ -56,6 +56,16 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 describe('To test Catchup v1.0.2 JSON API', async function () {
   this.timeout(100000);
 
+  it('getName', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getName', "1JSLWjyBEP3nSddHGFpaCp4PpN9MAUdPr")
+    logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
   it('getBancorTokenParams', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getBancorTokenParams', "VIRTUAL")
