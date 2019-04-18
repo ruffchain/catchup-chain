@@ -1028,14 +1028,13 @@ export class Synchro {
         return;
       }
 
-      // update caller token account
-      let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-
       if (receipt.receipt.returnCode === 0) {
+        // update caller token account
+        let result = await this.updateBancorTokenBalance(tokenName, { address: caller });
+        if (result.err) {
+          resolv(result);
+          return;
+        }
 
         result = await this.updateBancorTokenParameters(tokenName);
         if (result.err) {

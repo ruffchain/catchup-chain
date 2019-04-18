@@ -66,18 +66,18 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
-  it('getBancorTokenParams', async () => {
+  it('getBancorTokenParams SMTOKEN', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getBancorTokenParams', "VIRTUAL")
+    let cr = await client.callAsync('getBancorTokenParams', "SMTOKEN")
     logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-  it('getTokenInfo Virtual', async () => {
+  it('getTokenInfo SMTOKEN', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getTokenInfo', "VIRTUAL")
+    let cr = await client.callAsync('getTokenInfo', "SMTOKEN")
     logger.info(cr);
     logger.info(cr.resp)
 
@@ -85,7 +85,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
-  it('getTokenInfo REGTOKEN', async () => {
+  it('getTokenInfo language', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTokenInfo', "language")
     logger.info(cr);
@@ -94,7 +94,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-
+  /*
   it('getTxsByAddress ', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getTxsByAddress', { address: '1A3FVyxnENWa5w62xvHJ84RPFJT7N8u7vq', page: 1, pageSize: 10 })
@@ -104,7 +104,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-  /*
+
   
   it('getTokenInfo sys', async () => {
       this.timeout(3000);

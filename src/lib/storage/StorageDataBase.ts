@@ -330,6 +330,10 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, factor, reserve, supply) VALUES(?, ?, ?, ?);', [this.bancorTokenTable, tokenname, factor, reserve, supply])
     return this.insertRecord(sql, {});
   }
+  public updateBancorTokenByName(tokenname: string, factor: number, reserve: number, supply: number) {
+    let sql = SqlString.format('UPDATE ? SET reserve = ? , supply = ? WHERE name =?;', [this.bancorTokenTable, reserve, supply, tokenname])
+    return this.updateRecord(sql);
+  }
   public updateBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await this.queryBancorTokenTable(tokenname)
@@ -343,7 +347,8 @@ export class StorageDataBase extends CUDataBase {
         resolv(result);
       } else {
         console.log('ERROR: updateBancorTokenTable result2: ', tokenname, ' already exist in db!')
-        resolv({ err: ErrorCode.RESULT_OK, data: '' });
+        let result2 = await this.updateBancorTokenByName(tokenname, factor, reserve, supply);
+        resolv(result2);
       }
     });
   }
