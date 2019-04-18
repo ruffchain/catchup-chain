@@ -1,5 +1,5 @@
 import { WRQueue } from "../queue";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, isValidAddress } from "../../../core";
 import { HASH_TYPE } from "../StorageDataBase";
 
 function isANumber(args: string) {
@@ -31,13 +31,19 @@ export async function laGetName(handle: WRQueue, args: any) {
     if (!isANumber(args)) {
       handle.logger.info('getName: not a number:', args)
       // if it is sys
+      let queryName: string;
+
       if (args === 'sys' || args === 'SYS') {
         resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: 'SYS', type: HASH_TYPE.TOKEN, verified: 0 }] });
         return;
+      } else if (args.toString().length > 20) {
+        queryName = args.toString();
       }
-      let queryName: string = args.toString();
+      else {
+        queryName = args.toString().toUpperCase();
+      }
       // it is a token name, getAllRecords()
-      let result = await handle.pStorageDb.queryHashTableFullName(queryName, 6);
+      let result = await handle.pStorageDb.queryHashTableFullName(queryName, 2);
       if (result.data) {
         result.data.forEach((item: any) => {
           arr.push({ type: item.type });
