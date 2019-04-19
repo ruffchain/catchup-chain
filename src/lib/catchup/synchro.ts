@@ -931,7 +931,7 @@ export class Synchro {
       let nameLst: IName[] = [];
       let amountAll: number = 0;
       let addrLst: string[] = [];
-      let nonliquidity: number = (receipt.tx.nonliquidity !== undefined) ? (parseFloat(receipt.tx.nonliquidity)) : (0);
+      let nonliquidity: number = (receipt.tx.input.nonliquidity !== undefined) ? (parseFloat(receipt.tx.input.nonliquidity)) : (0);
       let factor = parseFloat(receipt.tx.input.factor);
       let reserve = parseFloat(receipt.tx.value)
       let hash = receipt.tx.hash;
