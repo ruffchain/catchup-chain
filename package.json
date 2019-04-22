@@ -7,11 +7,13 @@
     "test": "echo \"Run test specified\"",
     "testjson": "./node_modules/.bin/mocha ./dist/test/testjson.js",
     "testlist": "./node_modules/.bin/mocha ./dist/test/testlist.js",
+    "testchain": "./node_modules/.bin/mocha ./dist/testsuite/testChainApi.js",
+    "testbackend": "./node_modules/.bin/mocha ./dist/testsuite/testBackendApi.js",
     "compile": "tsc -p ./",
     "start": "node ./dist/index.js",
-    "clean": "rm -rf ./data/log && mkdir -p ./data/log",
+    "clean": "rm -rf ./data/log && mkdir -p ./data/log && rm -rf ./data/test && mkdir -p ./data/test",
     "cleandb": "rm  -rf ./data/db/ && mkdir -p ./data/db",
-    "preinstall": "mkdir -p ./data/log && mkdir -p ./data/db"
+    "preinstall": "mkdir -p ./data/log && mkdir -p ./data/db && mkdir -p ./data/test"
   },
   "repository": {
     "type": "git",
