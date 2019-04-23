@@ -6,8 +6,8 @@
 - [] setUserCode
 - [] getUserCode
 - [] runUserMethod
-- [] transferTo
-- [] createToken
+- [x] transferTo
+- [x] createToken
     - [] precision
 - [] transferTokenTo
 - [] getTokenBalance

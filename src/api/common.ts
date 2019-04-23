@@ -8,16 +8,18 @@ const BLOCK_INTERVAL = 10;
 
 export const TOKEN_MAX_LENGTH = 12;
 export const TOKEN_MIN_LENGTH = 3;
-export const FEE_MAX = 2;
+export const FEE_MAX = 0.001;
 export const FEE_MIN = 0.001;
 export const MAX_NONLIQUIDITY = 1000000000000;
 export const MAX_COST = 1000000000000;
 const NUM_DIGITS = 12;
 
+const MAX_NORMAL_TOKEN_PRECISION = 9;
+
 /**
- * 
+ *
  * @param amount: amount of token
- * 
+ *
  * - it should be a BigNumber
  */
 export function checkAmount(amount: string): boolean {
@@ -44,11 +46,21 @@ export function checkFee(fee: string): boolean {
     return num >= FEE_MIN && num <= FEE_MAX;
 }
 
+export function checkFeeForRange(fee: string, min: number, max: number) {
+    let bn = new BigNumber(fee);
+
+    if (bn.isNaN() === true) {
+        return false;
+    }
+
+    let num = JSON.parse(fee);
+    return num >= min && num <= max;
+}
+
 export function checkAddress(addr: string): boolean {
     //console.log("len:", addr.length)
-
-    return isValidAddress(addr);
     // return addr.length >= 30;
+    return isValidAddress(addr);
 }
 
 export function checkAddressArray(addrStr: string): boolean {
@@ -56,20 +68,21 @@ export function checkAddressArray(addrStr: string): boolean {
     let addr: any;
     try {
         addr = JSON.parse(addrStr);
+        console.log('addr', addr);
+
+        for (let i = 0; i < addr.length; i++) {
+            console.log(addr[i])
+            if (!isValidAddress(addr[i])) {
+                return false;
+            }
+        }
     } catch (e) {
         return false;
     }
-    for (let i = 0; i < addr.length; i++) {
-        if (!isValidAddress(addr[i])) {
-            return false;
-        }
-    }
+
     return addr.length > 0;
 }
-
 export interface IfResult { resp: string | null, ret: number };
-
-export interface IfResultTransferTo { resp: string | null, ret: number, hash: string }
 
 export interface IfSysinfo {
     secret: string;
@@ -90,7 +103,7 @@ export async function waitSeconds(seconds: number) {
     });
 }
 
-export const sysTokenSym = 'sys';
+export const sysTokenSym = 'SYS';
 
 export async function checkReceipt(ctx: IfContext, txhash: string): Promise<{ resp: string | null, ret: number }> {
     return new Promise<{ resp: string | null, ret: number }>(async (resolve, reject) => {
@@ -145,7 +158,7 @@ export function checkTokenFactor(factor: string): boolean {
         return false;
     }
     let num = JSON.parse(factor);
-    return num > 0 && num < 1;
+    return num > 0 && num <= 1;
 }
 
 export function checkTokenNonliquidity(nonliquidity: string): boolean {
@@ -179,6 +192,16 @@ export function formatNumber(num: string): string {
     }
 }
 
+export function checkPrecision(arg: string) {
+    let bn = new BigNumber(arg);
+
+    if (bn.isNaN()) {
+        return false;
+    }
+    let num = parseInt(arg);
+    return num >= 0 && num <= MAX_NORMAL_TOKEN_PRECISION;
+}
+
 export function DelayPromise(n: number) {
     return new Promise<IFeedBack>((resolv) => {
         setTimeout(() => {
@@ -186,4 +209,3 @@ export function DelayPromise(n: number) {
         }, n * 1000)
     });
 }
-

@@ -7,11 +7,11 @@
 
 import { Logger } from "../api/logger";
 import { IfSysinfo } from "../api/common";
-import { RPCClient } from "../client/client/rfc_client";
-import { getBlock } from "../api/getblock";
 import { User } from "./user";
 import { transferTo } from "../api/transferto";
 import { getBalance } from "../api/getbalance";
+import { createToken } from "../api/createtoken";
+import { getTokenBalance } from "../api/getTokenBalance";
 
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
 const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
@@ -32,25 +32,16 @@ let SYSINFO: IfSysinfo = {
   address: ADDRESS,
   verbose: false
 }
+function createTokenName() {
+  let out = '';
 
-// let ctx: any;
+  out = 'TOK';
 
-// function createContext(si: IfSysinfo) {
-//   return {
-//     client: new RPCClient(
-//       HOST,
-//       PORT,
-//       si
-//     ),
-//     sysinfo: si
-//   };
-// }
-// function setClientUser(user: User) {
-//   SYSINFO.secret = user.getSecret();
-//   SYSINFO.address = user.getAddress();
-
-//   ctx = createContext(SYSINFO);
-// }
+  out += Math.floor((Math.random() * 1000)).toString();
+  out += String.fromCharCode(Math.floor(Math.random() * 10) + 65);
+  out += String.fromCharCode(Math.floor(Math.random() * 10) + 75);
+  return out;
+}
 // async function main() {
 //   let result = await getBlock(ctx, ['latest', 'true']);
 //   logger.info(result);
@@ -75,7 +66,10 @@ userAlice.info(logger.info);
 
 
 
-describe('To test Chain JSON API', async function () {
+let faketoken1 = createTokenName();
+let faketoken2 = createTokenName();
+
+describe('To test Chain API', async function () {
   this.timeout(100000);
 
   // let result = await getBlock(userBoss.ctx, ['1']);
@@ -98,18 +92,52 @@ describe('To test Chain JSON API', async function () {
 
     expect(resp.value).to.equal("n1000");
   })
-  // it('boss transfer 1000 SYS to Mary', async () => {
-  //   this.timeout(3000);
+  it('boss transfer 1000 SYS to Mary', async () => {
+    this.timeout(3000);
 
-  //   let result = await transferTo(userBoss.ctx, [userMary.getAddress(), 1000 + '', 0.001 + '']);
+    let result = await transferTo(userBoss.ctx, [userMary.getAddress(), 1000 + '', 0.001 + '']);
 
-  //   expect(result.ret).to.equal(200);
-  // })
-  // it('boss transfer 1000 SYS to Alice', async () => {
-  //   this.timeout(3000);
+    expect(result.ret).to.equal(0);
+  })
+  it('check  Mary\'s balance be 1000', async () => {
+    this.timeout(6000);
 
-  //   let result = await transferTo(userBoss.ctx, [userAlice.getAddress(), 1000 + '', 0.001 + '']);
+    let result = await getBalance(userBoss.ctx, [userMary.getAddress()]);
+    let resp = JSON.parse(result.resp!)
 
-  //   expect(result.ret).to.equal(200);
-  // })
+    expect(resp.value).to.equal("n1000");
+  })
+  it('boss transfer 1000 SYS to Alice', async () => {
+    this.timeout(3000);
+
+    let result = await transferTo(userBoss.ctx, [userAlice.getAddress(), 1000 + '', 0.001 + '']);
+
+    expect(result.ret).to.equal(0);
+  })
+  it('check  Alice\'s balance be 1000', async () => {
+    this.timeout(6000);
+
+    let result = await getBalance(userBoss.ctx, [userAlice.getAddress()]);
+    let resp = JSON.parse(result.resp!)
+
+    expect(resp.value).to.equal("n1000");
+  })
+
+  it('John createToken ' + faketoken1, async () => {
+    this.timeout(60000);
+
+    let result = await createToken(userJohn.ctx, [faketoken1, "[{\"address\":\"" + userJohn.getAddress() + "\",\"amount\":\"10000\"}]", '9', '0.001']);
+    console.log(result);
+    expect(result.ret).to.equal(0);
+  })
+
+  it('John getTokenBalance  ' + faketoken1, async () => {
+    this.timeout(6000);
+
+    let result = await getTokenBalance(userJohn.ctx, [faketoken1, userJohn.getAddress()]);
+    console.log(result);
+    let resp = JSON.parse(result.resp!)
+    expect(resp.value).to.equal("n10000");
+  })
+
 });
