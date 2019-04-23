@@ -12,9 +12,8 @@ export async function getMiners(ctx: IfContext, args: string[]): Promise<IfResul
         let params =
         {
             method: 'getMiners',
-            params: {}
-        }
-
+            params: {},
+        };
         let cr = await ctx.client.callAsync(FUNC_NAME, params);
         if (ctx.sysinfo.verbose) {
             console.log(cr);

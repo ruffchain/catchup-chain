@@ -9,6 +9,7 @@
     "testlist": "./node_modules/.bin/mocha ./dist/test/testlist.js",
     "testchain": "./node_modules/.bin/mocha ./dist/testsuite/testChainApi.js",
     "testbackend": "./node_modules/.bin/mocha ./dist/testsuite/testBackendApi.js",
+    "testbug": "./node_modules/.bin/mocha ./dist/testsuite/testgetminers.js",
     "compile": "tsc -p ./",
     "start": "node ./dist/index.js",
     "clean": "rm -rf ./data/log && mkdir -p ./data/log && rm -rf ./data/test && mkdir -p ./data/test",
