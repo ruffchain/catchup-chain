@@ -1180,7 +1180,7 @@ export class Synchro {
   }
   public async getBlock(num: number) {
     let result = await getBlock(this.ctx, [num + '', 'true']);
-    this.logger.info(result.resp!);
+    // this.logger.info(result.resp!);
     return result;
   }
   public async getLIBNumber() {

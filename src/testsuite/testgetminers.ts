@@ -18,7 +18,7 @@ import * as fs from "fs";
 
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
 const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
-const HOST = '40.73.35.23'
+const HOST = '40.73.34.219' // 40.73.34.219 .  40.73.35.23 internal test 40.73.34.219
 const PORT = 18089
 const MAX_ = 4000000;
 
@@ -46,15 +46,15 @@ function createTokenName() {
   return out;
 }
 
-let userBoss = new User('Boss', SYSINFO);
-userBoss.setAddress('da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba');
-userBoss.setSecret('1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy');
+let userBoss = new User('Boss', SYSINFO, null);
+userBoss.setAddress('1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy');
+userBoss.setSecret('da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba');
 
 // setClientUser(userBoss);
 
-let userJohn = new User('John', SYSINFO);
-let userMary = new User('Mary', SYSINFO)
-let userAlice = new User('Alice', SYSINFO)
+let userJohn = new User('John', SYSINFO, null);
+let userMary = new User('Mary', SYSINFO, null)
+let userAlice = new User('Alice', SYSINFO, null)
 
 userJohn.info(logger.info);
 userMary.info(logger.info);

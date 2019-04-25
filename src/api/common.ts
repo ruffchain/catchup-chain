@@ -3,7 +3,7 @@ import { ErrorCode, IFeedBack } from '../core/error_code';
 import { isValidAddress } from '../core/address';
 const BigNumber = require('bignumber.js');
 
-const MAX_CONFIRM_TIMES = 3;
+const MAX_CONFIRM_TIMES = 4;
 const BLOCK_INTERVAL = 10;
 
 export const TOKEN_MAX_LENGTH = 12;

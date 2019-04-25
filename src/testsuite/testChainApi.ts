@@ -48,17 +48,17 @@ function createTokenName() {
 // }
 
 // main();
-let userBoss = new User('Boss', SYSINFO);
-userBoss.setAddress('da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba');
-userBoss.setSecret('1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy');
+let userBoss = new User('Boss', SYSINFO, null);
+userBoss.setAddress('1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy');
+userBoss.setSecret('da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba');
 
 // setClientUser(userBoss);
 
-let userJohn = new User('John', SYSINFO);
+let userJohn = new User('John', SYSINFO, null);
 // userJohn.setAddress('1E6YG96FtWqtpxtX3TVsGxkPPBjQqhkx8k');
 // userJohn.setSecret('b01874098f97ee1a281c6915cb0fc55a1f5a6a0ac1d8b7afe685959e88336450');
-let userMary = new User('Mary', SYSINFO)
-let userAlice = new User('Alice', SYSINFO)
+let userMary = new User('Mary', SYSINFO, null)
+let userAlice = new User('Alice', SYSINFO, null)
 
 userJohn.info(logger.info);
 userMary.info(logger.info);

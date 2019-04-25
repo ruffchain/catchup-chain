@@ -13,7 +13,7 @@ export class User {
   private secret: string;
 
 
-  constructor(name: string, sysinfo: IfSysinfo) {
+  constructor(name: string, sysinfo: IfSysinfo, option: { address: string, secret: string } | undefined | null) {
     if (name) {
       this.name = name;
     } else {
@@ -21,9 +21,16 @@ export class User {
     }
 
     this.sys = 0;
-    let [publicKey, pk] = createKeyPair();
-    this.address = addressFromSecretKey(pk)!;
-    this.secret = pk.toString('hex');
+
+    if (option) {
+      this.address = option.address;
+      this.secret = option.secret;
+    } else {
+      let [publicKey, pk] = createKeyPair();
+      this.address = addressFromSecretKey(pk)!;
+      this.secret = pk.toString('hex');
+    }
+
 
     this.ctx = { client: new RPCClient(sysinfo.host, sysinfo.port, sysinfo), sysinfo: sysinfo };
   }

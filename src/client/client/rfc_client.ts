@@ -38,6 +38,10 @@ export class RPCClient {
             funName,
             args: funcArgs
         };
+
+        // console.log('sendObj:')
+        // console.log(sendObj);
+
         if (this.m_verbose) {
             console.log(`RPCClient send request ${sendObj.funName}, params ${JSON.stringify(sendObj.args)}`);
         }
