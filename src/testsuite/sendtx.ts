@@ -8,26 +8,35 @@ import * as colors from 'colors';
 import * as fs from 'fs';
 
 // run work
-// FILE=0 node ./dist/testsuite/sendtx.js
+// FILE=0 IP=40.73.35.23 node ./dist/testsuite/sendtx.js
+// FILE=1 IP=40.73.35.23 node ./dist/testsuite/sendtx.js
+// FILE=2 IP=40.73.96.202 node ./dist/testsuite/sendtx.js
+// FILE=3 IP=40.73.96.202 node ./dist/testsuite/sendtx.js
+
+// FILE=2 IP=40.73.34.219 node ./dist/testsuite/sendtx.js
+// FILE=3 IP=40.73.34.219 node ./dist/testsuite/sendtx.js
+
+// FILE=4 IP=40.73.34.219 node ./dist/testsuite/sendtx.js
+// FILE=1 IP=40.73.34.219 node ./dist/testsuite/sendtx.js
 
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
 const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
-const HOST = '40.73.35.23'
+let HOST = '40.73.35.23'
 const PORT = 18089
 
 
 // Create 
-let FILE_INDEX: number;
+let FILE_INDEX: number = 0;
 let MAX_USERNUM: number;
-
-
+let REMOTE_IP: string;
 
 if (process.env.FILE) {
   FILE_INDEX = parseInt(process.env.FILE);
-} else {
-  FILE_INDEX = 0;
 }
 
+if (process.env.IP) {
+  HOST = process.env.IP;
+}
 
 const logger = Logger.init({
   path: './data/test/'
@@ -88,7 +97,12 @@ async function main() {
     promiseLst.push(prom);
   }
   Promise.all(promiseLst).then((result) => {
-    console.log(result);
+    // console.log(result);
+    if (result) {
+      for (let ele in result) {
+        console.log(ele);
+      }
+    }
   });
 }
 

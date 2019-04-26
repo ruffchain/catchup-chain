@@ -11,6 +11,8 @@ import { StorageDataBase } from "../lib/storage/StorageDataBase";
 import { Synchro } from "../lib/catchup/synchro";
 import { getBlock } from "../api/getblock";
 
+// START=1 node ./dist/testsuite/checktx.js
+
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
 const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
 const HOST = '40.73.35.23'
@@ -47,12 +49,6 @@ let synchro = new Synchro({
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
-
-
-
-
-
-
 
 async function main() {
   // get current height
