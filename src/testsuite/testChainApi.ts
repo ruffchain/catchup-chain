@@ -12,6 +12,8 @@ import { transferTo } from "../api/transferto";
 import { getBalance } from "../api/getbalance";
 import { createToken } from "../api/createtoken";
 import { getTokenBalance } from "../api/getTokenBalance";
+import { setUserCode } from "../api/setusercode";
+import * as path from "path";
 
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
 const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
@@ -140,4 +142,11 @@ describe('To test Chain API', async function () {
     expect(resp.value).to.equal("n10000");
   })
 
+  it('John setUserCode ', async () => {
+    let codePath = path.join(__dirname, "usercode.js");
+    this.timeout(6000);
+    let result = await setUserCode(userJohn.ctx, [codePath, '0.13']);
+    console.log(result);
+    expect(result.ret).to.equal(0);
+  })
 });
