@@ -28,12 +28,12 @@ const PORT = 18089
 // Create 
 let FILE_INDEX: number = 0;
 let MAX_USERNUM: number;
-let REMOTE_IP: string;
+// let REMOTE_IP: string;
 
 if (process.env.FILE) {
   FILE_INDEX = parseInt(process.env.FILE);
 }
-
+ 
 if (process.env.IP) {
   HOST = process.env.IP;
 }

@@ -133,18 +133,18 @@ async function transferMain() {
 
   }
 }
-async function main() {
-  console.log(colors.red('\n************************************\n'))
-  // let result = await transferTo(userBoss.ctx, [userLst[0].getAddress(), SUM + '', 0.001 + '']);
-  // console.log(colors.green(userLst[0].name))
-  // console.log(result);
+// async function main() {
+console.log(colors.red('\n************************************\n'))
+// let result = await transferTo(userBoss.ctx, [userLst[0].getAddress(), SUM + '', 0.001 + '']);
+// console.log(colors.green(userLst[0].name))
+// console.log(result);
 
-  // result = await getBalance(userBoss.ctx, [userLst[0].getAddress()]);
-  // console.log(colors.green(userLst[0].name))
-  // console.log(result);
+// result = await getBalance(userBoss.ctx, [userLst[0].getAddress()]);
+// console.log(colors.green(userLst[0].name))
+// console.log(result);
 
-  // transferNext(0, MAX_LEVEL, SUM);
+// transferNext(0, MAX_LEVEL, SUM);
 
-}
+// }
 
 transferMain();

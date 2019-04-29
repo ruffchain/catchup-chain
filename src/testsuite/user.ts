@@ -32,7 +32,15 @@ export class User {
     }
 
 
-    this.ctx = { client: new RPCClient(sysinfo.host, sysinfo.port, sysinfo), sysinfo: sysinfo };
+    let userSysinfo = {
+      secret: this.secret,
+      host: sysinfo.host,
+      port: sysinfo.port,
+      address: this.address,
+      verbose: sysinfo.verbose
+    };
+
+    this.ctx = { client: new RPCClient(sysinfo.host, sysinfo.port, userSysinfo), sysinfo: userSysinfo };
   }
 
   info(handle: any) {
@@ -42,11 +50,11 @@ export class User {
     handle("SYS:  ", this.sys, "\n");
   }
 
-  setAddress(addr: string) {
+  private setAddress(addr: string) {
     this.address = addr;
   }
   getAddress() { return this.address; }
-  setSecret(sec: string) {
+  private setSecret(sec: string) {
     this.secret = sec;
   }
   getSecret() { return this.secret; }

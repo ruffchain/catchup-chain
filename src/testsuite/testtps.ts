@@ -35,9 +35,12 @@ let SYSINFO: IfSysinfo = {
   verbose: false
 }
 
-let userBoss = new User('Boss', SYSINFO, null);
-userBoss.setAddress('1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy');
-userBoss.setSecret('da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba');
+let userBoss = new User('Boss', SYSINFO, {
+  address: '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy',
+  secret: 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba'
+});
+// userBoss.setAddress('1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy');
+// userBoss.setSecret('da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba');
 
 let userDeputy = new User('Deputy', SYSINFO, null);
 
