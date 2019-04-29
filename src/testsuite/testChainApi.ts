@@ -13,6 +13,7 @@ import { getBalance } from "../api/getbalance";
 import { createToken } from "../api/createtoken";
 import { getTokenBalance } from "../api/getTokenBalance";
 import { setUserCode } from "../api/setusercode";
+import { runUserMethod } from "../api/runusermethod";
 import * as path from "path";
 
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
@@ -146,8 +147,32 @@ describe('To test Chain API', async function () {
   it('John setUserCode ', async () => {
     let codePath = path.join(__dirname, "usercode.js");
     this.timeout(6000);
-    let result = await setUserCode(userJohn.ctx, [codePath, '0.13']);
+    let result = await setUserCode(userJohn.ctx, [codePath, "0.13"]);
     console.log(result);
     expect(result.ret).to.equal(0);
   })
+
+  it('John runUserMethod ', async () => {
+    this.timeout(6000);
+    let granteeAddress = "1LuwjNj8wkqo237N7Gh8nZSSvUa6TZ5ds4";
+    let result = await getBalance(userJohn.ctx, [granteeAddress]);
+    let resp = JSON.parse(result.resp!);
+
+    let value = resp.value;
+    let before = value.slice(1);
+
+    let expectNum = (parseInt(before) + 50);
+    let expectValue = `n${expectNum}`;
+
+    result = await runUserMethod(userJohn.ctx, [userJohn.getAddress(), "100", "0.002", "doTransfer", "100"]);
+
+    console.log('result', result);
+
+    result = await getBalance(userJohn.ctx, [granteeAddress]);
+    resp = JSON.parse(result.resp!);
+    console.log(resp);
+
+    expect(resp.value).to.equal(expectValue);
+  })
+
 });
