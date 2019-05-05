@@ -33,7 +33,7 @@ let MAX_USERNUM: number;
 if (process.env.FILE) {
   FILE_INDEX = parseInt(process.env.FILE);
 }
- 
+
 if (process.env.IP) {
   HOST = process.env.IP;
 }
@@ -81,7 +81,7 @@ console.log('max usernum:', MAX_USERNUM)
 async function main() {
   let promiseLst: Promise<IfResult>[] = [];
   // let len = userList.length;
-  let sysForEither = 0.0001
+  let sysForEither = 0.01
 
   for (let i = 0; i < userList.length; i++) {
     console.log(colors.cyan(userList[i].name));
