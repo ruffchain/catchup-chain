@@ -1,5 +1,6 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
+import { NORMAL_TOKEN_PRECISION } from "./scoop";
 
 /**
  * Get BancorToken parameters, Factor, Supply, Reserve, latest value
@@ -25,7 +26,8 @@ export async function laGetBancorTokenParams(handle: WRQueue, args: any) {
     } else {
       F = result.data.factor;
       S = result.data.supply;
-      R = result.data.reserve;
+      // To make the displayed Reserve value to be fixed 
+      R = parseFloat(result.data.reserve.toFixed(NORMAL_TOKEN_PRECISION));
       // result.data.price = S * F / R;
     }
     resolv({
