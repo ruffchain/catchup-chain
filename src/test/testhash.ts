@@ -8,16 +8,25 @@ const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
 let msg = 'abc';
 let publicKey = publicKeyFromSecretKey(SECRET);
 
+console.log('\n1st hash:');
+let hashVal0 = sha256(Buffer.from('abc'));
 console.log(sha256(Buffer.from('abc')));
-console.log('address:')
+console.log('\naddress:')
 console.log(addressFromSecretKey(SECRET));
-console.log('publicKey')
+
+console.log('\npublicKey:')
 console.log(publicKeyFromSecretKey(SECRET));
 
+console.log('\nsecret');
+let secretBuf = Buffer.from(SECRET, 'hex')
+console.log(secretBuf);
+console.log(secretBuf.toString('hex'))
+
 // hash to 
-console.log('hash:')
+console.log('\nhash:')
 let hashVal = sha256(sha256(Buffer.from(msg)))
 console.log(hashVal);
+
 console.log('\ndigest')
 let signature = sign(hashVal, SECRET);
 console.log(signature)

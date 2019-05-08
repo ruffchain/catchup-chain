@@ -26,6 +26,8 @@ function pubKeyToBCFormat(publickey: Buffer): Buffer {
 export function signBufferMsg(msg: Buffer, key: Buffer) {
     // Sign message
     let sig = secp256k1.sign(msg, key);
+    // console.log('Yang Jun, signBufferMsg:');
+    // console.log(sig);
     // Ensure low S value
     return secp256k1.signatureNormalize(sig.signature);
 }
@@ -67,6 +69,8 @@ export function publicKeyFromSecretKey(secret: Buffer | string): Buffer | undefi
 
 export function addressFromSecretKey(secret: Buffer | string): string | undefined {
     let publicKey = publicKeyFromSecretKey(secret);
+    // Yang Jun
+    console.log(publicKey);
     if (publicKey) {
         return addressFromPublicKey(publicKey);
     }
