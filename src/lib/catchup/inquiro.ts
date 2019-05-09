@@ -61,8 +61,6 @@ export class Inquiro {
       let obj = reqobj as IfReq;
       this.logger.info('\nreceive msg req:', reqobj, '\n');
 
-
-
       resp.writeHead(200, { 'Content-Type': 'application/json' });
       let result = await this.handle(obj);
 

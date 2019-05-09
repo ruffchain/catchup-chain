@@ -37,7 +37,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.1.241', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56
+  host: '40.73.100.56', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56
   port: 18080,
   address: '',
   verbose: false
@@ -68,33 +68,27 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
 
   it('getBancorTokenParams SMTOKEN', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getBancorTokenParams', "TESTTOKEN2")
+    let cr = await client.callAsync('getBancorTokenParams', "TOKEN90")
     logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
+
+  it('getTokenInfo language', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getTokenInfo', "TOKEN90")
+    logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
+
   /*
-it('getTokenInfo SMTOKEN', async () => {
-  this.timeout(3000);
-  let cr = await client.callAsync('getTokenInfo', "SMTOKEN")
-  logger.info(cr);
-  logger.info(cr.resp)
 
-  let obj = JSON.parse(cr.resp!);
-  expect(1).to.equal(1);
-})
-
-it('getTokenInfo language', async () => {
-  this.timeout(3000);
-  let cr = await client.callAsync('getTokenInfo', "language")
-  logger.info(cr);
-  logger.info(cr.resp)
-
-  let obj = JSON.parse(cr.resp!);
-  expect(1).to.equal(1);
-})
 
 it('getTxsByAddress ', async () => {
   this.timeout(3000);

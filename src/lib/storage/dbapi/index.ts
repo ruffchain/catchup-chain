@@ -17,6 +17,8 @@ import { laGetChainOverview } from "./getchainoverview";
 import { laGetLatestTxCount } from "./getlatesttxcount";
 import { laGetCandy } from "./getcandy";
 import { laGetBancorTokenParams } from "./getbancortokenparams";
+import { laGetSysByToken } from "./getsysbytoken";
+import { laGetTokenBySys } from "./gettokenbysys";
 
 /**
  * Get function by name
@@ -76,6 +78,12 @@ export function getFunc(funName: string) {
   }
   else if (funName === 'getCandy') {
     return laGetCandy;
+  }
+  else if (funName === 'getTokenBySys') {
+    return laGetTokenBySys;
+  }
+  else if (funName === 'getSysByToken') {
+    return laGetSysByToken;
   }
   else if (funName === 'default') {
     return laDefault;
