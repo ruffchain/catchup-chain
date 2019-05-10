@@ -27,6 +27,8 @@ export async function laGetSysByToken(handle: WRQueue, args: any) {
       return;
     }
 
+    console.log('Yang laGetsysbytoken:', tokenid, ' and ', num);
+
 
     let F: BigNumber;
     let S: BigNumber;
