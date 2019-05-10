@@ -171,6 +171,9 @@ export class WRQueue extends EventEmitter {
   private async execRead(task: IfTask) {
     task.running = true;
 
+    console.log('Yang-- execRead');
+    console.log(task.request);
+
     let result = await getFunc(task.request.funName)(this, task.request.args);
 
     task.callback({ err: ErrorCode.RESULT_OK, data: result.data })

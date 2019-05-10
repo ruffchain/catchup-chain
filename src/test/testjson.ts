@@ -86,7 +86,15 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
+  it('getToken sys', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getSysByToken', { tokenid: "TOKEN90", amount: 2 })
+    logger.info(cr);
+    logger.info(cr.resp)
 
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
   /*
 
 
