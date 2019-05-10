@@ -18,8 +18,10 @@ export async function laGetSysByToken(handle: WRQueue, args: any) {
       let argsObj = JSON.parse(JSON.stringify(args));
       tokenid = argsObj.tokenid.totoUpperCase();
       num = argsObj.amount;
+      console.log('args:', argsObj);
 
     } catch (e) {
+      console.log('args parsing wrong :', e);
       resolv({
         err: ErrorCode.RESULT_SYNC_GETSELLTOKENGAIN_FAILED,
         data: null
