@@ -16,7 +16,7 @@ export async function laGetSysByToken(handle: WRQueue, args: any) {
     let num: number;
     try {
       let argsObj = JSON.parse(JSON.stringify(args));
-      tokenid = argsObj.tokenid.totoUpperCase();
+      tokenid = argsObj.tokenid.toUpperCase();
       num = argsObj.amount;
       console.log('args:', argsObj);
 
@@ -64,7 +64,7 @@ export async function laGetSysByToken(handle: WRQueue, args: any) {
 
     resolv({
       err: ErrorCode.RESULT_OK,
-      data: out.toNumber()
+      data: parseFloat(out.toNumber().toFixed(NORMAL_TOKEN_PRECISION))
     })
 
   })
