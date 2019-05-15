@@ -155,6 +155,11 @@ export class StorageDataBase extends CUDataBase {
     });
   }
 
+  public async queryUserCount() {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE type = ?;', [this.hashTable, HASH_TYPE.ADDRESS]);
+    return this.getRecord(sql)
+  }
+
   // account
   public queryFortuneRanking(token: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE token = ? ORDER BY value DESC LIMIT 50;', [this.accountTable, token]);
