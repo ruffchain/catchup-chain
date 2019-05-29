@@ -66,6 +66,17 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
+  it('getChainOverview', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getChainOverview', '')
+    logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
+  /*
   it('getBancorTokenParams SMTOKEN', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getBancorTokenParams', "TOKEN90")
@@ -95,7 +106,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-  /*
+
 
 
 it('getTxsByAddress ', async () => {
