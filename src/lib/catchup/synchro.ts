@@ -23,6 +23,7 @@ import { getTokenBalances } from '../../api/getTokenBalances';
 import { getBancorTokenBalances } from '../../api/getBancorTokenBalances';
 import { getBancorTokenParams } from '../../api/getBancorTokenParams';
 import { getBlocks } from '../../api/getblocks';
+import { checkMortgage, checkUnmortgage, checkVote } from './vote/check';
 
 /**
  * This is a client , always syncing with the Chain
@@ -57,7 +58,7 @@ export class Synchro {
   private port: number;
   private ctx: IfContext;
   private pStatusDb: StatusDataBase;
-  private pStorageDb: StorageDataBase;
+  public pStorageDb: StorageDataBase;
   private nCurrentLIBHeight: number;
   private nBatch: number;
 
@@ -446,6 +447,7 @@ export class Synchro {
 
         let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
         feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
+
         if (feedback.err) {
           this.logger.error('put tx into txtable failed')
           resolv({ err: feedback.err, data: null });
@@ -498,10 +500,16 @@ export class Synchro {
     else if (tx.method === 'transferBancorTokenTo') {
       return this.checkTransferBancorTokenTo(recet);
     }
-    else if (tx.method === 'vote'
-      || tx.method === 'mortgage'
-      || tx.method === 'unmortgage'
-      || tx.method === 'register'
+    else if (tx.method === 'mortgage') {
+      return checkMortgage(this, recet);
+    }
+    else if (tx.method === 'unmortgage') {
+      return checkUnmortgage(this, recet);
+    }
+    else if (tx.method === 'vote') {
+      return checkVote(this, recet);
+    }
+    else if (tx.method === 'register'
       || tx.method === 'setUserCode'
       || tx.method === 'getUserCode'
       || tx.method === 'runUserMethod'
@@ -531,7 +539,7 @@ export class Synchro {
       }
 
       //if (receipt.receipt.returnCode === 0) {
-      this.logger.info('checkTranserTo, updateBalances')
+      this.logger.info('checkDefaultCommand');
       feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }]);
       if (feedback.err) {
         resolv(feedback);
@@ -1146,7 +1154,7 @@ export class Synchro {
   public async updateBalance(token: string, account: IName) {
     return this.updateBalanceBasic(token, TOKEN_TYPE.SYS, account, this.getBalanceInfo);
   }
-  private async updateBalances(token: string, accounts: IName[]) {
+  public async updateBalances(token: string, accounts: IName[]) {
     return this.updateBalancesBasic(SYS_TOKEN, accounts, this.updateBalance);
   }
   //---------------------------------------------------------------
