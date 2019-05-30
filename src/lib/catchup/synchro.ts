@@ -28,6 +28,9 @@ import { checkCreateToken } from './token/token';
 import { checkCreateBancorToken } from './bancortoken/bancortoken';
 import { checkCreateLockBancorToken, updateShortALTRow, updatePureALTRow } from './lockbancortoken/lockbancor';
 import { getLockBancorTokenBalance } from '../../api/getLockBancorTokenBalance';
+import { checkTransferLockBancorTokenTo } from './lockbancortoken/transfer';
+import { checkSellLockBancorToken } from './lockbancortoken/sell';
+import { checkBuyLockBancorToken } from './lockbancortoken/buy';
 
 /**
  * This is a client , always syncing with the Chain
@@ -522,6 +525,15 @@ export class Synchro {
     else if (tx.method === 'createLockBancorToken') {
       return checkCreateLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
     }
+    else if (tx.method === 'transferLockBancorTokenTo') {
+      return checkTransferLockBancorTokenTo(this, recet, TOKEN_TYPE.LOCKBANCOR);
+    }
+    else if (tx.method === 'sellLockBancorToken') {
+      return checkSellLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
+    }
+    else if (tx.method === 'buyLockBancorToken') {
+      return checkBuyLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
+    }
     else if (tx.method === 'setUserCode'
       || tx.method === 'getUserCode'
       || tx.method === 'runUserMethod'
@@ -804,7 +816,7 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null })
     });
   }
-  private updateBancorTokenParameters(tokenName: string) {
+  public updateBancorTokenParameters(tokenName: string) {
     this.logger.info('updateBancorTokenParameters, with:', tokenName)
 
     return new Promise<IFeedBack>(async (resolv) => {

@@ -119,7 +119,6 @@ export async function updateShortALTRow(handler: Synchro, valueObj: any, token: 
   let laAmount: number = parseFloat(amount);
   let value: number = parseFloat(laAmount.toFixed(BANCOR_TOKEN_PRECISION));
 
-
   // save to account table
   handler.logger.info('updateShortALTRow ->\n')
   let result2 = await handler.pStorageDb.updateAccountTable(account.address, token, type, amount, value);
