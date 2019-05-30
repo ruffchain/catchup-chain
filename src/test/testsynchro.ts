@@ -20,7 +20,7 @@ let storageDB = new StorageDataBase(logger, {
 })
 
 let synchro = new Synchro({
-  ip: '40.73.100.56', // '139.219.184.44'   '127.0.0.1' 40.73.100.56
+  ip: '40.73.35.23', // '139.219.184.44'   '127.0.0.1' 40.73.100.56, 40.73.35.23
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
@@ -61,21 +61,25 @@ const txLst = [
 // synchro.getBlock(0);
 async function main() {
   let result;
-  // let result = await synchro.getLIBNumber();
-  // logger.info(result);
+  result = await synchro.getLockBancorTokenBalanceInfo('TOKEN2', '16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg');
+
+  console.log(result);
+
+  result = await synchro.getLIBNumber();
+  logger.info(result);
   result = await synchro.laGetMiners();
   logger.info(result);
-  if (result.ret === 200) {
-    let obj = JSON.parse(result.resp!);
-    logger.info(obj.err);
-    logger.info(obj.value);
-    let minerLst: string[] = []
-    obj.value.forEach((item: string) => {
-      minerLst.push(item);
-    })
+  // if (result.ret === 200) {
+  //   let obj = JSON.parse(result.resp!);
+  //   logger.info(obj.err);
+  //   logger.info(obj.value);
+  //   let minerLst: string[] = []
+  //   obj.value.forEach((item: string) => {
+  //     minerLst.push(item);
+  //   })
 
-    console.log(minerLst);
-  }
+  //   console.log(minerLst);
+  // }
 
   // result = await synchro.laGetBalances(["1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J", "159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1"]);
 

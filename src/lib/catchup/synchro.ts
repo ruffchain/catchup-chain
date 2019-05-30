@@ -26,6 +26,8 @@ import { getBlocks } from '../../api/getblocks';
 import { checkMortgage, checkUnmortgage, checkVote, checkRegister, checkUnregister } from './vote/check';
 import { checkCreateToken } from './token/token';
 import { checkCreateBancorToken } from './bancortoken/bancortoken';
+import { checkCreateLockBancorToken, updateShortALTRow, updatePureALTRow } from './lockbancortoken/lockbancor';
+import { getLockBancorTokenBalance } from '../../api/getLockBancorTokenBalance';
 
 /**
  * This is a client , always syncing with the Chain
@@ -517,6 +519,9 @@ export class Synchro {
     else if (tx.method === 'unregister') {
       return checkUnregister(this, recet);
     }
+    else if (tx.method === 'createLockBancorToken') {
+      return checkCreateLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
+    }
     else if (tx.method === 'setUserCode'
       || tx.method === 'getUserCode'
       || tx.method === 'runUserMethod'
@@ -953,6 +958,34 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null })
     });
   }
+  // Add by Yang Jun 2019-5-30
+  private updateLockBancorBalanceBasic(token: string, type: string, account: IName, funcGetBalance: (token1: string, address1: string) => Promise<IfResult>) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let result = await funcGetBalance.call(this, token, account.address);
+
+      if (result.ret === 200) {
+        let obj = JSON.parse(result.resp!);
+        console.log('updateLockBancorBalanceBasic()');
+        console.log(obj.value);
+
+        if (obj.err) {
+          resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });
+          return;
+        }
+        let hret: IFeedBack;
+        if (obj.value.amountLock === undefined) {
+          hret = await updateShortALTRow(this, obj.value, token, type, account);
+        } else {
+          hret = await updatePureALTRow(this, obj.value, token, type, account);
+        }
+
+        if (hret.err) { resolv(hret); return; }
+      } else {
+        resolv({ err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null });
+      }
+      resolv({ err: ErrorCode.RESULT_OK, data: null });
+    });
+  }
   private updateBalanceBasic(token: string, type: string, account: IName, funcGetBalance: (token1: string, address1: string) => Promise<IfResult>) {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await funcGetBalance.call(this, token, account.address);
@@ -1020,11 +1053,18 @@ export class Synchro {
   }
 
   // ---------- 2 -----------
+  private async updateLockBancorTokenBalance(token: string, account: IName) {
+    return this.updateLockBancorBalanceBasic(token, TOKEN_TYPE.LOCKBANCOR, account, this.getLockBancorTokenBalanceInfo);
+  }
 
 
+  public async updateLockBancorTokenBalances(token: string, accounts: IName[]) {
+    return this.updateBalancesBasic(token, accounts,
+      this.updateLockBancorTokenBalance);
+  }
 
 
-  // -------------------------
+  // ------------ 3 -------------
 
 
   // Basic commands 
@@ -1109,6 +1149,18 @@ export class Synchro {
     } else {
       this.logger.info(JSON.stringify(result));
       this.logger.info('bancor token balance:', JSON.parse(result.resp!).value);
+    }
+    return result;
+  }
+  // Yang Jun 2019-5-30
+  public async getLockBancorTokenBalanceInfo(token: string, strHash: string) {
+    console.log('\ngetLockBancorTokenBalanceInfo', token, ' ', strHash, '\n')
+    let result = await getLockBancorTokenBalance(this.ctx, [token, strHash]);
+    if (result.ret !== 200) {
+      this.logger.error('wrong result', result)
+    } else {
+      this.logger.info(JSON.stringify(result));
+      this.logger.info('lockbancor token balance:', JSON.parse(result.resp!).value);
     }
     return result;
   }

@@ -111,6 +111,20 @@ export abstract class CUDataBase {
         });
     });
   }
+  public execRecord(sql: string, params: any) {
+    return new Promise<IFeedBack>((resolv) => {
+      this.db.run(sql,
+        params,
+        (err: any) => {
+          if (err) {
+            this.logger.error(err);
+            resolv({ err: ErrorCode.RESULT_DB_TABLE_FAILED, data: err });
+          } else {
+            resolv({ err: ErrorCode.RESULT_OK, data: null });
+          }
+        });
+    });
+  }
   public removeRecord(sql: string, params: any) {
     return new Promise<IFeedBack>((resolv) => {
       this.db.run(sql,

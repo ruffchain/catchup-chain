@@ -54,7 +54,7 @@ export class StorageDataBase extends CUDataBase {
     this.tokenTable = 'tokentable';
     this.bancorTokenTable = 'bancortokentable';
     this.txAddressTable = 'txaddresstable';
-    this.accountLockBancorTokenTable = 'lockbancortokentable';
+    this.accountLockBancorTokenTable = 'albttable';
 
     // Token is of uppercase, hash| tokenname - type 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
@@ -78,8 +78,8 @@ export class StorageDataBase extends CUDataBase {
     // tx-address table - address
     this.txAddressTableSchema = `("hash" CHAR(64) NOT NULL ,"address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, PRIMARY KEY("hash", "address"));`;
 
-    // account, LockBancorToken table, LBTT table
-    this.accountLockBancorTokenTableSchema = `("hash" CHAR(64)  NOT NULL , "dueblock" INTEGER NOT NULL, "amount" TEXT NOT NULL,);`;
+    // account, LockBancorToken table, LBTT table, amount in BigNumber
+    this.accountLockBancorTokenTableSchema = `("hash" CHAR(64)  NOT NULL , "token" CHAR(64) NOT NULL,"amount" TEXT NOT NULL,"dueamount" TEXT NOT NULL, "dueblock" INTEGER NOT NULL, "duetime" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
   }
 
   public init(): Promise<IFeedBack> {
@@ -450,6 +450,29 @@ export class StorageDataBase extends CUDataBase {
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
+  }
+  /////////////////////////////////////////////////////////////////////
+  // Lock Bancor Token Table
+  /////////////////////////////////////////////////////////////////////
+  public queryALTTableByAddressToken(addr: string, token: string): Promise<IFeedBack> {
+    let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? AND token=?;', [this.accountLockBancorTokenTable, addr, token]);
+    return this.getAllRecords(sql);
+  }
+
+  public removeALTTableByAddressToken(address: string, token: string): Promise<IFeedBack> {
+    let sql = SqlString.format('DELETE FROM ? WHERE hash=? AND token=?;', [this.accountLockBancorTokenTable, address, token]);
+
+    return this.removeRecord(sql, {});
+
+  }
+
+  public updateALTTable(address: string, token: string, amount: string, dueAmount: string, dueBlock: number, dueTime: number, ): Promise<IFeedBack> {
+
+    // update new one
+    // REPLACE INTO '${this.fullName}' (name, field, value) VALUES (?, ?, ?)`, key, field, json
+    let sql = SqlString.format('REPLACE INTO ? (hash, token, amount, dueamount, dueblock, duetime) VALUES (?,?,?,?,?,?);', [this.accountLockBancorTokenTable, address, token, amount, dueAmount, dueBlock, dueTime]);
+    return this.execRecord(sql, {});
+
   }
 }
 
