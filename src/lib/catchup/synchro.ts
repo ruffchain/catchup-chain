@@ -24,6 +24,8 @@ import { getBancorTokenBalances } from '../../api/getBancorTokenBalances';
 import { getBancorTokenParams } from '../../api/getBancorTokenParams';
 import { getBlocks } from '../../api/getblocks';
 import { checkMortgage, checkUnmortgage, checkVote, checkRegister, checkUnregister } from './vote/check';
+import { checkCreateToken } from './token/token';
+import { checkCreateBancorToken } from './bancortoken/bancortoken';
 
 /**
  * This is a client , always syncing with the Chain
@@ -37,7 +39,7 @@ interface IfSynchroOptions {
   port: number;
   batch: number;
 }
-interface IName {
+export interface IName {
   address: string;
 }
 interface IBalance {
@@ -483,10 +485,10 @@ export class Synchro {
       return this.checkTransferTo(recet);
     }
     else if (tx.method === 'createToken') {
-      return this.checkCreateToken(recet, TOKEN_TYPE.NORMAL);
+      return checkCreateToken(this, recet, TOKEN_TYPE.NORMAL);
     }
     else if (tx.method === 'createBancorToken') {
-      return this.checkCreateBancorToken(recet, TOKEN_TYPE.BANCOR);
+      return checkCreateBancorToken(this, recet, TOKEN_TYPE.BANCOR);
     }
     else if (tx.method === 'sellBancorToken') {
       return this.checkSellBancorToken(recet);
@@ -555,85 +557,7 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
   }
-  private checkCreateToken(receipt: any, tokenType: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      // 
-      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
-      let preBalances = receipt.tx.input.preBalances; // array
-      let datetime = receipt.block.timestamp;
-      let caller = receipt.tx.caller;
-      let nameLst: IName[] = [];
-      let addrLst: string[] = [];
-      let amountAll: number = 0;
-      let precision: number = receipt.tx.input.precision;
-      let hash = receipt.tx.hash;
-      let time = receipt.block.timestamp;
 
-      // put it into hash table–––
-
-      preBalances.forEach((element: any) => {
-        nameLst.push({
-          address: element.address
-        })
-        addrLst.push(element.address)
-        amountAll += parseInt(element.amount);
-      });
-
-      addrLst.push(caller);
-
-      this.logger.info('checkCreateToken, updateNamesToHashTable')
-      // put address into hash table
-      let feedback = await this.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
-      if (feedback.err) {
-        resolv(feedback);
-        return;
-      }
-
-      // insert into txaddresstable
-      feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
-      if (feedback.err) {
-        resolv(feedback);
-        return;
-      }
-
-      // update caller balance
-      let result = await this.updateBalance(SYS_TOKEN, { address: caller });
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-
-      if (receipt.receipt.returnCode === 0) {
-
-        // add a new token to token table
-        result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
-          supply: amountAll,
-          precision: precision
-        })));
-        this.logger.info('createToken insertTokenTable , result:', result)
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-
-        // update accounts token account table
-        result = await this.updateTokenBalances(tokenName, nameLst);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-
-        // put tokenname into hash table
-        result = await this.pStorageDb.updateNameToHashTable(tokenName, HASH_TYPE.TOKEN);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-      }
-
-      resolv({ err: ErrorCode.RESULT_OK, data: null });
-    });
-  }
   // Check bancor R, F, S parameters
   private checkBuyBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -816,7 +740,7 @@ export class Synchro {
   //     resolv({ err: ErrorCode.RESULT_OK, data: null })
   //   });
   // }
-  private insertBancorTokenParameters(tokenName: string) {
+  public insertBancorTokenParameters(tokenName: string) {
     this.logger.info('insertBancorTokenParameters, with: ', tokenName)
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
@@ -934,89 +858,7 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_OK, data: null })
     });
   }
-  // it will record the R, S, F参数
-  private checkCreateBancorToken(receipt: any, tokenType: string) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
-      let preBalances = receipt.tx.input.preBalances; // array
-      let datetime = receipt.block.timestamp;
-      let caller = receipt.tx.caller;
-      let nameLst: IName[] = [];
-      let amountAll: number = 0;
-      let addrLst: string[] = [];
-      let nonliquidity: number = (receipt.tx.input.nonliquidity !== undefined) ? (parseFloat(receipt.tx.input.nonliquidity)) : (0);
-      let factor = parseFloat(receipt.tx.input.factor);
-      let reserve = parseFloat(receipt.tx.value)
-      let hash = receipt.tx.hash;
-      let time = receipt.block.timestamp;
-      // add it into hash table
 
-      preBalances.forEach((element: any) => {
-        nameLst.push({ address: element.address });
-        amountAll += parseInt(element.amount);
-        addrLst.push(element.address)
-      });
-      addrLst.push(caller)
-
-      // put address into hashtable
-      let feedback = await this.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
-      if (feedback.err) {
-        resolv(feedback);
-        return;
-      }
-
-      // insert into txaddresstable
-      feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
-      if (feedback.err) {
-        resolv(feedback);
-        return;
-      }
-
-      // update caller balance
-      let result = await this.updateBalance(SYS_TOKEN, { address: caller });
-      if (result.err) {
-        resolv(result);
-        return;
-      }
-
-      if (receipt.receipt.returnCode === 0) {
-        // get add token table
-        result = await this.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
-          factor: factor,
-          supply: amountAll,
-          nonliquidity: nonliquidity,
-          reserve: reserve
-        })));
-        this.logger.info('checkCreateBancorToken insert token table')
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-
-        // update accounts token account table
-        result = await this.updateBancorTokenBalances(tokenName, nameLst);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-
-        // put tokenname into hash table
-        result = await this.pStorageDb.updateNameToHashTable(tokenName, HASH_TYPE.TOKEN);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-
-        result = await this.insertBancorTokenParameters(tokenName);
-        if (result.err) {
-          resolv(result);
-          return;
-        }
-      }
-
-      resolv({ err: ErrorCode.RESULT_OK, data: null });
-    });
-  }
   // check R, S, F parameters
   private checkSellBancorToken(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -1166,14 +1008,14 @@ export class Synchro {
   private async updateTokenBalance(token: string, account: IName) {
     return this.updateBalanceBasic(token, TOKEN_TYPE.NORMAL, account, this.getTokenBalanceInfo);
   }
-  private async updateTokenBalances(token: string, accounts: IName[]) {
+  public async updateTokenBalances(token: string, accounts: IName[]) {
     return this.updateBalancesBasic(token, accounts, this.updateTokenBalance)
   }
   // -------------------------------------------------------------
   private async updateBancorTokenBalance(token: string, account: IName) {
     return this.updateBalanceBasic(token, TOKEN_TYPE.BANCOR, account, this.getBancorTokenBalanceInfo);
   }
-  private async updateBancorTokenBalances(token: string, accounts: IName[]) {
+  public async updateBancorTokenBalances(token: string, accounts: IName[]) {
     return this.updateBalancesBasic(token, accounts, this.updateBancorTokenBalance);
   }
 

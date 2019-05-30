@@ -19,9 +19,9 @@ export const SYS_TOKEN_SYMBOL = 'SYS';
 export const TOKEN_TYPE = {
   NORMAL: 'normal',
   BANCOR: 'bancor',
-  SYS: 'sys'
+  SYS: 'sys',
+  LOCKBANCOR: 'lockbancor'
 }
-
 
 export class StorageDataBase extends CUDataBase {
   private hashTable: string;
@@ -30,6 +30,8 @@ export class StorageDataBase extends CUDataBase {
   private txTable: string;
   private tokenTable: string;
   private bancorTokenTable: string;
+  // Add by Yang Jun 2019-5-30
+  private accountLockBancorTokenTable: string;
 
   private hashTableSchema: string;
   private accountTableSchema: string;
@@ -37,6 +39,8 @@ export class StorageDataBase extends CUDataBase {
   private txTableSchema: string;
   private tokenTableSchema: string;
   private bancorTokenTableSchema: string;
+  // Add by Yang Jun 2019-5-30
+  private accountLockBancorTokenTableSchema: string;
 
   private txAddressTable: string;
   private txAddressTableSchema: string;
@@ -50,6 +54,7 @@ export class StorageDataBase extends CUDataBase {
     this.tokenTable = 'tokentable';
     this.bancorTokenTable = 'bancortokentable';
     this.txAddressTable = 'txaddresstable';
+    this.accountLockBancorTokenTable = 'lockbancortokentable';
 
     // Token is of uppercase, hash| tokenname - type 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
@@ -72,17 +77,38 @@ export class StorageDataBase extends CUDataBase {
 
     // tx-address table - address
     this.txAddressTableSchema = `("hash" CHAR(64) NOT NULL ,"address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, PRIMARY KEY("hash", "address"));`;
+
+    // account, LockBancorToken table, LBTT table
+    this.accountLockBancorTokenTableSchema = `("hash" CHAR(64)  NOT NULL , "dueblock" INTEGER NOT NULL, "amount" TEXT NOT NULL,);`;
   }
 
   public init(): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await this.createTable(this.hashTable, this.hashTableSchema);
-      await this.createTable(this.accountTable, this.accountTableSchema);
-      await this.createTable(this.blockTable, this.blockTableSchema);
-      await this.createTable(this.txTable, this.txTableSchema);
-      await this.createTable(this.bancorTokenTable, this.bancorTokenTableSchema);
-      await this.createTable(this.txAddressTable, this.txAddressTableSchema);
-      result = await this.createTable(this.tokenTable, this.tokenTableSchema);
+
+      let hret = await this.createTable(this.accountTable, this.accountTableSchema);
+      if (hret.err) { throw new Error() };
+
+      hret = await this.createTable(this.blockTable, this.blockTableSchema);
+      if (hret.err) { throw new Error() };
+
+      hret = await this.createTable(this.txTable, this.txTableSchema);
+      if (hret.err) { throw new Error() };
+
+      hret = await this.createTable(this.bancorTokenTable,
+        this.bancorTokenTableSchema);
+      if (hret.err) { throw new Error() };
+
+      hret = await this.createTable(this.txAddressTable, this.txAddressTableSchema);
+      if (hret.err) { throw new Error() };
+
+      hret = await this.createTable(this.tokenTable, this.tokenTableSchema);
+      if (hret.err) { throw new Error() };
+
+      // Add by Yang Jun 2019-5-30
+      hret = await this.createTable(this.accountLockBancorTokenTable, this.accountLockBancorTokenTableSchema);
+      if (hret.err) { throw new Error() };
+
       this.logger.info('Create storage tables:', result);
       resolv({ err: 0, data: null });
     });
