@@ -23,7 +23,7 @@ import { getTokenBalances } from '../../api/getTokenBalances';
 import { getBancorTokenBalances } from '../../api/getBancorTokenBalances';
 import { getBancorTokenParams } from '../../api/getBancorTokenParams';
 import { getBlocks } from '../../api/getblocks';
-import { checkMortgage, checkUnmortgage, checkVote } from './vote/check';
+import { checkMortgage, checkUnmortgage, checkVote, checkRegister, checkUnregister } from './vote/check';
 
 /**
  * This is a client , always syncing with the Chain
@@ -509,8 +509,13 @@ export class Synchro {
     else if (tx.method === 'vote') {
       return checkVote(this, recet);
     }
-    else if (tx.method === 'register'
-      || tx.method === 'setUserCode'
+    else if (tx.method === 'register') {
+      return checkRegister(this, recet);
+    }
+    else if (tx.method === 'unregister') {
+      return checkUnregister(this, recet);
+    }
+    else if (tx.method === 'setUserCode'
       || tx.method === 'getUserCode'
       || tx.method === 'runUserMethod'
     ) {
