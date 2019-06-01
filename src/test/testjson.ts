@@ -29,7 +29,7 @@ let storageDB = new StorageDataBase(logger, {
 
 // Operation on RuffChain
 let synchro = new Synchro({
-  ip: '139.219.184.44',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56
+  ip: '40.73.35.23',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
@@ -37,7 +37,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.100.56', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56
+  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56
   port: 18080,
   address: '',
   verbose: false
@@ -76,6 +76,14 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
+  it('getCandy', async () => {
+    this.timeout(33000);
+    let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
   /*
   it('getBancorTokenParams SMTOKEN', async () => {
     this.timeout(3000);
@@ -394,14 +402,7 @@ it('getTokenInfo sys', async () => {
   //   let obj = JSON.parse(cr.resp!)
   //   expect(1).to.equal(1);
   // })
-  // it('getCandy', async () => {
-  //   this.timeout(33000);
-  //   let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
-  //   // logger.info(cr);
-  //   logger.info(cr.resp)
-  //   let obj = JSON.parse(cr.resp!)
-  //   expect(1).to.equal(1);
-  // })
+
   // it('default', async () => {
   //   this.timeout(33000);
   //   let cr = await client.callAsync('default', {})
