@@ -493,21 +493,21 @@ export class Synchro {
     else if (tx.method === 'createToken') {
       return checkCreateToken(this, recet, TOKEN_TYPE.NORMAL);
     }
-    else if (tx.method === 'createBancorToken') {
-      return checkCreateBancorToken(this, recet, TOKEN_TYPE.BANCOR);
-    }
-    else if (tx.method === 'sellBancorToken') {
-      return this.checkSellBancorToken(recet);
-    }
-    else if (tx.method === 'buyBancorToken') {
-      return this.checkBuyBancorToken(recet);
-    }
+    // else if (tx.method === 'createBancorToken') {
+    //   return checkCreateBancorToken(this, recet, TOKEN_TYPE.BANCOR);
+    // }
+    // else if (tx.method === 'sellBancorToken') {
+    //   return this.checkSellBancorToken(recet);
+    // }
+    // else if (tx.method === 'buyBancorToken') {
+    //   return this.checkBuyBancorToken(recet);
+    // }
     else if (tx.method === 'transferTokenTo') {
       return this.checkTransferTokenTo(recet);
     }
-    else if (tx.method === 'transferBancorTokenTo') {
-      return this.checkTransferBancorTokenTo(recet);
-    }
+    // else if (tx.method === 'transferBancorTokenTo') {
+    //   return this.checkTransferBancorTokenTo(recet);
+    // }
     else if (tx.method === 'mortgage') {
       return checkMortgage(this, recet);
     }
@@ -523,19 +523,19 @@ export class Synchro {
     else if (tx.method === 'unregister') {
       return checkUnregister(this, recet);
     }
-    else if (tx.method === 'createLockBancorToken') {
+    else if (tx.method === 'createBancorToken') {
       return checkCreateLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
     }
-    else if (tx.method === 'transferLockBancorTokenTo') {
+    else if (tx.method === 'transferBancorTokenTo') {
       return checkTransferLockBancorTokenTo(this, recet, TOKEN_TYPE.LOCKBANCOR);
     }
-    else if (tx.method === 'transferLockBancorTokenToMulti') {
+    else if (tx.method === 'transferBancorTokenToMulti') {
       return checkTransferLockBancorTokenToMulti(this, recet, TOKEN_TYPE.LOCKBANCOR);
     }
-    else if (tx.method === 'sellLockBancorToken') {
+    else if (tx.method === 'sellBancorToken') {
       return checkSellLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
     }
-    else if (tx.method === 'buyLockBancorToken') {
+    else if (tx.method === 'buyBancorToken') {
       return checkBuyLockBancorToken(this, recet, TOKEN_TYPE.LOCKBANCOR);
     }
     else if (tx.method === 'setUserCode'
@@ -1072,7 +1072,6 @@ export class Synchro {
   private async updateLockBancorTokenBalance(token: string, account: IName) {
     return this.updateLockBancorBalanceBasic(token, TOKEN_TYPE.LOCKBANCOR, account, this.getLockBancorTokenBalanceInfo);
   }
-
 
   public async updateLockBancorTokenBalances(token: string, accounts: IName[]) {
     return this.updateBalancesBasic(token, accounts,
