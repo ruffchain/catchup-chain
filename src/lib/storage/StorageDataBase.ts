@@ -20,7 +20,7 @@ export const TOKEN_TYPE = {
   NORMAL: 'normal',
   BANCOR: 'bancor',
   SYS: 'sys',
-  LOCKBANCOR: 'lockbancor'
+  // LOCKBANCOR: 'lockbancor'
 }
 
 export class StorageDataBase extends CUDataBase {
