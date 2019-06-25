@@ -933,6 +933,12 @@ export class Synchro {
       let cost = receipt.receipt.cost;
       // let value = receipt.tx.value; // string
       // let fee = receipt.tx.fee;
+      // Add Yang Jun 2019-6-24
+      let blockhash = receipt.block.hash;
+      let blocknumber = receipt.block.number;
+      let datetime = receipt.block.timestamp;
+      let content = Buffer.from(JSON.stringify(receipt.tx));
+      let returnCode = receipt.receipt.returnCode;
 
       // update caller, to address to hash table
       // this.logger.info('checkTxTransferto, updateNamesToHashTable\n')
@@ -959,6 +965,16 @@ export class Synchro {
         return;
       }
       //}
+
+      // Update txTransferTo txs
+      // if (receipt.receipt.returnCode === 0) {
+      this.logger.info('Put it into txTransferToTable')
+      feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
+      if (feedback.err) {
+        this.logger.error('put tx into txtransfertotable failed');
+        resolv(feedback);
+        return;
+      }
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });

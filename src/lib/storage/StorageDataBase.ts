@@ -32,6 +32,8 @@ export class StorageDataBase extends CUDataBase {
   private bancorTokenTable: string;
   // Add by Yang Jun 2019-5-30
   private accountLockBancorTokenTable: string;
+  // Add by Yang Jun 2019-6-24
+  private txTransferToTable: string;
 
   private hashTableSchema: string;
   private accountTableSchema: string;
@@ -41,6 +43,8 @@ export class StorageDataBase extends CUDataBase {
   private bancorTokenTableSchema: string;
   // Add by Yang Jun 2019-5-30
   private accountLockBancorTokenTableSchema: string;
+  // Add by Yang Jun 2019-6-24
+  private txTransferToTableSchema: string;
 
   private txAddressTable: string;
   private txAddressTableSchema: string;
@@ -55,6 +59,7 @@ export class StorageDataBase extends CUDataBase {
     this.bancorTokenTable = 'bancortokentable';
     this.txAddressTable = 'txaddresstable';
     this.accountLockBancorTokenTable = 'albttable';
+    this.txTransferToTable = 'txtransfertotable';
 
     // Token is of uppercase, hash| tokenname - type 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
@@ -80,6 +85,9 @@ export class StorageDataBase extends CUDataBase {
 
     // account, LockBancorToken table, LBTT table, amount in BigNumber
     this.accountLockBancorTokenTableSchema = `("hash" CHAR(64)  NOT NULL , "token" CHAR(64) NOT NULL,"amount" TEXT NOT NULL,"dueamount" TEXT NOT NULL, "dueblock" INTEGER NOT NULL, "duetime" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
+
+    // txTransferToTable
+    this.txTransferToTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL, "to" CHAR(64) NOT NULL, "returncode" INTEGER NOT NULL);`;
   }
 
   public init(): Promise<IFeedBack> {
@@ -107,6 +115,10 @@ export class StorageDataBase extends CUDataBase {
 
       // Add by Yang Jun 2019-5-30
       hret = await this.createTable(this.accountLockBancorTokenTable, this.accountLockBancorTokenTableSchema);
+      if (hret.err) { throw new Error() };
+
+      // Add by Yang Jun 2019-6-24
+      hret = await this.createTable(this.txTransferToTable, this.txTransferToTableSchema);
       if (hret.err) { throw new Error() };
 
       this.logger.info('Create storage tables:', result);
@@ -474,6 +486,21 @@ export class StorageDataBase extends CUDataBase {
     return this.execRecord(sql, {});
 
   }
+
+  ////////////////////////////////////
+  // txTransferTo table
+  ////////////////////////////////////
+  public insertTxTransferToTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer, to: string, code: number) {
+    this.logger.info('insertOrREplaceTxTransferToTable', hash, '\n');
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, to, returncode) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $to, $code);', [this.txTransferToTable]);
+
+    return this.insertOrReplaceRecord(sql, {
+      $hash: SqlString.escape(hash).replace(/\'/g, ''),
+      $blockhash: SqlString.escape(blockhash).replace(/\'/g, ''),
+      $datetime: SqlString.escape(datetime),
+      $content1: content1,
+      $to: to,
+      $code: code
+    });
+  }
 }
-
-
