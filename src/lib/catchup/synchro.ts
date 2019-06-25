@@ -970,7 +970,7 @@ export class Synchro {
       // Update txTransferTo txs
       // if (receipt.receipt.returnCode === 0) {
       this.logger.info('Put it into txTransferToTable')
-      feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
+      feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, to, returnCode, content);
       if (feedback.err) {
         this.logger.error('put tx into txtransfertotable failed');
         resolv(feedback);

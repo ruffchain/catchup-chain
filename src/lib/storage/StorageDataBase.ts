@@ -87,7 +87,7 @@ export class StorageDataBase extends CUDataBase {
     this.accountLockBancorTokenTableSchema = `("hash" CHAR(64)  NOT NULL , "token" CHAR(64) NOT NULL,"amount" TEXT NOT NULL,"dueamount" TEXT NOT NULL, "dueblock" INTEGER NOT NULL, "duetime" INTEGER NOT NULL, PRIMARY KEY("hash", "token"));`;
 
     // txTransferToTable
-    this.txTransferToTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL, "to" CHAR(64) NOT NULL, "returncode" INTEGER NOT NULL);`;
+    this.txTransferToTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "to" CHAR(64) NOT NULL, "returncode" INTEGER NOT NULL, "content" BLOB NOT NULL );`;
   }
 
   public init(): Promise<IFeedBack> {
@@ -490,9 +490,9 @@ export class StorageDataBase extends CUDataBase {
   ////////////////////////////////////
   // txTransferTo table
   ////////////////////////////////////
-  public insertTxTransferToTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer, to: string, code: number) {
+  public insertTxTransferToTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, to: string, code: number, content1: Buffer) {
     this.logger.info('insertOrREplaceTxTransferToTable', hash, '\n');
-    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, to, returncode) VALUES ($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $to, $code);', [this.txTransferToTable]);
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, to, returncode, content) VALUES ($hash, $blockhash, $blocknumber ,$address, $datetime, $to, $code, $content1);', [this.txTransferToTable]);
 
     return this.insertOrReplaceRecord(sql, {
       $hash: SqlString.escape(hash).replace(/\'/g, ''),
@@ -500,9 +500,9 @@ export class StorageDataBase extends CUDataBase {
       $blocknumber: SqlString.escape(blocknumber),
       $address: SqlString.escape(address).replace(/\'/g, ''),
       $datetime: SqlString.escape(datetime),
-      $content1: content1,
-      $to: to,
-      $code: SqlString.escape(code)
+      $to: SqlString.escape(to).replace(/\'/g, ''),
+      $code: SqlString.escape(code),
+      $content1: content1
     });
   }
   public queryTxTransferToByPage(to: string, index: number, size: number) {
