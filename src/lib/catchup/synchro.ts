@@ -923,6 +923,9 @@ export class Synchro {
   }
   private checkTransferTo(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('Print checkTransferTo()');
+      console.log(receipt);
+
       let caller = receipt.tx.caller;
       let to = receipt.tx.input.to;
       let hash = receipt.tx.hash;

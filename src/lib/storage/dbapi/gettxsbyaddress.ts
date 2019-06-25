@@ -16,7 +16,7 @@ export async function laGetTxsByAddress(handle: WRQueue, args: any) {
 
     if (!args) {
       // getAllRecords()
-      result = await handle.pStorageDb.queryLatestTxTable();
+      result = await handle.pStorageDb.queryLatestTxTransferToTable();
     } else {
       try {
         argsObj = JSON.parse(JSON.stringify(args));

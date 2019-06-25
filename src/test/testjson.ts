@@ -75,7 +75,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-
+  /*
   it('getCandy', async () => {
     this.timeout(33000);
     let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
@@ -127,7 +127,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(obj.status).to.equal(0);
   })
-  /*
+
   it('getBancorTokenParams SMTOKEN', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getBancorTokenParams', "TOKEN90")
