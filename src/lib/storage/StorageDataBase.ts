@@ -497,10 +497,29 @@ export class StorageDataBase extends CUDataBase {
     return this.insertOrReplaceRecord(sql, {
       $hash: SqlString.escape(hash).replace(/\'/g, ''),
       $blockhash: SqlString.escape(blockhash).replace(/\'/g, ''),
+      $blocknumber: SqlString.escape(blocknumber),
+      $address: SqlString.escape(address).replace(/\'/g, ''),
       $datetime: SqlString.escape(datetime),
       $content1: content1,
       $to: to,
       $code: code
     });
+  }
+  public queryTxTransferToByPage(to: string, index: number, size: number) {
+    let sql = SqlString.format('SELECT * FROM ? WHERE to = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?;', [this.txTransferToTable, to, size, index * size]);
+    return this.getAllRecords(sql);
+  }
+  public async queryTxTransferToTotal(addr: string) {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE to = ? ;', [this.txTransferToTable, addr]);
+    return this.getRecord(sql)
+  }
+  public queryTxTransferFromByPage(addr: string, index: number, size: number) {
+    let sql = SqlString.format('SELECT * FROM ? WHERE address = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?;', [this.txTransferToTable, addr, size, index * size]);
+    return this.getAllRecords(sql);
+  }
+
+  public async queryTxTransferFromTotal(addr: string) {
+    let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE address = ? ;', [this.txTransferToTable, addr]);
+    return this.getRecord(sql)
   }
 }
