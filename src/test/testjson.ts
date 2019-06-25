@@ -29,7 +29,7 @@ let storageDB = new StorageDataBase(logger, {
 
 // Operation on RuffChain
 let synchro = new Synchro({
-  ip: '40.73.34.219',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219
+  ip: '40.73.1.241',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219, 40.73.1.241
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
@@ -37,7 +37,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.34.219', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
+  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
   port: 18080,
   address: '',
   verbose: true
@@ -76,6 +76,25 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
+  it('getTxsTransferTo ', async () => {
+    this.timeout(30000);
+    let cr = await client.callAsync('getTxsTransferTo', { address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1', page: 1, pageSize: 10 })
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+  it('getTxsTransferFrom ', async () => {
+    this.timeout(30000);
+    let cr = await client.callAsync('getTxsTransferFrom', { address: '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r', page: 1, pageSize: 10 })
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+  /*
   it('getCandy', async () => {
     this.timeout(33000);
     let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
@@ -127,7 +146,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!)
     expect(obj.status).to.equal(0);
   })
-  /*
+
   it('getBancorTokenParams SMTOKEN', async () => {
     this.timeout(3000);
     let cr = await client.callAsync('getBancorTokenParams', "TOKEN90")

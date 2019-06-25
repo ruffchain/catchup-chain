@@ -59,7 +59,8 @@ let storageDB = new StorageDataBase(logger, {
 // let queue = new WRQueue(logger, statusDB, storageDB);
 
 let client = new Synchro({
-  ip: '40.73.1.241', // '127.0.0.1'   '139.219.184.44', 40.73.35.23 , 40.73.1.241
+
+  ip: '40.73.1.241', // '127.0.0.1'   '139.219.184.44', 40.73.35.23 , newpeer 40.73.1.241
   port: 18089,
   batch: 20
 }, logger, statusDB, storageDB);
