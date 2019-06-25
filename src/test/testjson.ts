@@ -29,7 +29,7 @@ let storageDB = new StorageDataBase(logger, {
 
 // Operation on RuffChain
 let synchro = new Synchro({
-  ip: '40.73.34.219',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219
+  ip: '40.73.1.241',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219, 40.73.1.241
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
@@ -37,7 +37,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.34.219', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
+  host: '40.73.1.241', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
   port: 18080,
   address: '',
   verbose: true
