@@ -19,6 +19,8 @@ import { laGetCandy } from "./getcandy";
 import { laGetBancorTokenParams } from "./getbancortokenparams";
 import { laGetSysByToken } from "./getsysbytoken";
 import { laGetTokenBySys } from "./gettokenbysys";
+import { laGetTxsTransferFrom } from "./gettxstransferfrom";
+import { laGetTxsTransferTo } from "./gettxstransferto";
 
 /**
  * Get function by name
@@ -84,6 +86,12 @@ export function getFunc(funName: string) {
   }
   else if (funName === 'getSysByToken') {
     return laGetSysByToken;
+  }
+  else if (funName === 'getTxsTransferFrom') {
+    return laGetTxsTransferFrom;
+  }
+  else if (funName === 'getTxsTransferTo') {
+    return laGetTxsTransferTo;
   }
   else if (funName === 'default') {
     return laDefault;

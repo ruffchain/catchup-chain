@@ -37,7 +37,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.1.241', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
+  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
   port: 18080,
   address: '',
   verbose: true
@@ -70,6 +70,25 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     this.timeout(3000);
     let cr = await client.callAsync('getChainOverview', '')
     logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
+  it('getTxsTransferTo ', async () => {
+    this.timeout(30000);
+    let cr = await client.callAsync('getTxsTransferTo', { address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1', page: 1, pageSize: 10 })
+    //logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+  it('getTxsTransferFrom ', async () => {
+    this.timeout(30000);
+    let cr = await client.callAsync('getTxsTransferFrom', { address: '154bdF5WH3FXGo4v24F4dYwXnR8br8rc2r', page: 1, pageSize: 10 })
+    //logger.info(cr);
     logger.info(cr.resp)
 
     let obj = JSON.parse(cr.resp!);

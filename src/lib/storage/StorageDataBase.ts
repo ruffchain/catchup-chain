@@ -492,7 +492,7 @@ export class StorageDataBase extends CUDataBase {
   ////////////////////////////////////
   public insertTxTransferToTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer, to: string, code: number) {
     this.logger.info('insertOrREplaceTxTransferToTable', hash, '\n');
-    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, to, returncode) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $to, $code);', [this.txTransferToTable]);
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, to, returncode) VALUES ($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $to, $code);', [this.txTransferToTable]);
 
     return this.insertOrReplaceRecord(sql, {
       $hash: SqlString.escape(hash).replace(/\'/g, ''),
@@ -502,7 +502,7 @@ export class StorageDataBase extends CUDataBase {
       $datetime: SqlString.escape(datetime),
       $content1: content1,
       $to: to,
-      $code: code
+      $code: SqlString.escape(code)
     });
   }
   public queryTxTransferToByPage(to: string, index: number, size: number) {
@@ -521,5 +521,10 @@ export class StorageDataBase extends CUDataBase {
   public async queryTxTransferFromTotal(addr: string) {
     let sql = SqlString.format('SELECT COUNT(*) as count FROM ? WHERE address = ? ;', [this.txTransferToTable, addr]);
     return this.getRecord(sql)
+  }
+
+  public queryLatestTxTransferToTable() {
+    let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 15;', [this.txTransferToTable])
+    return this.getAllRecords(sql)
   }
 }

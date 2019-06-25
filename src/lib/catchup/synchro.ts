@@ -219,7 +219,7 @@ export class Synchro {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = nStart; i <= nStop; i = i + this.nBatch) {
         let result = await this.updateBlockRangeGroup(i, ((i + this.nBatch - 1) > nStop) ? nStop : (i + this.nBatch - 1));
-        if (result.err) {
+        if (result.err !== 0) {
           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
           return;
         }
@@ -241,7 +241,8 @@ export class Synchro {
               console.log(obj);
               let feedback = await this.syncBlockData(obj);
               if (feedback.err) {
-                break;
+                resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
+                return;
               } else {
                 // update lib
                 // update statusDB current Height
@@ -376,7 +377,7 @@ export class Synchro {
         let txno = obj.transactions.length;
         let height = obj.block.number;
 
-        this.logger.info('save block hash to hash table')
+        this.logger.info('save block hash to hash table, update block')
         // save to hash table
         let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
         if (feedback.err) {
