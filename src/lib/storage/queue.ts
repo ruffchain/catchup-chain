@@ -176,7 +176,7 @@ export class WRQueue extends EventEmitter {
     console.log('funName:', task.request.funName);
     console.log('args:', task.request.args);
 
-    console.log('func:', getFunc(task.request.funName));
+    // console.log('func:', getFunc(task.request.funName));
     let result = await getFunc(task.request.funName)(this, task.request.args);
 
     task.callback({ err: ErrorCode.RESULT_OK, data: result.data })
