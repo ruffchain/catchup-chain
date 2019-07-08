@@ -13,6 +13,7 @@ export const HASH_TYPE = {
   HEIGHT: 'block',
   NONE: 'none'
 };
+// Token symbol, 
 export const SYS_TOKEN = 's';
 export const SYS_TOKEN_SYMBOL = 'SYS';
 
@@ -200,6 +201,11 @@ export class StorageDataBase extends CUDataBase {
   }
 
   // account
+  // Add 2019-7-8, SYS will have a name 's', 
+  public querySumOfToken(token: string) {
+    let sql = SqlString.format('SELECT SUM(value) as nsum FROM ? WHERE token = ?;', [this.accountTable, token]);
+    return this.getRecord(sql)
+  }
   public queryFortuneRanking(token: string) {
     let sql = SqlString.format('SELECT * FROM ? WHERE token = ? ORDER BY value DESC LIMIT 50;', [this.accountTable, token]);
     return this.getAllRecords(sql);

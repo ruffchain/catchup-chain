@@ -16,6 +16,7 @@ export class StatusDataBase extends CUDataBase {
 
   public nCurrentHeight: number; // 
   public nLoadGenesisFile: number;
+
   /**
    * @constructor
    * @param {winston.LoggerInstance} logger 
