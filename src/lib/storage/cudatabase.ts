@@ -85,9 +85,9 @@ export abstract class CUDataBase {
     });
   }
   // You should check if it exists!
-  public updateRecord(sql: string) {
+  public updateRecord(sql: string, params: any) {
     return new Promise<IFeedBack>((resolv) => {
-      this.db.run(sql,
+      this.db.run(sql, params,
         (err: any) => {
           if (err) {
             this.logger.error(err);

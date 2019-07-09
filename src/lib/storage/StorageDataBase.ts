@@ -243,7 +243,7 @@ export class StorageDataBase extends CUDataBase {
 
   private updateAccountTableByTokenAndAddress(addr: string, token: string, amount: string, value: number) {
     let sql = SqlString.format('UPDATE ? SET amount = ? , value = ? WHERE hash=? AND token = ? ;', [this.accountTable, amount, value, addr, token])
-    return this.updateRecord(sql);
+    return this.updateRecord(sql, {});
   }
   public updateAccountTable(address: string, token: string, tokentype: string, amount: string, value: number) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -354,7 +354,8 @@ export class StorageDataBase extends CUDataBase {
     return this.insertRecord(sql, { $content: content });
   }
   public updateTokenTableContent(token: string, content: Buffer) {
-    return this.updateRecord(`UPDATE ${this.tokenTable} SET content=${content} WHERE name="${token}";`);
+    let sql = SqlString.format('UPDATE ? SET content=$content WHERE name= ?;', [this.tokenTable, token])
+    return this.updateRecord(sql, { $content: content });
   }
   // public updateTokenTable(tokenname: string, type: string, address: string, datetime: number, content: Buffer) {
   //   return new Promise<IFeedBack>(async (resolv) => {
@@ -385,7 +386,7 @@ export class StorageDataBase extends CUDataBase {
   }
   public updateBancorTokenByName(tokenname: string, factor: number, reserve: number, supply: number) {
     let sql = SqlString.format('UPDATE ? SET reserve = ? , supply = ? WHERE name =?;', [this.bancorTokenTable, reserve, supply, tokenname])
-    return this.updateRecord(sql);
+    return this.updateRecord(sql, {});
   }
   public updateBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
     return new Promise<IFeedBack>(async (resolv) => {

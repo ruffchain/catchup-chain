@@ -48,7 +48,7 @@ export class StatusDataBase extends CUDataBase {
     })
   }
   private setSomeStatus(name: string, value: number) {
-    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${value} WHERE name="${name}";`);
+    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${value} WHERE name="${name}";`, {});
   }
   private getSomeStatus(name: string, failCB: (res: () => void) => void): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -88,7 +88,9 @@ export class StatusDataBase extends CUDataBase {
     });
   }
   public setCurrentHeight(height: number) {
-    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${height} WHERE name="${this.nameCurrentHeight}";`);
+    // Update token table, + MINE_REWARD, for every block
+
+    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
   }
   // get Candy function
   public async getCandyTable(address: string, token: string) {
@@ -120,7 +122,7 @@ export class StatusDataBase extends CUDataBase {
     return this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${author}", 10, 0);`, {});
   }
   public updateAuthor(author: string, value: number) {
-    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${value} WHERE name="${author}";`);
+    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${value} WHERE name="${author}";`, {});
   }
   // open or create the table
   public init(): Promise<IFeedBack> {

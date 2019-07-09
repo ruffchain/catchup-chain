@@ -16,7 +16,7 @@ import { getBancorTokenReserve } from '../../api/getBancorTokenReserve';
 import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
-import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION, MININE_REWARD, MINE_REWARD } from '../storage/dbapi/scoop';
+import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION, MINE_REWARD } from '../storage/dbapi/scoop';
 import { getMiners } from '../../api/getminers';
 import { getBalances } from '../../api/getbalances';
 import { getTokenBalances } from '../../api/getTokenBalances';
@@ -267,15 +267,18 @@ export class Synchro {
 
     });
   }
-  private async syncHeightAndMineAward(height: number): Promise<IFeedBack> {
 
-    let result = await this.pStorageDb.queryTokenTable('s');
+  private async syncHeightAndMineAward(height: number): Promise<IFeedBack> {
+    this.logger.info('syncHeightAndMineAward');
+
+    let result = await this.pStorageDb.queryTokenTable('SYS');
     if (result.err === ErrorCode.RESULT_OK) {
       result.data.content = JSON.parse(result.data.content);
     } else {
       return result;
     }
     result.data.content.supply += MINE_REWARD;
+    this.logger.info(result.data.content.supply);
 
     let result2 = await this.pStorageDb.updateTokenTableContent('SYS',
       Buffer.from(JSON.stringify({
@@ -358,7 +361,8 @@ export class Synchro {
       let result = await this.updateBlock(nBlock);
       if (result.err === 0) {
         // update 
-        let feedback = await this.pStatusDb.setCurrentHeight(nBlock);
+        // 2019-7-9
+        let feedback = await this.syncHeightAndMineAward(nBlock);
         if (feedback.err === 0) {
           this.pStatusDb.nCurrentHeight = nBlock;
           resolv({ err: ErrorCode.RESULT_OK, data: null })
