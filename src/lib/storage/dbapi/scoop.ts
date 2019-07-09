@@ -7,6 +7,8 @@ export const SYS_TOKEN = 'SYS';
 const TOKEN_MIN_LEN = 3;
 const TOKEN_MAX_LEN = 12;
 
+export const MINE_REWARD = 12;
+
 
 const REGPAT = /^[A-Z]{1}[0-9A-Z]{2,11}$/g
 

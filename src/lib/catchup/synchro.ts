@@ -16,7 +16,7 @@ import { getBancorTokenReserve } from '../../api/getBancorTokenReserve';
 import { getBancorTokenSupply } from '../../api/getBancorTokenSupply';
 import * as fs from 'fs';
 import { transferTo } from '../../api/transferto';
-import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION } from '../storage/dbapi/scoop';
+import { SYS_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION, MININE_REWARD, MINE_REWARD } from '../storage/dbapi/scoop';
 import { getMiners } from '../../api/getminers';
 import { getBalances } from '../../api/getbalances';
 import { getTokenBalances } from '../../api/getTokenBalances';
@@ -246,7 +246,7 @@ export class Synchro {
               } else {
                 // update lib
                 // update statusDB current Height
-                let feedback2 = await this.pStatusDb.setCurrentHeight(obj.block.number);
+                let feedback2 = await this.syncHeightAndMineAward(obj.block.number);
                 if (feedback2.err) {
                   this.logger.error('Save block ', i, ' to db failedd');
                   resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: i });
@@ -266,6 +266,26 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
 
     });
+  }
+  private async syncHeightAndMineAward(height: number): Promise<IFeedBack> {
+
+    let result = await this.pStorageDb.queryTokenTable('s');
+    if (result.err === ErrorCode.RESULT_OK) {
+      result.data.content = JSON.parse(result.data.content);
+    } else {
+      return result;
+    }
+    result.data.content.supply += MINE_REWARD;
+
+    let result2 = await this.pStorageDb.updateTokenTableContent('SYS',
+      Buffer.from(JSON.stringify({
+        supply: result.data.content.supply,
+        precision: SYS_TOKEN_PRECISION
+      })));
+    if (result2.err) { return result2; }
+
+    let hret = await this.pStatusDb.setCurrentHeight(height);
+    return hret;
   }
   private async syncBlockData(obj: any) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -308,29 +328,29 @@ export class Synchro {
     });
   }
   // main task
-  private updateBlockRange(nStart: number, nStop: number): Promise<IFeedBack> {
-    return new Promise<IFeedBack>(async (resolv) => {
-      for (let i = nStart; i <= nStop; i++) {
-        // update database by block, one by one
-        let result = await this.updateBlock(i);
-        if (result.err) {
-          this.logger.error('UpdataeBlockRange block ', i, ' failed');
-          resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: i });
-          return;
-        } else {
-          // update statusDB current Height
-          let feedback = await this.pStatusDb.setCurrentHeight(i);
-          if (feedback.err) {
-            this.logger.error('Save block ', i, ' to db failedd');
-            resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: i });
-            return;
-          }
-          this.pStatusDb.nCurrentHeight = i;
-        }
-      }
-      resolv({ err: ErrorCode.RESULT_OK, data: null });
-    });
-  }
+  // private updateBlockRange(nStart: number, nStop: number): Promise<IFeedBack> {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     for (let i = nStart; i <= nStop; i++) {
+  //       // update database by block, one by one
+  //       let result = await this.updateBlock(i);
+  //       if (result.err) {
+  //         this.logger.error('UpdataeBlockRange block ', i, ' failed');
+  //         resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: i });
+  //         return;
+  //       } else {
+  //         // update statusDB current Height
+  //         let feedback = await this.pStatusDb.setCurrentHeight(i);
+  //         if (feedback.err) {
+  //           this.logger.error('Save block ', i, ' to db failedd');
+  //           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: i });
+  //           return;
+  //         }
+  //         this.pStatusDb.nCurrentHeight = i;
+  //       }
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_OK, data: null });
+  //   });
+  // }
   private async updateBlockSingle(nBlock: number): Promise<IFeedBack> {
     this.logger.info('updateBlockSingle()')
     return new Promise<IFeedBack>(async (resolv) => {

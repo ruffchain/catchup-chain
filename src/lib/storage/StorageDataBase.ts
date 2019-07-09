@@ -353,6 +353,9 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp, content) VALUES(?, ?, ?, ?, $content);', [this.tokenTable, tokenname, type, address, datetime])
     return this.insertRecord(sql, { $content: content });
   }
+  public updateTokenTableContent(token: string, content: Buffer) {
+    return this.updateRecord(`UPDATE ${this.tokenTable} SET content=${content} WHERE name="${token}";`);
+  }
   // public updateTokenTable(tokenname: string, type: string, address: string, datetime: number, content: Buffer) {
   //   return new Promise<IFeedBack>(async (resolv) => {
   //     let result = await this.queryTokenTable(tokenname)
