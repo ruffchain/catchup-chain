@@ -18,15 +18,11 @@ export async function laGetTokenInfo(handle: WRQueue, args: any) {
 
       if (token === 'SYS') {
         let result2 = await handle.pStorageDb.querySumOfToken('s');
-        if (result2.err) {
-          resolv({ err: result2.err, data: {} })
-          return;
-        }
-
-        // get something from account table
-        result.data.content = {
-          supply: parseFloat(result2.data.nsum),
-          precision: SYS_TOKEN_PRECISION
+        if (result2.err === 0) {
+          result.data.content = {
+            supply: parseFloat(result2.data.nsum),
+            precision: SYS_TOKEN_PRECISION
+          }
         }
       }
 
