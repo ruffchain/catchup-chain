@@ -19,11 +19,25 @@ export async function checkRunUserMethod(handler: Synchro, receipt: any): Promis
 
     if (receipt.tx.input.action === 'doTransfer') {
         return checkDoTransfer(handler, receipt);
+    } else {
+        return checkOtherAction(handler, receipt);
+    }
+}
+async function checkOtherAction(handler: Synchro, receipt: any): Promise<IFeedBack> {
+    let outAddrLst: { address: string }[] = [];
+    outAddrLst.push({ address: receipt.tx.caller });
+
+    if (receipt.tx.caller !== receipt.tx.input.to) {
+        outAddrLst.push({ address: receipt.tx.input.to });
+    }
+
+    let feedback = await handler.updateBalances(SYS_TOKEN, outAddrLst);
+    if (feedback.err) {
+        return feedback;
     }
 
     return { err: ErrorCode.RESULT_OK, data: null };
 }
-
 async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBack> {
     let addrLst: string[] = [receipt.tx.caller, receipt.tx.input.to];
     let mReceipt = receipt.receipt;
