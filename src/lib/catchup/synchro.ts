@@ -32,6 +32,7 @@ import { checkTransferLockBancorTokenTo } from './lockbancortoken/transfer';
 import { checkSellLockBancorToken } from './lockbancortoken/sell';
 import { checkBuyLockBancorToken } from './lockbancortoken/buy';
 import { checkTransferLockBancorTokenToMulti } from './lockbancortoken/transfermulti';
+import { checkRunUserMethod } from './usercode/runusermethod';
 
 /**
  * This is a client , always syncing with the Chain
@@ -579,6 +580,7 @@ export class Synchro {
       });
     }
   }
+
   private checkDefaultCommand(receipt: any) {
     return new Promise<IFeedBack>(async (resolv) => {
       // get caller balance
