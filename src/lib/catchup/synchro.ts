@@ -563,9 +563,11 @@ export class Synchro {
     else if (tx.method === 'buyBancorToken') {
       return checkBuyLockBancorToken(this, recet, TOKEN_TYPE.BANCOR);
     }
+    else if (tx.method === 'runUserMethod') {
+      return checkRunUserMethod(this, recet);
+    }
     else if (tx.method === 'setUserCode'
       || tx.method === 'getUserCode'
-      || tx.method === 'runUserMethod'
     ) {
       this.logger.info('We wont handle tx:', tx.method, '\n')
       return this.checkDefaultCommand(recet);
