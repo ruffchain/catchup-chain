@@ -33,6 +33,8 @@ import { checkSellLockBancorToken } from './lockbancortoken/sell';
 import { checkBuyLockBancorToken } from './lockbancortoken/buy';
 import { checkTransferLockBancorTokenToMulti } from './lockbancortoken/transfermulti';
 import { checkRunUserMethod } from './usercode/runusermethod';
+import { getCandidates } from '../../api/getCandidates';
+import { localCache } from './localcache';
 
 /**
  * This is a client , always syncing with the Chain
@@ -146,6 +148,16 @@ export class Synchro {
       } else {
         this.logger.error('loopTask2 fetch miners fail!\n');
       }
+    }
+
+    // get candidatesinfo
+    result = await this.laGetCandidates();
+
+    if (result.ret === 200) {
+      localCache.getCandidates = result;
+    } else {
+      this.logger.error('Can not fetch candidates');
+      console.log(result);
     }
 
     // update miner balance one by one, we won't take time to retry here.
@@ -1271,6 +1283,11 @@ export class Synchro {
 
   public async laGetBlocks(min: number, max: number, flag: boolean) {
     let result = await getBlocks(this.ctx, [min.toString(), max.toString(), flag.toString()]);
+    return result;
+  }
+
+  public async laGetCandidates() {
+    let result = await getCandidates(this.ctx, []);
     return result;
   }
 
