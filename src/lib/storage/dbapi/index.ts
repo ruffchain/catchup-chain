@@ -21,7 +21,8 @@ import { laGetSysByToken } from "./getsysbytoken";
 import { laGetTokenBySys } from "./gettokenbysys";
 import { laGetTxsTransferFrom } from "./gettxstransferfrom";
 import { laGetTxsTransferTo } from "./gettxstransferto";
-import { localCache } from "../../catchup/localcache";
+import { localCache, fetchCacheGetCandidates } from "../../catchup/localcache";
+import { WRQueue } from "../queue";
 
 /**
  * Get function by name
@@ -95,7 +96,7 @@ export function getFunc(funName: string) {
     return laGetTxsTransferTo;
   }
   else if (funName === 'getCandidates') {
-    return localCache.getCandidates;
+    return fetchCacheGetCandidates;
   }
   else if (funName === 'default') {
     return laDefault;
