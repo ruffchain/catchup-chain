@@ -3,6 +3,7 @@ import winston = require('winston');
 import { RPCServer } from '../../client/client/rfc_server';
 import { ErrorCode, IFeedBack } from '../../core';
 import { WRQueue, createTask } from '../storage/queue';
+import { getFunc } from '../storage/dbapi';
 
 /**
  * This is for a server , provide information to users
@@ -62,7 +63,19 @@ export class Inquiro {
       this.logger.info('\nreceive msg req:', reqobj, '\n');
 
       resp.writeHead(200, { 'Content-Type': 'application/json' });
-      let result = await this.handle(obj);
+
+      // let result = await this.handle(obj);
+      // change this to be parallel
+      let result = Object.create(null);
+      let task = createTask(obj, () => { });
+
+      if (['getCandy'].indexOf(obj.funName) !== -1) {
+        // this.queue.emit('write', createTask(obj, resolv))
+        result = await getFunc(obj.funName)(this.queue, task.request.args);
+      } else {
+        // this.queue.emit('read', createTask(obj, resolv));
+        result = await getFunc(obj.funName)(this.queue, task.request.args);
+      }
 
       this.logger.info('send out');
       let strFb = JSON.stringify(result.data);

@@ -36,8 +36,8 @@ let synchro = new Synchro({
 
 
 let SYSINFO: IfSysinfo = {
-  secret: '127.0.0.1',
-  host: '', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219
+  secret: '',
+  host: '40.73.34.219', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219  40.73.35.23 
   port: 18080,
   address: '',
   verbose: true
@@ -56,9 +56,11 @@ let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 describe('To test Catchup v1.0.2 JSON API', async function () {
   this.timeout(100000);
 
-  it('getName', async () => {
+
+
+  it('getCandidates', async () => {
     this.timeout(3000);
-    let cr = await client.callAsync('getName', "159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1")
+    let cr = await client.callAsync('getCandidates', '')
     logger.info(cr);
     logger.info(cr.resp)
 
@@ -75,7 +77,21 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
+
+
   /*
+
+    it('getName', async () => {
+    this.timeout(3000);
+    let cr = await client.callAsync('getName', "159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1")
+    logger.info(cr);
+    logger.info(cr.resp)
+
+    let obj = JSON.parse(cr.resp!);
+    expect(1).to.equal(1);
+  })
+
+
 it('getTokenInfo sys', async () => {
   this.timeout(3000);
   let cr = await client.callAsync('getTokenInfo', "SYS")
