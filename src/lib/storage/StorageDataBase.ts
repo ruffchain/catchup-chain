@@ -103,7 +103,7 @@ export class StorageDataBase extends CUDataBase {
       if (hret.err) { throw new Error() };
 
       // create index
-      hret = await this.execRecord(`create unique index timestamp_index on ${this.blockTable}(timestamp);`, {});
+      hret = await this.execRecord(`create unique index IF NOT EXISTS timestamp_index on ${this.blockTable}(timestamp);`, {});
       if (hret.err) { throw new Error(); }
 
 
