@@ -29,7 +29,7 @@ let storageDB = new StorageDataBase(logger, {
 
 // Operation on RuffChain
 let synchro = new Synchro({
-  ip: '40.73.1.241',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219, 40.73.1.241
+  ip: '40.73.96.202',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219, 40.73.1.241
   port: 18089,
   batch: 10
 }, logger, statusDB, storageDB);
@@ -37,7 +37,7 @@ let synchro = new Synchro({
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '127.0.0.1', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219  40.73.35.23 
+  host: '40.73.96.202', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219  40.73.35.23 
   port: 18080,
   address: '',
   verbose: true
@@ -58,15 +58,15 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
 
 
 
-  it('getCandidates', async () => {
-    this.timeout(3000);
-    let cr = await client.callAsync('getCandidates', '')
-    logger.info(cr);
-    logger.info(cr.resp)
+  // it('getCandidates', async () => {
+  //   this.timeout(3000);
+  //   let cr = await client.callAsync('getCandidates', '')
+  //   logger.info(cr);
+  //   logger.info(cr.resp)
 
-    let obj = JSON.parse(cr.resp!);
-    expect(1).to.equal(1);
-  })
+  //   let obj = JSON.parse(cr.resp!);
+  //   expect(1).to.equal(1);
+  // })
 
   it('getChainOverview', async () => {
     this.timeout(3000);
@@ -77,7 +77,14 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     let obj = JSON.parse(cr.resp!);
     expect(1).to.equal(1);
   })
-
+  it('getLatestBlocks', async () => {
+    this.timeout(33000);
+    let cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 5 })
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
 
   /*
 

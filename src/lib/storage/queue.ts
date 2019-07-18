@@ -64,7 +64,7 @@ export class WRQueue extends EventEmitter {
     this.on('write', (data: IfTask) => {
       this.logger.info('WRQueue receives "write" event\n');
       this.queueWrite.push(data);
-      if (this.queueWrite.length() !== 1) {
+      if (this.queueWrite.length() !== 0) {
         this.emit('execWrite');
       }
     });
@@ -75,7 +75,7 @@ export class WRQueue extends EventEmitter {
       this.logger.info('WRQueue receives "read" event\n');
       this.queueRead.push(data);
 
-      if (this.queueRead.length() !== 1) {
+      if (this.queueRead.length() !== 0) {
         this.emit('execRead');
       }
     });
