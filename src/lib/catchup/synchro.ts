@@ -152,9 +152,19 @@ export class Synchro {
 
     // get candidatesinfo
     result = await this.laGetCandidates();
+    console.log(result);
 
     if (result.ret === 200) {
-      localCache.getCandidates = result;
+      let obj = Object.create(null);
+      try {
+        obj = JSON.parse(result.resp!);
+        localCache.getCandidates = obj.value;
+      }
+      catch (e) {
+        this.logger.error("error");
+        console.log(e);
+      }
+
     } else {
       this.logger.error('Can not fetch candidates');
       console.log(result);

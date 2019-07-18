@@ -7,6 +7,8 @@ export let localCache = {
 
 export function fetchCacheGetCandidates() {
     return new Promise<IFeedBack>(async (resolv) => {
-        resolv({ err: ErrorCode.RESULT_OK, data: localCache.getCandidates })
+        resolv({
+            err: ErrorCode.RESULT_OK, data: localCache.getCandidates
+        });
     });
 }
