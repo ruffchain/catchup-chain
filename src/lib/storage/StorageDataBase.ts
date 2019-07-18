@@ -102,6 +102,11 @@ export class StorageDataBase extends CUDataBase {
       hret = await this.createTable(this.blockTable, this.blockTableSchema);
       if (hret.err) { throw new Error() };
 
+      // create index
+      hret = await this.execRecord(`create unique index timestamp_index on ${this.blockTable}(timestamp);`, {});
+      if (hret.err) { throw new Error(); }
+
+
       hret = await this.createTable(this.txTable, this.txTableSchema);
       if (hret.err) { throw new Error() };
 
