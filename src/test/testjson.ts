@@ -86,6 +86,15 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
     expect(1).to.equal(1);
   })
 
+  it('getCandy', async () => {
+    this.timeout(33000);
+    let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
+    // logger.info(cr);
+    logger.info(cr.resp)
+    let obj = JSON.parse(cr.resp!)
+    expect(1).to.equal(1);
+  })
+
   /*
 
     it('getName', async () => {
@@ -129,14 +138,7 @@ it('getTxsTransferFrom ', async () => {
   expect(1).to.equal(1);
 })
 
-it('getCandy', async () => {
-  this.timeout(33000);
-  let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
-  // logger.info(cr);
-  logger.info(cr.resp)
-  let obj = JSON.parse(cr.resp!)
-  expect(1).to.equal(1);
-})
+
 
 it('getCandy', async () => {
   this.timeout(33000);

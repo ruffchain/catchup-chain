@@ -69,13 +69,13 @@ export class Inquiro {
       let result = Object.create(null);
       let task = createTask(obj, () => { });
 
-      if (['getCandy'].indexOf(obj.funName) !== -1) {
-        // this.queue.emit('write', createTask(obj, resolv))
-        result = await getFunc(obj.funName)(this.queue, task.request.args);
-      } else {
-        // this.queue.emit('read', createTask(obj, resolv));
-        result = await getFunc(obj.funName)(this.queue, task.request.args);
-      }
+      // if (['getCandy'].indexOf(obj.funName) !== -1) {
+      // this.queue.emit('write', createTask(obj, resolv))
+      result = await getFunc(obj.funName)(this.queue, task.request.args);
+      // } else {
+      // this.queue.emit('read', createTask(obj, resolv));
+      //   result = await getFunc(obj.funName)(this.queue, task.request.args);
+      // }
 
       this.logger.info('send out');
       let strFb = JSON.stringify(result.data);
