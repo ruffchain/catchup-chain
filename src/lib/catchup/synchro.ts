@@ -172,6 +172,7 @@ export class Synchro {
       console.log(result);
     }
 
+
     // update miner balance one by one, we won't take time to retry here.
     this.logger.info('-------- end of looptask2() -----------\n');
     await DelayPromise(PERIOD);
@@ -312,11 +313,7 @@ export class Synchro {
       localCache.getChainOverview.irreversibleBlockHeight = this.nCurrentLIBHeight;
     }
 
-    await this.updateTxUserCount();
 
-    await this.updateGetTxs();
-
-    await this.updateGetLatestBlocks();
 
     // get currentHeight
     let nCurrentHeight = this.pStatusDb.nCurrentHeight;
@@ -341,6 +338,14 @@ export class Synchro {
     }
     this.logger.info(JSON.stringify(result2));
     // delay 5s
+
+    await this.updateTxUserCount();
+
+    await this.updateGetTxs();
+
+    await this.updateGetLatestBlocks();
+
+
     this.logger.info('Delay ', PERIOD, ' seconds\n');
     await DelayPromise(PERIOD);
     this.loopTask2();
