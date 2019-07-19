@@ -72,6 +72,7 @@ export class Synchro {
   public pStorageDb: StorageDataBase;
   private nCurrentLIBHeight: number;
   private nBatch: number;
+  private nLatestBlock: number;
 
   constructor(options: IfSynchroOptions, logger: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase) {
     this.ip = options.ip;
@@ -108,6 +109,7 @@ export class Synchro {
     this.pStatusDb = statusdb;
     this.pStorageDb = storagedb;
     this.nCurrentLIBHeight = 0;
+    this.nLatestBlock = 0;
   }
 
   public async start() {
@@ -202,14 +204,63 @@ export class Synchro {
       resolv({ err: ErrorCode.RESULT_FAILED, data: null })
     });
   }
+  private async updateTxUserCount(): Promise<IFeedBack> {
+    let nTxCount = 0;
+    // get tx count
+    let result2 = await this.pStorageDb.queryTxTableCount();
+    if (result2.err) {
+      this.logger.error('taskgetchainoverview get tx count fail');
+      return ({ err: ErrorCode.RESULT_SYNC_GETCHAINOVERVIEW_FAILED, data: {} });
+
+    }
+    try {
+      nTxCount = parseInt(result2.data.count)
+    } catch (e) {
+      this.logger.error('taskgetchainoverview get tx count JSON parse fail');
+      return ({ err: ErrorCode.RESULT_SYNC_GETCHAINOVERVIEW_FAILED, data: {} });
+
+    }
+
+
+    let nUserCount = 0;
+    let result3 = await this.pStorageDb.queryUserCount();
+    if (result3.err) {
+      this.logger.error('taskgetchainoverview get user count fail');
+      return ({ err: ErrorCode.RESULT_SYNC_GETCHAINOVERVIEW_FAILED, data: {} });
+
+    }
+    try {
+      nUserCount = parseInt(result3.data.count)
+    } catch (e) {
+      this.logger.error('taskgetchainoverview get user count JSON parse fail');
+      return ({ err: ErrorCode.RESULT_SYNC_GETCHAINOVERVIEW_FAILED, data: {} });
+    }
+
+    localCache.getChainOverview.txCount = nTxCount;
+    localCache.getChainOverview.userCount = nUserCount;
+
+    return { err: ErrorCode.RESULT_OK, data: {} }
+  }
+
 
   private async loopTask() {
     // get LIBNumber
     this.logger.info('loopTask()\n');
-    let result = await this.getLIBNumber()
+
+    let result = await this.getLastestBlock();
+    if (result.ret === 200) {
+      let obj = JSON.parse(result.resp!);
+      this.nLatestBlock = obj.block.number;
+      localCache.getChainOverview.blockHeight = obj.block.number;
+    }
+
+    result = await this.getLIBNumber()
     if (result.ret == 200) {
       this.nCurrentLIBHeight = parseInt(result.resp!);
+      localCache.getChainOverview.irreversibleBlockHeight = this.nCurrentLIBHeight;
     }
+
+    await this.updateTxUserCount();
 
     // get currentHeight
     let nCurrentHeight = this.pStatusDb.nCurrentHeight;

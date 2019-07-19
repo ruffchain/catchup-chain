@@ -2,7 +2,13 @@
 import { IFeedBack, ErrorCode } from "../../core";
 
 export let localCache = {
-    getCandidates: {}
+    getCandidates: {},
+    getChainOverview: {
+        blockHeight: 0,
+        irreversibleBlockHeight: 0,
+        txCount: 0,
+        userCount: 0
+    }
 };
 
 export function fetchCacheGetCandidates() {
