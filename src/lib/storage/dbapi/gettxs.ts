@@ -1,5 +1,6 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
+import { localCache } from "../../catchup/localcache";
 
 // function transformContent(arr: any[]) {
 //   for (let i = 0; i < arr.length; i++) {
@@ -40,13 +41,28 @@ export async function laGetTxs(handle: WRQueue, args: any) {
     } else {
       try {
         let argsObj = JSON.parse(JSON.stringify(args));
+
+        // if it can be read from localCache
+        if (argsObj.page === 1 && argsObj.pageSize < localCache.MAX_PAGESIZE) {
+          let mData = {
+            data: localCache.getTxs.data.slice(0, argsObj.pageSize),
+            total: localCache.getTxs.total
+          }
+          resolv({
+            err: ErrorCode.RESULT_OK,
+            data: mData
+          });
+          return;
+        }
+        //////////////////////////////////
+
         result = await handle.pStorageDb.queryTxTableByPage(
           (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
 
         if (result.err === ErrorCode.RESULT_OK) {
 
           for (let i = 0; i < result.data.length; i++) {
-            console.log('getTxs:', i)
+            handle.logger.info('getTxs:', i)
             // console.log(JSON.parse(result.data[i].content.toString()))
             result.data[i].content = JSON.parse(result.data[i].content);
 

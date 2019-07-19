@@ -1,5 +1,6 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
+import { localCache } from "../../catchup/localcache";
 
 
 /**
@@ -26,6 +27,21 @@ export async function laLatestBlocks(handle: WRQueue, args: any) {
     } else {
       try {
         let argsObj = JSON.parse(JSON.stringify(args));
+
+
+        // if it can be read from localCache
+        if (argsObj.page === 1 && argsObj.pageSize < localCache.MAX_PAGESIZE) {
+          let mData = {
+            data: localCache.getLatestBlocks.data.slice(0, argsObj.pageSize),
+            total: localCache.getLatestBlocks.total
+          }
+          resolv({
+            err: ErrorCode.RESULT_OK,
+            data: mData
+          });
+          return;
+        }
+
         result = await handle.pStorageDb.queryBlockTableByPage(
           (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
 

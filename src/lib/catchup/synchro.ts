@@ -242,7 +242,59 @@ export class Synchro {
     return { err: ErrorCode.RESULT_OK, data: {} }
   }
 
+  private async updateGetTxs(): Promise<IFeedBack> {
+    let page = 1;
+    let pageSize = localCache.MAX_PAGESIZE;
 
+    try {
+      let result = await this.pStorageDb.queryTxTableByPage(
+        (page > 0) ? (page - 1) : 0, pageSize);
+
+      if (result.err === ErrorCode.RESULT_OK) {
+
+        for (let i = 0; i < result.data.length; i++) {
+          console.log('getTxs:', i)
+          // console.log(JSON.parse(result.data[i].content.toString()))
+          result.data[i].content = JSON.parse(result.data[i].content);
+
+        }
+        let arr = result.data;
+        let result1 = await this.pStorageDb.queryTxTableCount();
+        let newObj: any;
+
+        newObj = {};
+        newObj.data = result.data;
+        newObj.total = parseInt(result1.data.count)
+
+        localCache.getTxs = newObj;
+      }
+    } catch (e) {
+      this.logger.error('Wrong getTxs ARGS');
+    }
+
+    return { err: ErrorCode.RESULT_OK, data: [] };
+  }
+
+  private async updateGetLatestBlocks(): Promise<IFeedBack> {
+    let page = 1;
+    let pageSize = localCache.MAX_PAGESIZE;
+
+    let result = await this.pStorageDb.queryBlockTableByPage(
+      (page > 0) ? (page - 1) : 0, pageSize);
+
+    if (result.err === ErrorCode.RESULT_OK) {
+      // 
+      let result1 = await this.pStorageDb.queryBlockTotal();
+      let newObj: any;
+      newObj = {};
+      newObj.data = result.data;
+      newObj.total = parseInt(result1.data.count)
+
+      localCache.getLatestBlocks = newObj;
+
+    }
+    return { err: ErrorCode.RESULT_OK, data: [] };
+  }
   private async loopTask() {
     // get LIBNumber
     this.logger.info('loopTask()\n');
@@ -261,6 +313,10 @@ export class Synchro {
     }
 
     await this.updateTxUserCount();
+
+    await this.updateGetTxs();
+
+    await this.updateGetLatestBlocks();
 
     // get currentHeight
     let nCurrentHeight = this.pStatusDb.nCurrentHeight;
