@@ -132,6 +132,12 @@ export class StorageDataBase extends CUDataBase {
       hret = await this.createTable(this.txTransferToTable, this.txTransferToTableSchema);
       if (hret.err) { throw new Error() };
 
+      // add index 
+      hret = await this.execRecord(`create unique index IF NOT EXISTS address_timestamp_index on ${this.txTransferToTable}(address, timestamp);`, {});
+      if (hret.err) { throw new Error(); }
+      hret = await this.execRecord(`create unique index IF NOT EXISTS toaddress_timestamp_index on ${this.txTransferToTable}(toaddress, timestamp);`, {});
+      if (hret.err) { throw new Error(); }
+
       this.logger.info('Create storage tables:', result);
       resolv({ err: 0, data: null });
     });
