@@ -587,67 +587,67 @@ export class Synchro {
   }
   // Need to check if address is already in hash table here, 
   // Because information is got from tx
-  private async updateTx(bhash: string, nhash: number, dtime: number, txs: any[]) {
-    return new Promise<IFeedBack>(async (resolv) => {
-      for (let j = 0; j < txs.length; j++) {
+  // private async updateTx(bhash: string, nhash: number, dtime: number, txs: any[]) {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     for (let j = 0; j < txs.length; j++) {
 
-        let hash = txs[j].hash;
-        let blockhash = bhash;
-        let blocknumber = nhash;
-        let address = txs[j].caller;
-        let datetime = dtime;
+  //       let hash = txs[j].hash;
+  //       let blockhash = bhash;
+  //       let blocknumber = nhash;
+  //       let address = txs[j].caller;
+  //       let datetime = dtime;
 
-        // insertOrReplace it into hash table
-        let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
-        if (feedback.err) {
-          resolv({ err: feedback.err, data: null });
-          return;
-        }
+  //       // insertOrReplace it into hash table
+  //       let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
+  //       if (feedback.err) {
+  //         resolv({ err: feedback.err, data: null });
+  //         return;
+  //       }
 
-        // get receipt
-        feedback = await this.getReceiptInfo(hash);
-        if (feedback.err) {
-          this.logger.error('getReceipt for tx failed')
-          resolv({ err: feedback.err, data: null });
-          return;
-        }
-        this.logger.info('get receipt for tx -->\n')
-        console.log(feedback.data)
+  //       // get receipt
+  //       feedback = await this.getReceiptInfo(hash);
+  //       if (feedback.err) {
+  //         this.logger.error('getReceipt for tx failed')
+  //         resolv({ err: feedback.err, data: null });
+  //         return;
+  //       }
+  //       this.logger.info('get receipt for tx -->\n')
+  //       console.log(feedback.data)
 
-        // put it into tx table, insertOrReplace
-        // let fee = txs[j].fee;
-        let recet: any;
-        try {
-          recet = JSON.parse(feedback.data.toString());
-          txs[j].cost = recet.receipt.cost;
-        } catch (e) {
-          this.logger.error('parse receipt failed')
-          resolv({ err: ErrorCode.RESULT_PARSE_ERROR, data: null });
-          return;
-        }
+  //       // put it into tx table, insertOrReplace
+  //       // let fee = txs[j].fee;
+  //       let recet: any;
+  //       try {
+  //         recet = JSON.parse(feedback.data.toString());
+  //         txs[j].cost = recet.receipt.cost;
+  //       } catch (e) {
+  //         this.logger.error('parse receipt failed')
+  //         resolv({ err: ErrorCode.RESULT_PARSE_ERROR, data: null });
+  //         return;
+  //       }
 
-        let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
-        feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
+  //       let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
+  //       feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
 
-        if (feedback.err) {
-          this.logger.error('put tx into txtable failed')
-          resolv({ err: feedback.err, data: null });
-          return;
-        }
-        console.log('updateTx:')
-        console.log(content);
-        // console.log(typeof content)
+  //       if (feedback.err) {
+  //         this.logger.error('put tx into txtable failed')
+  //         resolv({ err: feedback.err, data: null });
+  //         return;
+  //       }
+  //       console.log('updateTx:')
+  //       console.log(content);
+  //       // console.log(typeof content)
 
-        let feedback2 = await this.checkAccountAndToken(recet);
-        if (feedback2.err) {
-          this.logger.error('checkAccountAndToken() failed.')
-          resolv({ err: feedback2.err, data: null });
-          return;
-        }
-      }
-      resolv({ err: ErrorCode.RESULT_OK, data: null })
-    });
-  }
+  //       let feedback2 = await this.checkAccountAndToken(recet);
+  //       if (feedback2.err) {
+  //         this.logger.error('checkAccountAndToken() failed.')
+  //         resolv({ err: feedback2.err, data: null });
+  //         return;
+  //       }
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_OK, data: null })
+  //   });
+  // }
   // Based on tx method name
   // 1, token table
   // 2, account table
