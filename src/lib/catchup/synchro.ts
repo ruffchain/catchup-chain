@@ -124,36 +124,36 @@ export class Synchro {
   private async loopTask2() {
     this.logger.info('loopTask2()\n');
     // get miners list
-    let minerLst: string[] = [];
-    let result = await this.laGetMiners();
+    // let minerLst: string[] = [];
+    // let result = await this.laGetMiners();
 
-    if (result.ret === 200) {
-      let obj = JSON.parse(result.resp!);
-      if (obj.err === 0) {
-        obj.value.forEach((item: string) => {
-          minerLst.push(item.substring(1));
-        })
-        // ?? Use getBalances to fetch multiple balances
-        // let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
-        let feedback = await this.getMinerBalances(minerLst);
+    // if (result.ret === 200) {
+    //   let obj = JSON.parse(result.resp!);
+    //   if (obj.err === 0) {
+    //     obj.value.forEach((item: string) => {
+    //       minerLst.push(item.substring(1));
+    //     })
+    //     // ?? Use getBalances to fetch multiple balances
+    //     // let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
+    //     let feedback = await this.getMinerBalances(minerLst);
 
-        this.logger.info('feedback.data', feedback.data)
+    //     this.logger.info('feedback.data', feedback.data)
 
-        if (feedback.err) {
-          this.logger.error('loopTask2 getMinerBalances fail!\n')
-        } else {
-          feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
-          if (feedback.err) {
-            this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
-          }
-        }
-      } else {
-        this.logger.error('loopTask2 fetch miners fail!\n');
-      }
-    }
+    //     if (feedback.err) {
+    //       this.logger.error('loopTask2 getMinerBalances fail!\n')
+    //     } else {
+    //       feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
+    //       if (feedback.err) {
+    //         this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
+    //       }
+    //     }
+    //   } else {
+    //     this.logger.error('loopTask2 fetch miners fail!\n');
+    //   }
+    // }
 
     // get candidatesinfo
-    result = await this.laGetCandidates();
+    let result = await this.laGetCandidates();
     console.log(result);
 
     if (result.ret === 200) {
@@ -300,7 +300,7 @@ export class Synchro {
     // get LIBNumber
     this.logger.info('loopTask()\n');
 
-    let result = await this.getLastestBlock();
+    let result = await this.getLatestBlock();
     if (result.ret === 200) {
       let obj = JSON.parse(result.resp!);
       this.nLatestBlock = obj.block.number;
@@ -312,8 +312,6 @@ export class Synchro {
       this.nCurrentLIBHeight = parseInt(result.resp!);
       localCache.getChainOverview.irreversibleBlockHeight = this.nCurrentLIBHeight;
     }
-
-
 
     // get currentHeight
     let nCurrentHeight = this.pStatusDb.nCurrentHeight;
@@ -345,7 +343,7 @@ export class Synchro {
 
     await this.updateGetLatestBlocks();
 
-
+    this.logger.info('-------- end of looptask() -----------\n');
     this.logger.info('Delay ', PERIOD, ' seconds\n');
     await DelayPromise(PERIOD);
     this.loopTask2();
@@ -402,7 +400,7 @@ export class Synchro {
 
     });
   }
-
+  // Only update SYS supply, miner balance will not change;
   private async syncHeightAndMineAward(height: number): Promise<IFeedBack> {
     this.logger.info('syncHeightAndMineAward');
 
@@ -448,6 +446,14 @@ export class Synchro {
       if (feedback.err) {
         this.logger.error('updateBlock ', hashnumber, ' put into block able failed')
         resolv({ err: feedback.err, data: null });
+        return;
+      }
+
+      // update block-creator's balance
+      this.logger.info('update creator balance');
+      feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
+      if (feedback.err) {
+        resolv(feedback);
         return;
       }
 
@@ -550,6 +556,13 @@ export class Synchro {
         if (feedback.err) {
           this.logger.error('updateBlock ', nBlock, ' put into block able failed')
           resolv({ err: feedback.err, data: null });
+          return;
+        }
+
+        // update creator balance
+        feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
+        if (feedback.err) {
+          resolv(feedback);
           return;
         }
 
@@ -1276,7 +1289,7 @@ export class Synchro {
 
 
   // Basic commands 
-  public async getLastestBlock() {
+  public async getLatestBlock() {
     let result = await getBlock(this.ctx, ['latest', 'true']);
     this.logger.info(result.resp!);
     return result;
