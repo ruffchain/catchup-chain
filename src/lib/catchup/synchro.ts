@@ -158,8 +158,24 @@ export class Synchro {
     //     this.logger.error('loopTask2 fetch miners fail!\n');
     //   }
     // }
+    let minerLst: string[] = [];
+    this.latestMinerLst.forEach((item) => {
+      minerLst.push(item);
+    });
+    if (minerLst.length > 0) {
+      let feedback = await this.getMinerBalances(minerLst);
+      this.logger.info('feedback.data', feedback.data)
+      if (feedback.err) {
+        this.logger.error('loopTask2 getMinerBalances fail!\n')
+      } else {
+        feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
+        if (feedback.err) {
+          this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
+        }
+      }
+    }
 
-
+    this.latestMinerLst = [];
 
     // get candidatesinfo
     let result = await this.laGetCandidates();
@@ -461,11 +477,17 @@ export class Synchro {
       }
 
       // update block-creator's balance
-      this.logger.info('update creator balance');
-      feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
-      if (feedback.err) {
-        resolv(feedback);
-        return;
+      this.logger.info('save to minerLst , let loopTask2 to do it');
+      // feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
+      // if (feedback.err) {
+      //   resolv(feedback);
+      //   return;
+      // }
+      let miner1 = this.latestMinerLst.find((item) => {
+        return item === address;
+      })
+      if (!miner1) {
+        this.latestMinerLst.push(address);
       }
 
       if (txno > 0) {
@@ -578,10 +600,17 @@ export class Synchro {
         }
 
         // update creator balance
-        feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
-        if (feedback.err) {
-          resolv(feedback);
-          return;
+        // feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
+        // if (feedback.err) {
+        //   resolv(feedback);
+        //   return;
+        // }
+        this.logger.info('save to minerLst , let loopTask2 to do it');
+        let miner1 = this.latestMinerLst.find((item) => {
+          return item === address;
+        })
+        if (!miner1) {
+          this.latestMinerLst.push(address);
         }
 
         if (txno > 0) {
