@@ -75,10 +75,6 @@ let server = new Inquiro({
 
 
 
-
-
-
-
 // main entry function
 async function main() {
   assert(await statusDB.open(), 'statusDB open', logger)

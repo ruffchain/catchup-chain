@@ -1,9 +1,26 @@
 import { IFeedBack, ErrorCode, Receipt } from "../../../core";
 import { Synchro } from "../synchro";
 import { HASH_TYPE, TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { handleAccountAndToken } from "./handleUpdateTx";
+import { checkTransferTo } from "./check/checkTransferTo";
+import { checkCreateToken } from "./check/checkCreateToken";
+import { checkTransferTokenTo } from "./check/checkTransferTokenTo";
+import { checkMortgage } from "./check/checkMortgage";
+import { checkUnmortgage } from "./check/checkUnmortgage";
+import { checkVote } from "./check/checkVote";
+import { checkRegister } from "./check/checkRegister";
+import { checkUnregister } from "./check/checkUnregister";
+import { checkCreateLockBancorToken } from "./check/checkCreateBancorToken";
+import { checkTransferLockBancorTokenTo } from "./check/checkTransferLockBancorTokenTo";
+import { checkTransferLockBancorTokenToMulti } from "./check/checkTransferLockBancorTokenToMulti";
+import { checkSellLockBancorToken } from "./check/checkSellLockBancorToken";
+import { checkBuyLockBancorToken } from "./check/checkBuyLockBancorToken";
+import { checkRunUserMethod } from "./check/checkRunUserMethod";
+import { checkDefaultCommand } from "./check/checkDefaultCommand";
 
-interface IfTokenAddressCp {
+export interface IfTokenAddressCp {
     token: string;
+    type: string;
     addresses: string[];
 }
 
@@ -70,7 +87,7 @@ export async function updateTx(handler: Synchro, bhash: string, nhash: number, d
 
         }
 
-        let feedback = await handleAccountAndToken(tokenAddressLst);
+        let feedback = await handleAccountAndToken(handler, tokenAddressLst);
         if (feedback.err) {
             resolv(feedback);
             return;
@@ -89,52 +106,52 @@ async function checkAccountAndToken(handler: Synchro, receipt: any, lst: IfToken
     console.log(tx);
 
     if (tx.method === 'transferTo') {
-        return checkTransferTo(handler, recet);
+        return checkTransferTo(handler, recet, lst);
     }
     else if (tx.method === 'createToken') {
-        return checkCreateToken(handler, recet, TOKEN_TYPE.NORMAL);
+        return checkCreateToken(handler, recet, TOKEN_TYPE.NORMAL, lst);
     }
     else if (tx.method === 'transferTokenTo') {
-        return checkTransferTokenTo(handler, recet);
+        return checkTransferTokenTo(handler, recet, lst);
     }
     else if (tx.method === 'mortgage') {
-        return checkMortgage(handler, recet);
+        return checkMortgage(handler, recet, lst);
     }
     else if (tx.method === 'unmortgage') {
-        return checkUnmortgage(handler, recet);
+        return checkUnmortgage(handler, recet, lst);
     }
     else if (tx.method === 'vote') {
-        return checkVote(handler, recet);
+        return checkVote(handler, recet, lst);
     }
     else if (tx.method === 'register') {
-        return checkRegister(handler, recet);
+        return checkRegister(handler, recet, lst);
     }
     else if (tx.method === 'unregister') {
-        return checkUnregister(handler, recet);
+        return checkUnregister(handler, recet, lst);
     }
     else if (tx.method === 'createBancorToken') {
-        return checkCreateLockBancorToken(handler, recet, TOKEN_TYPE.BANCOR);
+        return checkCreateLockBancorToken(handler, recet, TOKEN_TYPE.BANCOR, lst);
     }
     else if (tx.method === 'transferBancorTokenTo') {
-        return checkTransferLockBancorTokenTo(handler, recet, TOKEN_TYPE.BANCOR);
+        return checkTransferLockBancorTokenTo(handler, recet, TOKEN_TYPE.BANCOR, lst);
     }
     else if (tx.method === 'transferBancorTokenToMulti') {
-        return checkTransferLockBancorTokenToMulti(handler, recet, TOKEN_TYPE.BANCOR);
+        return checkTransferLockBancorTokenToMulti(handler, recet, TOKEN_TYPE.BANCOR, lst);
     }
     else if (tx.method === 'sellBancorToken') {
-        return checkSellLockBancorToken(handler, recet, TOKEN_TYPE.BANCOR);
+        return checkSellLockBancorToken(handler, recet, TOKEN_TYPE.BANCOR, lst);
     }
     else if (tx.method === 'buyBancorToken') {
-        return checkBuyLockBancorToken(handler, recet, TOKEN_TYPE.BANCOR);
+        return checkBuyLockBancorToken(handler, recet, TOKEN_TYPE.BANCOR, lst);
     }
     else if (tx.method === 'runUserMethod') {
-        return checkRunUserMethod(handler, recet);
+        return checkRunUserMethod(handler, recet, lst);
     }
     else if (tx.method === 'setUserCode'
         || tx.method === 'getUserCode'
     ) {
         handler.logger.info('We wont handle tx:', tx.method, '\n')
-        return checkDefaultCommand(handler, recet);
+        return checkDefaultCommand(handler, recet, lst);
     }
     else {
         return new Promise<IFeedBack>(async (resolv) => {
@@ -142,8 +159,4 @@ async function checkAccountAndToken(handler: Synchro, receipt: any, lst: IfToken
             resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
         });
     }
-}
-async function handleAccountAndToken(lst: IfTokenAddressCp[]): Promise<IFeedBack> {
-
-    return { err: ErrorCode.RESULT_OK, data: null };
 }

@@ -62,6 +62,11 @@ interface IBancorTokenParams {
   R: string;
 }
 
+interface IfTaskItem {
+  id: number;
+  task: any;
+}
+
 export class Synchro {
   public logger: winston.LoggerInstance;
 
@@ -433,6 +438,8 @@ export class Synchro {
       let height = obj.block.number;
 
       this.logger.info('save block hash to hash table')
+      let startSyncBlockDataTime = new Date().getTime();
+      console.log('Start of syncBlockData', new Date());
       // save to hash table
       let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
       if (feedback.err) {
@@ -459,14 +466,19 @@ export class Synchro {
 
       if (txno > 0) {
         this.logger.info('UpdateTx -->')
-        feedback = await this.updateTx(hash, hashnumber, timestamp, obj.transactions);
+        let startUpdateTxNew = new Date().getTime();
+        console.log('Start of updateTexNew', new Date());
+        feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.transactions);
+        console.log('End of updateTexNew', new Date());
+        console.log('Delta of updateTxNew is:', new Date().getTime() - startUpdateTxNew)
         if (feedback.err) {
 
           resolv({ err: feedback.err, data: null });
           return;
         }
       }
-
+      console.log('End of syncBlockData', new Date());
+      console.log('Delta of syncBlockDAta is:', new Date().getTime() - startSyncBlockDataTime)
       resolv({ err: ErrorCode.RESULT_OK, data: null })
 
     });
@@ -518,6 +530,8 @@ export class Synchro {
   private async updateBlock(nBlock: number): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('Get block ' + nBlock + '\n')
+      let startUpdateBlockTime = new Date().getTime();
+      console.log('Start of updateBlock', new Date());
       let result = await this.getBlock(nBlock)
 
       if (result.ret === 200) {
@@ -568,14 +582,20 @@ export class Synchro {
 
         if (txno > 0) {
           this.logger.info('UpdateTx -->')
-          feedback = await this.updateTx(hash, hashnumber, timestamp, obj.transactions);
+          let startTxTime = new Date().getTime();
+          console.log('Start of updateTxNew', new Date());
+          feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.transactions);
+          console.log('End of updateTxNew', new Date());
+          let endTxTime = new Date().getTime()
+          console.log('Delta of udpateTxNew is:', endTxTime - startTxTime);
           if (feedback.err) {
 
             resolv({ err: feedback.err, data: null });
             return;
           }
         }
-
+        console.log('End of updateBlock', new Date());
+        console.log('Delta of updateBlock:', new Date().getTime() - startUpdateBlockTime)
         resolv({ err: ErrorCode.RESULT_OK, data: null })
 
       } else {
@@ -585,10 +605,114 @@ export class Synchro {
       }
     });
   }
+  private async updateSingleTx(bhash: string, nhash: number, dtime: number, taskitem: IfTaskItem): Promise<IFeedBack> {
+    let hash = taskitem.task.hash;
+    let blockhash = bhash;
+    let blocknumber = nhash;
+    let address = taskitem.task.caller;
+    let datetime = dtime;
+
+    // insertOrReplace it into hash table
+    let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
+    if (feedback.err) {
+      return { err: feedback.err, data: null };
+    }
+
+    // get receipt
+    feedback = await this.getReceiptInfo(hash);
+    if (feedback.err) {
+      this.logger.error('getReceipt for tx failed')
+      return { err: feedback.err, data: null };
+    }
+    this.logger.info('get receipt for tx ' + taskitem.task + ' -->\n')
+    console.log(feedback.data)
+
+    // put it into tx table, insertOrReplace
+    // let fee = txs[j].fee;
+    let recet: any;
+    try {
+      recet = JSON.parse(feedback.data.toString());
+      taskitem.task.cost = recet.receipt.cost;
+    } catch (e) {
+      this.logger.error('parse receipt failed')
+      return { err: ErrorCode.RESULT_PARSE_ERROR, data: null };
+    }
+
+    let content: Buffer = Buffer.from(JSON.stringify(taskitem.task))
+    feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
+
+    if (feedback.err) {
+      this.logger.error('put tx into txtable failed')
+      return { err: feedback.err, data: null };
+    }
+    console.log('updateTx:')
+    console.log(content);
+    // console.log(typeof content)
+
+    let feedback2 = await this.checkAccountAndToken(recet);
+    if (feedback2.err) {
+      this.logger.error('checkAccountAndToken() failed.')
+      return { err: feedback2.err, data: null };
+    }
+
+    return { err: ErrorCode.RESULT_OK, data: taskitem.id };
+  }
+  private async  updateMultiTx(bhash: string, nhash: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let promiseLst: Promise<IFeedBack>[] = [];
+
+    this.logger.info('UpdateTxMulti -- length:', taskLst.length);
+
+    // Parallel processing 
+    for (let i = 0; i < taskLst.length; i++) {
+      let func = new Promise<IFeedBack>(async (resolve) => {
+        let task: IfTaskItem = taskLst[i];
+        let result = await this.updateSingleTx(bhash, nhash, dtime, task);
+        resolve(result);
+      });
+      promiseLst.push(func);
+    }
+    let finishedId: number[] = [];
+    await Promise.all(promiseLst).then((result) => {
+      for (let item of result) {
+        this.logger.info('returned:', JSON.stringify(item));
+        if (item.err === 0) {
+          // remove item.data id from 
+          finishedId.push(item.data);
+        }
+      }
+    });
+    console.log('finishedId:', finishedId);
+
+    let newTaskLst: IfTaskItem[] = [];
+    for (let i = 0; i < taskLst.length; i++) {
+      let id = taskLst[i].id;
+      if (finishedId.indexOf(id) === -1) {
+        newTaskLst.push(taskLst[i]);
+      }
+    }
+    // Check if 
+    if (newTaskLst.length > 0) {
+      return await this.updateMultiTx(bhash, nhash, dtime, newTaskLst);
+    } else {
+      return { err: ErrorCode.RESULT_OK, data: null }
+    }
+  }
+  private async updateTxNew(bhash: string, nhash: number, dtime: number, txs: any[]) {
+    let taskLst1: IfTaskItem[] = [];
+
+    for (let j = 0; j < txs.length; j++) {
+      taskLst1.push({ id: j, task: txs[j] });
+    }
+    await this.updateMultiTx(bhash, nhash, dtime, taskLst1);;
+
+    return { err: ErrorCode.RESULT_OK, data: null };
+  }
+
   // Need to check if address is already in hash table here, 
   // Because information is got from tx
   // private async updateTx(bhash: string, nhash: number, dtime: number, txs: any[]) {
   //   return new Promise<IFeedBack>(async (resolv) => {
+
   //     for (let j = 0; j < txs.length; j++) {
 
   //       let hash = txs[j].hash;
@@ -648,6 +772,7 @@ export class Synchro {
   //     resolv({ err: ErrorCode.RESULT_OK, data: null })
   //   });
   // }
+
   // Based on tx method name
   // 1, token table
   // 2, account table
