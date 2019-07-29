@@ -1296,14 +1296,21 @@ export class Synchro {
       // this.logger.info('checkTxTransferto, updateNamesToHashTable\n')
       // // put address into hashtable
       this.logger.info('checkTransferTo, updateNamesToHashTable')
+      let startTime = 0, endTime = 0;
+      startTime = new Date().getTime();
       let feedback = await this.pStorageDb.updateNamesToHashTable([caller, to], HASH_TYPE.ADDRESS);
+      endTime = new Date().getTime();
+      this.logger.info('Used time for updateNamesToHashTable:', endTime - startTime);
       if (feedback.err) {
         resolv(feedback);
         return;
       }
 
       // insert into txaddresstable
+      startTime = new Date().getTime();
       feedback = await this.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
+      endTime = new Date().getTime();
+      this.logger.info('Used time for updateHashToTxAddressTable:', endTime - startTime);
       if (feedback.err) {
         resolv(feedback);
         return;
@@ -1311,7 +1318,10 @@ export class Synchro {
 
       //if (receipt.receipt.returnCode === 0) {
       this.logger.info('checkTranserTo, updateBalances')
+      startTime = new Date().getTime();
       feedback = await this.updateBalances(SYS_TOKEN, [{ address: caller }, { address: to }]);
+      endTime = new Date().getTime();
+      this.logger.info('Used time for updateBalances:', endTime - startTime);
       if (feedback.err) {
         resolv(feedback);
         return;
@@ -1320,7 +1330,10 @@ export class Synchro {
       // Update txTransferTo txs
       // if (receipt.receipt.returnCode === 0) {
       this.logger.info('Put it into txTransferToTable')
+      startTime = new Date().getTime();
       feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
+      endTime = new Date().getTime();
+      this.logger.info('Used time for insertTxTransferToTable:', endTime - startTime);
       if (feedback.err) {
         this.logger.error('put tx into txtransfertotable failed');
         resolv(feedback);
@@ -1331,7 +1344,10 @@ export class Synchro {
       // Update txTransferTo txs
       // if (receipt.receipt.returnCode === 0) {
       this.logger.info('Put it into txTransferToTable')
+      startTime = new Date().getTime();
       feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
+      endTime = new Date().getTime();
+      this.logger.info('Used time for insertTxTransferToTable:', endTime - startTime);
       if (feedback.err) {
         this.logger.error('put tx into txtransfertotable failed');
         resolv(feedback);
