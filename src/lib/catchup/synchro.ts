@@ -78,6 +78,7 @@ export class Synchro {
   private nCurrentLIBHeight: number;
   private nBatch: number;
   private nLatestBlock: number;
+  private latestMinerLst: string[];
 
   constructor(options: IfSynchroOptions, logger: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase) {
     this.ip = options.ip;
@@ -115,6 +116,7 @@ export class Synchro {
     this.pStorageDb = storagedb;
     this.nCurrentLIBHeight = 0;
     this.nLatestBlock = 0;
+    this.latestMinerLst = [];
   }
 
   public async start() {
@@ -156,6 +158,8 @@ export class Synchro {
     //     this.logger.error('loopTask2 fetch miners fail!\n');
     //   }
     // }
+
+
 
     // get candidatesinfo
     let result = await this.laGetCandidates();
@@ -349,8 +353,8 @@ export class Synchro {
     await this.updateGetLatestBlocks();
 
     this.logger.info('-------- end of looptask() -----------\n');
-    this.logger.info('Delay ', PERIOD, ' seconds\n');
-    await DelayPromise(PERIOD);
+    this.logger.info('Delay ', PERIOD / 5, ' seconds\n');
+    await DelayPromise(PERIOD / 5);
     this.loopTask2();
   }
   private updateBlockRangeBatch(nStart: number, nStop: number) {
