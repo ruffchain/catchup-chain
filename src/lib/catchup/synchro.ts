@@ -1343,16 +1343,16 @@ export class Synchro {
 
       // Update txTransferTo txs
       // if (receipt.receipt.returnCode === 0) {
-      this.logger.info('Put it into txTransferToTable')
-      startTime = new Date().getTime();
-      feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
-      endTime = new Date().getTime();
-      this.logger.info('Used time for insertTxTransferToTable:', endTime - startTime);
-      if (feedback.err) {
-        this.logger.error('put tx into txtransfertotable failed');
-        resolv(feedback);
-        return;
-      }
+      // this.logger.info('Put it into txTransferToTable')
+      // startTime = new Date().getTime();
+      // feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
+      // endTime = new Date().getTime();
+      // this.logger.info('Used time for insertTxTransferToTable:', endTime - startTime);
+      // if (feedback.err) {
+      //   this.logger.error('put tx into txtransfertotable failed');
+      //   resolv(feedback);
+      //   return;
+      // }
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
