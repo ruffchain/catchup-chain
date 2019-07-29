@@ -42,6 +42,7 @@ import { localCache } from './localcache';
  */
 
 const PERIOD = 5;
+const MAX_BUSY_INDEX = 10;
 
 interface IfSynchroOptions {
   ip: string;
@@ -79,6 +80,7 @@ export class Synchro {
   private nBatch: number;
   private nLatestBlock: number;
   private latestMinerLst: string[];
+  private busyIndex: number;
 
   constructor(options: IfSynchroOptions, logger: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase) {
     this.ip = options.ip;
@@ -117,6 +119,7 @@ export class Synchro {
     this.nCurrentLIBHeight = 0;
     this.nLatestBlock = 0;
     this.latestMinerLst = [];
+    this.busyIndex = 0;
   }
 
   public async start() {
@@ -163,6 +166,8 @@ export class Synchro {
       minerLst.push(item);
     });
     if (minerLst.length > 0) {
+      this.logger.info('getminerbalance start=>');
+      console.log(new Date())
       let feedback = await this.getMinerBalances(minerLst);
       this.logger.info('feedback.data', feedback.data)
       if (feedback.err) {
@@ -173,6 +178,8 @@ export class Synchro {
           this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
         }
       }
+      this.logger.info('getminerbalance end=>');
+      console.log(new Date())
     }
 
     this.latestMinerLst = [];
@@ -200,7 +207,7 @@ export class Synchro {
 
     // update miner balance one by one, we won't take time to retry here.
     this.logger.info('-------- end of looptask2() -----------\n');
-    await DelayPromise(PERIOD);
+    await DelayPromise(PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX);
     this.loopTask();
   }
   private async getMinerBalances(addrs: string[]) {
@@ -229,6 +236,15 @@ export class Synchro {
       }
       resolv({ err: ErrorCode.RESULT_FAILED, data: null })
     });
+  }
+  private calcBusyIndex(txno: number) {
+    if (txno === 0) {
+      return 0;
+    } else if (txno >= 50) {
+      return MAX_BUSY_INDEX;
+    } else {
+      return MAX_BUSY_INDEX * txno / 50;
+    }
   }
   private async updateTxUserCount(): Promise<IFeedBack> {
     let nTxCount = 0;
@@ -489,7 +505,7 @@ export class Synchro {
       if (!miner1) {
         this.latestMinerLst.push(address);
       }
-
+      this.busyIndex = this.calcBusyIndex(txno);
       if (txno > 0) {
         this.logger.info('UpdateTx -->')
         let startUpdateTxNew = new Date().getTime();
@@ -613,6 +629,7 @@ export class Synchro {
           this.latestMinerLst.push(address);
         }
 
+        this.busyIndex = this.calcBusyIndex(txno);
         if (txno > 0) {
           this.logger.info('UpdateTx -->')
           let startTxTime = new Date().getTime();
