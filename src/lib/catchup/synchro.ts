@@ -663,12 +663,14 @@ export class Synchro {
     let datetime = dtime;
 
     // insertOrReplace it into hash table
+    console.log('insert to to hashtable,start:', new Date());
     let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
     if (feedback.err) {
       return { err: feedback.err, data: null };
     }
 
     // get receipt
+    console.log('To getReceipt:', new Date());
     feedback = await this.getReceiptInfo(hash);
     if (feedback.err) {
       this.logger.error('getReceipt for tx failed')
@@ -687,7 +689,7 @@ export class Synchro {
       this.logger.error('parse receipt failed')
       return { err: ErrorCode.RESULT_PARSE_ERROR, data: null };
     }
-
+    console.log('To insertTxTable:', new Date());
     let content: Buffer = Buffer.from(JSON.stringify(taskitem.task))
     feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
 
@@ -699,12 +701,13 @@ export class Synchro {
     console.log(content);
     // console.log(typeof content)
 
+    console.log('Begin checkAccountAndToken:', new Date());
     let feedback2 = await this.checkAccountAndToken(recet);
     if (feedback2.err) {
       this.logger.error('checkAccountAndToken() failed.')
       return { err: feedback2.err, data: null };
     }
-
+    console.log('End of udpateSingleTx', new Date());
     return { err: ErrorCode.RESULT_OK, data: taskitem.id };
   }
   private async  updateMultiTx(bhash: string, nhash: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
