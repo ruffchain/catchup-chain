@@ -198,17 +198,17 @@ export class StorageDataBase extends CUDataBase {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('\n')
       this.logger.info('updateNameToHashTable()\n');
-      // let feedback = await this.getHashTable(name);
-      // console.log('\nfeedback is ->')
-      // console.log(feedback)
-      // if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-      //   let result = await this.insertOrReplaceHashTable(name, type);
-      //   resolv(result);
-      // } else { // failed or OK
-      //   resolv(feedback);
-      // }
-      let result = await this.insertOrReplaceHashTable(name, type);
-      resolv(result);
+      let feedback = await this.getHashTable(name);
+      console.log('\nfeedback is ->')
+      console.log(feedback)
+      if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+        let result = await this.insertOrReplaceHashTable(name, type);
+        resolv(result);
+      } else { // failed or OK
+        resolv(feedback);
+      }
+      // let result = await this.insertOrReplaceHashTable(name, type);
+      // resolv(result);
     });
   }
 
