@@ -161,7 +161,10 @@ export class StorageDataBase extends CUDataBase {
     for (let i = 0; i < hashLst.length; i++) {
       try {
         let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, hashLst[i], type])
-        await this.db.run(sql);
+        let result = await this.execRecord(sql, {});
+        if (result.err) {
+          throw new Error("execRecord");
+        }
       } catch (e) {
         this.logger.err('run insert fail, batchInsertOrReplaceHashTAble');
         await this.db.run('ROLLBACK;');
@@ -380,12 +383,16 @@ export class StorageDataBase extends CUDataBase {
 
   public async batchInsertTxTable(blockhash: string, blocknumber: number, datetime: number, contentLst: IfTxTableItem[]) {
     this.logger.info('batchInsertTxTable');
+    console.log(new Date())
 
     await this.db.run('BEGIN;');
-    for (let i = 0; i < contentLst.length; i++) {
-      try {
+
+    try {
+
+      for (let i = 0; i < contentLst.length; i++) {
         let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1);', [this.txTable]);
-        await this.db.run(sql, {
+
+        let result = await this.execRecord(sql, {
           $hash: SqlString.escape(contentLst[i].hash).replace(/\'/g, ''),
           $blockhash: SqlString.escape(blockhash).replace(/\'/g, ''),
           $blocknumber: SqlString.escape(blocknumber),
@@ -393,14 +400,20 @@ export class StorageDataBase extends CUDataBase {
           $datetime: SqlString.escape(datetime),
           $content1: contentLst[i].content
         });
-      } catch (e) {
-        this.logger.err('run insert fail, batchInsertTxTable');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+        if (result.err) {
+          throw new Error('execRecord');
+        }
       }
-    }
-    await this.db.run('COMMIT;');
 
+    } catch (e) {
+      this.logger.err('run insert fail, batchInsertTxTable');
+      await this.db.run('ROLLBACK;');
+      return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+    }
+
+    await this.db.run('COMMIT;');
+    this.logger.info('End of batchInsertTxTable');
+    console.log(new Date())
     return { err: ErrorCode.RESULT_OK, data: null };
   }
 

@@ -522,7 +522,7 @@ export class Synchro {
       }
       this.busyIndex = this.calcBusyIndex(txno);
       if (txno > 0) {
-        this.logger.info('UpdateTx -->')
+        this.logger.info('UpdateTx --> :', txno)
         let startUpdateTxNew = new Date().getTime();
         console.log('Start of updateTexNew', new Date());
         feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.transactions);
@@ -644,7 +644,7 @@ export class Synchro {
 
         this.busyIndex = this.calcBusyIndex(txno);
         if (txno > 0) {
-          this.logger.info('UpdateTx -->')
+          this.logger.info('UpdateTx -->:', txno)
           let startTxTime = new Date().getTime();
           console.log('Start of updateTxNew', new Date());
           feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.transactions);
@@ -868,14 +868,12 @@ export class Synchro {
       return { err: feedback.err, data: null };
     }
 
-    console.log('Begin batchcheckAccountAndToken:', new Date());
+    // console.log('Begin batchcheckAccountAndToken:', new Date());
     feedback = await this.batchCheckAccountAndToken(taskLst1);
     if (feedback.err) {
       this.logger.error('batchCheckAccountAndToken failed');
       return { err: feedback.err, data: null };
     }
-
-    console.log('End of udpateSingleTx', new Date());
 
     return { err: ErrorCode.RESULT_OK, data: null };
   }
@@ -888,6 +886,7 @@ export class Synchro {
     return feedback;
   }
   private async batchInsertTxTable(bhash: string, nheight: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    this.logger.info('batchInsertTxTable run ');
     let contentLst: IfTxTableItem[] = [];
     for (let i = 0; i < taskLst.length; i++) {
       taskLst[i].tx.cost = taskLst[i].receipt.receipt.cost;
