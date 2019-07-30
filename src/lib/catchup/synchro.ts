@@ -577,6 +577,7 @@ export class Synchro {
       let startUpdateBlockTime = new Date().getTime();
       console.log('Start of updateBlock', new Date());
       let result = await this.getBlock(nBlock)
+      console.log('getBlock finished:', new Date());
 
       if (result.ret === 200) {
         // this.logger.info(result.resp + '\n');
@@ -608,6 +609,7 @@ export class Synchro {
           resolv({ err: feedback.err, data: null });
           return;
         }
+        console.log('insertOrReplaceHashTable finished:', new Date());
 
         // save to block table
         feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, height, txno, address, timestamp);
@@ -616,13 +618,9 @@ export class Synchro {
           resolv({ err: feedback.err, data: null });
           return;
         }
-
+        console.log('insertOrReplaceBlockTable finished:', new Date());
         // update creator balance
-        // feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
-        // if (feedback.err) {
-        //   resolv(feedback);
-        //   return;
-        // }
+
         this.logger.info('save to minerLst , let loopTask2 to do it');
         let miner1 = this.latestMinerLst.find((item) => {
           return item === address;
