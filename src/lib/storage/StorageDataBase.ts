@@ -198,15 +198,17 @@ export class StorageDataBase extends CUDataBase {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('\n')
       this.logger.info('updateNameToHashTable()\n');
-      let feedback = await this.getHashTable(name);
-      console.log('\nfeedback is ->')
-      console.log(feedback)
-      if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-        let result = await this.insertOrReplaceHashTable(name, type);
-        resolv(result);
-      } else { // failed or OK
-        resolv(feedback);
-      }
+      // let feedback = await this.getHashTable(name);
+      // console.log('\nfeedback is ->')
+      // console.log(feedback)
+      // if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+      //   let result = await this.insertOrReplaceHashTable(name, type);
+      //   resolv(result);
+      // } else { // failed or OK
+      //   resolv(feedback);
+      // }
+      let result = await this.insertOrReplaceHashTable(name, type);
+      resolv(result);
     });
   }
 
@@ -441,18 +443,20 @@ export class StorageDataBase extends CUDataBase {
   }
   public async updateTxAddressTable(hash: string, address: string, datetime: number) {
     return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.queryHashFromTx(hash, address);
+      let result = await this.insertTxAddressTable(hash, address, datetime);
+      resolv(result);
+      // let result = await this.queryHashFromTx(hash, address);
 
-      if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+      // if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
 
-        let result1 = await this.insertTxAddressTable(hash, address, datetime);
-        console.log('updateTxAddressTable result1:', result1)
-        resolv(result1);
-      } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
-        resolv(result);
-      } else {
-        resolv({ err: ErrorCode.RESULT_OK, data: null })
-      }
+      //   let result1 = await this.insertTxAddressTable(hash, address, datetime);
+      //   console.log('updateTxAddressTable result1:', result1)
+      //   resolv(result1);
+      // } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+      //   resolv(result);
+      // } else {
+      //   resolv({ err: ErrorCode.RESULT_OK, data: null })
+      // }
 
     });
   }
@@ -473,8 +477,8 @@ export class StorageDataBase extends CUDataBase {
   }
 
   public async updateHashToTxAddressTable(strHash: string, addrs: string[], timestamp: number) {
-    this.logger.info('updateHashToTxAddressTable()')
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('updateHashToTxAddressTable()')
       for (let j = 0; j < addrs.length; j++) {
         let result = await this.updateTxAddressTable(strHash, addrs[j], timestamp);
         if (result.err) {
