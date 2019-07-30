@@ -436,12 +436,8 @@ export class StorageDataBase extends CUDataBase {
   }
   public async insertTxAddressTable(hash: string, address: string, datetime: number) {
     this.logger.info('insertTxAddressTable');
-    let sql = SqlString.format('INSERT INTO ? (hash, address, timestamp) VALUES($hash, $address, $datetime);', [this.txAddressTable]);
-    return this.insertRecord(sql, {
-      $hash: hash,
-      $address: address,
-      $datetime: datetime
-    })
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, address, timestamp) VALUES(?, ?, ?);', [this.txAddressTable, hash, address, datetime]);
+    return this.insertOrReplaceRecord(sql, {});
   }
   public async updateTxAddressTable(hash: string, address: string, datetime: number) {
     return new Promise<IFeedBack>(async (resolv) => {
