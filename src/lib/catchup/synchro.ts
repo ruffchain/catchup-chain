@@ -207,7 +207,9 @@ export class Synchro {
 
     // update miner balance one by one, we won't take time to retry here.
     this.logger.info('-------- end of looptask2() -----------\n');
-    await DelayPromise(PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX);
+    let delay = PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX;
+    this.logger.info('Delay ', delay, ' seconds\n');
+    await DelayPromise(delay);
     this.loopTask();
   }
   private async getMinerBalances(addrs: string[]) {
