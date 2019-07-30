@@ -35,6 +35,7 @@ import { checkTransferLockBancorTokenToMulti } from './lockbancortoken/transferm
 import { checkRunUserMethod } from './usercode/runusermethod';
 import { getCandidates } from '../../api/getCandidates';
 import { localCache } from './localcache';
+import { IfTask } from '../storage/queue';
 
 /**
  * This is a client , always syncing with the Chain
@@ -65,7 +66,19 @@ interface IBancorTokenParams {
 
 interface IfTaskItem {
   id: number;
-  task: any;
+  tx: any;
+  receipt: any;
+}
+interface IfReceiptItem {
+  id: number;
+  receipt: any;
+}
+export interface IfTxTableItem {
+
+  hash: string;
+  address: string;
+  content: Buffer;
+
 }
 
 export class Synchro {
@@ -656,10 +669,10 @@ export class Synchro {
     });
   }
   private async updateSingleTx(bhash: string, nhash: number, dtime: number, taskitem: IfTaskItem): Promise<IFeedBack> {
-    let hash = taskitem.task.hash;
+    let hash = taskitem.tx.hash;
     let blockhash = bhash;
     let blocknumber = nhash;
-    let address = taskitem.task.caller;
+    let address = taskitem.tx.caller;
     let datetime = dtime;
 
     // insertOrReplace it into hash table
@@ -676,7 +689,7 @@ export class Synchro {
       this.logger.error('getReceipt for tx failed')
       return { err: feedback.err, data: null };
     }
-    this.logger.info('get receipt for tx ' + taskitem.task + ' -->\n')
+    this.logger.info('get receipt for tx ' + taskitem.tx + ' -->\n')
     console.log(feedback.data)
 
     // put it into tx table, insertOrReplace
@@ -684,13 +697,13 @@ export class Synchro {
     let recet: any;
     try {
       recet = JSON.parse(feedback.data.toString());
-      taskitem.task.cost = recet.receipt.cost;
+      taskitem.tx.cost = recet.receipt.cost;
     } catch (e) {
       this.logger.error('parse receipt failed')
       return { err: ErrorCode.RESULT_PARSE_ERROR, data: null };
     }
     console.log('To insertTxTable:', new Date());
-    let content: Buffer = Buffer.from(JSON.stringify(taskitem.task))
+    let content: Buffer = Buffer.from(JSON.stringify(taskitem.tx))
     feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
 
     if (feedback.err) {
@@ -750,17 +763,161 @@ export class Synchro {
       return { err: ErrorCode.RESULT_OK, data: null }
     }
   }
+  private async getAllReceipt(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let promiseLst: Promise<IFeedBack>[] = [];
+    this.logger.info('getAllReceipt, num:', taskLst.length);
+
+    // Parallel processing 
+    for (let i = 0; i < taskLst.length; i++) {
+
+      let func = new Promise<IFeedBack>(async (resolve) => {
+        let taskitem: IfTaskItem = taskLst[i];
+        let hash = taskitem.tx.hash;
+        let feedback = await this.getReceiptInfo(hash);
+        if (!feedback.err) {
+          let recet: any;
+          try {
+            recet = JSON.parse(feedback.data.toString());
+            // Notify!!
+            // taskitem.task.cost = recet.receipt.cost;
+          } catch (e) {
+            this.logger.error('parse receipt failed')
+            resolve({
+              err: ErrorCode.RESULT_PARSE_ERROR,
+              data: {}
+            });
+            return;
+          }
+          resolve({
+            err: ErrorCode.RESULT_OK,
+            data: { id: taskitem.id, receipt: recet }
+          });
+          return;
+        } else {
+          resolve({
+            err: ErrorCode.RESULT_NEED_SYNC,
+            data: {}
+          });
+        }
+      });
+      promiseLst.push(func);
+    }
+
+    let receiptLst: IfReceiptItem[] = [];
+    await Promise.all(promiseLst).then((result) => {
+      for (let item of result) {
+        this.logger.info('returned:', JSON.stringify(item));
+        if (item.err === ErrorCode.RESULT_OK) {
+          // remove item.data id from 
+          receiptLst.push(item.data);
+        }
+      }
+    });
+    return { err: ErrorCode.RESULT_OK, data: receiptLst }
+  }
+  // In charge of failure of getAllReceipt()
+  private async getAllReceipts(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let result = await this.getAllReceipt(taskLst);
+
+    let newTaskLst: IfTaskItem[] = [];
+
+    for (let i = 0; i < taskLst.length; i++) {
+      let id = taskLst[i].id;
+      let itemFind: IfReceiptItem | undefined = result.data.find((item: IfReceiptItem) => {
+        return id === item.id;
+      })
+      if (itemFind === undefined) {
+        newTaskLst.push(taskLst[i]);
+      } else {
+        taskLst[i].receipt = itemFind.receipt;
+      }
+    }
+    if (newTaskLst.length > 0) {
+      return await this.getAllReceipts(newTaskLst);
+    } else {
+      return { err: ErrorCode.RESULT_OK, data: null }
+    }
+  }
+  // Here task is transaction we get from block structure
+  // receipt is a placeholder for receipt we get by tx.hash
+  // I will rename task to be tx
   private async updateTxNew(bhash: string, nhash: number, dtime: number, txs: any[]) {
+    // To store all information to update to local database
     let taskLst1: IfTaskItem[] = [];
 
     for (let j = 0; j < txs.length; j++) {
-      taskLst1.push({ id: j, task: txs[j] });
+      taskLst1.push({ id: j, tx: txs[j], receipt: null });
     }
-    await this.updateMultiTx(bhash, nhash, dtime, taskLst1);;
+    // await this.updateMultiTx(bhash, nhash, dtime, taskLst1);
+
+    // get all tx's receipt, change taskLst1 , return until finish fetching all tx receipts
+    console.log('start GetallReceipts:', new Date());
+    await this.getAllReceipts(taskLst1);
+    console.log('End of getAllReceipts:', new Date());
+
+    let feedback = await this.batchInsertTxToHashTable(taskLst1);
+    if (feedback.err) {
+      this.logger.error('batchInsertTxToHashTable failed');
+      return { err: feedback.err, data: null };
+    }
+
+    // put it into tx table, insertOrReplace
+    feedback = await this.batchInsertTxTable(bhash, nhash, dtime, taskLst1);
+    if (feedback.err) {
+      this.logger.error('batchInsertTxToHashTable failed');
+      return { err: feedback.err, data: null };
+    }
+
+    console.log('Begin batchcheckAccountAndToken:', new Date());
+    feedback = await this.batchCheckAccountAndToken(taskLst1);
+    if (feedback.err) {
+      this.logger.error('batchCheckAccountAndToken failed');
+      return { err: feedback.err, data: null };
+    }
+
+    console.log('End of udpateSingleTx', new Date());
 
     return { err: ErrorCode.RESULT_OK, data: null };
   }
+  private async batchInsertTxToHashTable(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let hashLst: string[] = [];
+    for (let i = 0; i < taskLst.length; i++) {
+      hashLst.push(taskLst[i].tx.hash);
+    }
+    let feedback = await this.pStorageDb.batchInsertOrReplaceHashTAble(hashLst, HASH_TYPE.TX);
+    return feedback;
+  }
+  private async batchInsertTxTable(bhash: string, nheight: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let contentLst: IfTxTableItem[] = [];
+    for (let i = 0; i < taskLst.length; i++) {
+      taskLst[i].tx.cost = taskLst[i].receipt.receipt.cost;
+      let contentBuf: Buffer = Buffer.from(JSON.stringify(taskLst[i].tx))
+      contentLst.push({
+        hash: taskLst[i].tx.hash,
+        address: taskLst[i].tx.caller,
+        content: contentBuf
+      });
+    }
+    let feedback = this.pStorageDb.batchInsertTxTable(bhash, nheight, dtime, contentLst);
+    return feedback;
 
+  }
+  private async batchCheckAccountAndToken(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let receiptLst: any[] = [];
+    this.logger.info('batchCheckAccountAndToken length:', taskLst.length);
+
+    for (let i = 0; i < taskLst.length; i++) {
+
+      let recet = taskLst[i].receipt;
+      receiptLst.push(recet);
+      let feedback2 = await this.checkAccountAndToken(recet);
+      if (feedback2.err) {
+        this.logger.error('batchCheckAccountAndToken() failed.')
+        return { err: feedback2.err, data: null };
+      }
+    }
+    return { err: ErrorCode.RESULT_OK, data: null };
+  }
   // Need to check if address is already in hash table here, 
   // Because information is got from tx
   // private async updateTx(bhash: string, nhash: number, dtime: number, txs: any[]) {

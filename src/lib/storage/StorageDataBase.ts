@@ -3,6 +3,7 @@ import winston = require('winston');
 import { ErrorCode, IFeedBack } from '../../core/error_code';
 //import { subtractBN3, addBN2 } from './computer';
 import * as SqlString from 'sqlstring';
+import { IfTxTableItem } from '../catchup/synchro';
 
 
 export const HASH_TYPE = {
@@ -152,6 +153,23 @@ export class StorageDataBase extends CUDataBase {
   public queryHashTableFullName(s: string, num: number) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? LIMIT ?;', [this.hashTable, s, num])
     return this.getAllRecords(sql);
+  }
+  public async batchInsertOrReplaceHashTAble(hashLst: string[], type: string) {
+    this.logger.info('into batchInsertOrReplaceHashTAble()');
+
+    await this.db.run('BEGIN;');
+    for (let i = 0; i < hashLst.length; i++) {
+      try {
+        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, hashLst[i], type])
+        await this.db.run(sql);
+      } catch (e) {
+        this.logger.err('run insert fail, batchInsertOrReplaceHashTAble');
+        await this.db.run('ROLLBACK;');
+        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+      }
+    }
+    await this.db.run('COMMIT;');
+    return { err: ErrorCode.RESULT_OK, data: null };
   }
 
   public insertOrReplaceHashTable(hash: string, type: string) {
@@ -358,6 +376,32 @@ export class StorageDataBase extends CUDataBase {
       $datetime: SqlString.escape(datetime),
       $content1: content1
     });
+  }
+
+  public async batchInsertTxTable(blockhash: string, blocknumber: number, datetime: number, contentLst: IfTxTableItem[]) {
+    this.logger.info('batchInsertTxTable');
+
+    await this.db.run('BEGIN;');
+    for (let i = 0; i < contentLst.length; i++) {
+      try {
+        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1);', [this.txTable]);
+        await this.db.run(sql, {
+          $hash: SqlString.escape(contentLst[i].hash).replace(/\'/g, ''),
+          $blockhash: SqlString.escape(blockhash).replace(/\'/g, ''),
+          $blocknumber: SqlString.escape(blocknumber),
+          $address: SqlString.escape(contentLst[i].address).replace(/\'/g, ''),
+          $datetime: SqlString.escape(datetime),
+          $content1: contentLst[i].content
+        });
+      } catch (e) {
+        this.logger.err('run insert fail, batchInsertTxTable');
+        await this.db.run('ROLLBACK;');
+        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+      }
+    }
+    await this.db.run('COMMIT;');
+
+    return { err: ErrorCode.RESULT_OK, data: null };
   }
 
 
