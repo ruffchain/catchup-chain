@@ -36,6 +36,7 @@ import { checkRunUserMethod } from './usercode/runusermethod';
 import { getCandidates } from '../../api/getCandidates';
 import { localCache } from './localcache';
 import { IfTask } from '../storage/queue';
+import { parallelCheckAccountAndToken } from './parallel';
 
 /**
  * This is a client , always syncing with the Chain
@@ -909,12 +910,13 @@ export class Synchro {
 
       let recet = taskLst[i].receipt;
       receiptLst.push(recet);
-      let feedback2 = await this.checkAccountAndToken(recet);
-      if (feedback2.err) {
-        this.logger.error('batchCheckAccountAndToken() failed.')
-        return { err: feedback2.err, data: null };
-      }
     }
+    let feedback2 = await parallelCheckAccountAndToken(this, receiptLst);
+    if (feedback2.err) {
+      this.logger.error('parallelCheckAccountAndToken() failed.')
+      return { err: feedback2.err, data: null };
+    }
+
     return { err: ErrorCode.RESULT_OK, data: null };
   }
   // Need to check if address is already in hash table here, 
