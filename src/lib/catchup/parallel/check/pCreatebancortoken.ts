@@ -58,9 +58,9 @@ export function pCheckCreateLockBancorToken(receipt: any, type: string): RawCmd[
         }));
 
         // update accounts LockBancor token account table
-        addrLst.forEach((addr: string) => {
-            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_ACCOUNT_TABLE, { address: addr, tokenname: tokenName, tokeytype: type }));
-        })
+        // addrLst.forEach((addr: string) => {
+        //     cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_TABLE_ALBTT, { address: addr, tokenname: tokenName, tokeytype: type }));
+        // })
         // updateLockBancorBalanceBasic
         // To use updateShortALTRow
         // updatePureALTRow
@@ -73,7 +73,7 @@ export function pCheckCreateLockBancorToken(receipt: any, type: string): RawCmd[
 
         // insert bancor token parameters
         // parameters
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_PARAMS_TO_BANCOR_TOKEN_TABLE, { tokenname: tokenName, tokeytype: type }));
+        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_TABLE, { tokenname: tokenName, tokeytype: type }));
 
     }
     return cmdLst;

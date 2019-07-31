@@ -20,9 +20,9 @@ export function pCheckTransferTokenTo(receipt: any): RawCmd[] {
 
     // update token balances
     if (receipt.receipt.returnCode === 0) {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_TOKEN_ACCOUNT_TABLE, { address: caller, tokenname: tokenName }));
+        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokenname: tokenName }));
 
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_TOKEN_ACCOUNT_TABLE, { address: to, tokenname: tokenName }));
+        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: to, tokenname: tokenName }));
     }
 
     return cmdLst;

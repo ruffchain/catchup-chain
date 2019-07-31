@@ -1,4 +1,4 @@
-import { RawCmd, RawCmdType, ArgsType } from "../RawCmd";
+import { RawCmd, RawCmdType, ArgsType, RawCmd_NTHT } from "../RawCmd";
 import { HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBase";
 
 export function pCheckTransferTo(receipt: any): RawCmd[] {
@@ -15,9 +15,9 @@ export function pCheckTransferTo(receipt: any): RawCmd[] {
     let returnCode = receipt.receipt.returnCode;
 
     // hash table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { address: caller, type: HASH_TYPE.ADDRESS }));
+    cmdLst.push(new RawCmd_NTHT({ name: caller, type: HASH_TYPE.ADDRESS }));
 
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { address: to, type: HASH_TYPE.ADDRESS }));
+    cmdLst.push(new RawCmd_NTHT({ name: to, type: HASH_TYPE.ADDRESS }));
 
     // tx address table
     cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: caller, timestamp: time }));

@@ -28,7 +28,7 @@ export function pCheckCreateToken(receipt: any, type: string): RawCmd[] {
     addrLst.push(caller);
 
     addrLst.forEach((addr: string) => {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { address: addr, type: HASH_TYPE.ADDRESS }));
+        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAME_TO_HASH_TABLE, { address: addr, type: HASH_TYPE.ADDRESS }));
     })
 
     // txaddress table
@@ -56,7 +56,7 @@ export function pCheckCreateToken(receipt: any, type: string): RawCmd[] {
 
         // update token account table
         addrLst.forEach((addr: string) => {
-            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_TOKEN_ACCOUNT_TABLE, { address: addr, tokenname: tokenName, tokeytype: type }));
+            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: addr, tokenname: tokenName, tokeytype: type }));
         })
 
         // put tokenname into hash table

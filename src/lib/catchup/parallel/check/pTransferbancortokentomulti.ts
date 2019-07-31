@@ -35,7 +35,7 @@ export function pCheckTransferLockBancorTokenToMulti(receipt: any, type: string)
 
     if (receipt.receipt.returnCode === 0) {
         to.forEach((addr: string) => {
-            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_ACCOUNT_TABLE, { tokenname: tokenName, address: addr }));
+            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { tokenname: tokenName, address: addr }));
         })
     }
 

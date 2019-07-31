@@ -25,7 +25,7 @@ export function pCheckSellLockBancorToken(receipt: any, type: string): RawCmd[] 
 
     if (receipt.receipt.returnCode === 0) {
         // lockbancortoken balance
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_ACCOUNT_TABLE, { tokenname: tokenName, address: caller }));
+        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_TABLE, { tokenname: tokenName, address: caller }));
 
         cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_PARAMS_TO_BANCOR_TOKEN_TABLE, { tokenname: tokenName, tokeytype: type }));
 

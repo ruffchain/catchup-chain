@@ -25,7 +25,7 @@ export function pCheckTransferLockBancorTokenTo(receipt: any, type: string): Raw
 
     if (receipt.receipt.returnCode === 0) {
         [caller, to].forEach((addr: string) => {
-            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_ACCOUNT_TABLE, { tokenname: tokenName, address: addr }));
+            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_TABLE, { tokenname: tokenName, address: addr }));
         })
     }
 
