@@ -1000,21 +1000,9 @@ export class Synchro {
     else if (tx.method === 'createToken') {
       return checkCreateToken(this, recet, TOKEN_TYPE.NORMAL);
     }
-    // else if (tx.method === 'createBancorToken') {
-    //   return checkCreateBancorToken(this, recet, TOKEN_TYPE.BANCOR);
-    // }
-    // else if (tx.method === 'sellBancorToken') {
-    //   return this.checkSellBancorToken(recet);
-    // }
-    // else if (tx.method === 'buyBancorToken') {
-    //   return this.checkBuyBancorToken(recet);
-    // }
     else if (tx.method === 'transferTokenTo') {
       return this.checkTransferTokenTo(recet);
     }
-    // else if (tx.method === 'transferBancorTokenTo') {
-    //   return this.checkTransferBancorTokenTo(recet);
-    // }
     else if (tx.method === 'mortgage') {
       return checkMortgage(this, recet);
     }
@@ -1335,26 +1323,6 @@ export class Synchro {
 
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      // let result = await this.fetchBancorTokenNumberFactor(tokenName);
-      // if (result.err) {
-      //   resolv(result);
-      //   return;
-      // }
-      // let F = result.data;
-
-      // result = await this.fetchBancorTokenNumberSupply(tokenName);
-      // if (result.err) {
-      //   resolv(result);
-      //   return;
-      // }
-      // let S = result.data;
-
-      // result = await this.fetchBancorTokenNumberReserve(tokenName);
-      // if (result.err) {
-      //   resolv(result);
-      //   return;
-      // }
-      // let R: number = result.data;
       let result0 = await this.laGetBancorTokenParams(tokenName);
       if (result0.ret !== 200) {
         this.logger.error("updateBancorTokenParameters, get params failed");
