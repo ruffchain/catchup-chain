@@ -1,5 +1,4 @@
-import { RawCmd, RawCmdType, ArgsType } from "../RawCmd";
-import { SYS_TOKEN } from "../../../storage/dbapi/scoop";
+import { RawCmd, RawCmd_TAT, RawCmd_ATS } from "../RawCmd";
 
 export function pCheckRegister(recept: any): RawCmd[] {
     let cmdLst: RawCmd[] = [];
@@ -9,10 +8,10 @@ export function pCheckRegister(recept: any): RawCmd[] {
     let time = recept.block.timestamp;
 
     // txaddress table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: caller, timestamp: time }));
+    cmdLst.push(new RawCmd_TAT({ hash: hash, address: caller, timestamp: time }));
 
     // update balances
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokentype: SYS_TOKEN }));
+    cmdLst.push(new RawCmd_ATS({ address: caller, tokenname: 's' }));
 
     return cmdLst;
 }

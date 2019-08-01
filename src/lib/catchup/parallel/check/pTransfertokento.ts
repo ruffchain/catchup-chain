@@ -1,5 +1,4 @@
-import { RawCmd, RawCmdType, ArgsType } from "../RawCmd";
-import { HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBase";
+import { RawCmd, RawCmd_TAT, RawCmd_ATS, RawCmd_ATN } from "../RawCmd";
 
 export function pCheckTransferTokenTo(receipt: any): RawCmd[] {
     let cmdLst: RawCmd[] = [];
@@ -11,18 +10,18 @@ export function pCheckTransferTokenTo(receipt: any): RawCmd[] {
     let time = receipt.block.timestamp;
 
     // txaddress table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: caller, timestamp: time }));
+    cmdLst.push(new RawCmd_TAT({ hash: hash, address: caller, timestamp: time }));
 
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: to, timestamp: time }));
+    cmdLst.push(new RawCmd_TAT({ hash: hash, address: to, timestamp: time }));
 
     // update balance
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokentype: SYS_TOKEN }));
+    cmdLst.push(new RawCmd_ATS({ address: caller, tokenname: 's' }));
 
     // update token balances
     if (receipt.receipt.returnCode === 0) {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokenname: tokenName }));
+        cmdLst.push(new RawCmd_ATN({ address: caller, tokenname: tokenName }));
 
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: to, tokenname: tokenName }));
+        cmdLst.push(new RawCmd_ATN({ address: to, tokenname: tokenName }));
     }
 
     return cmdLst;

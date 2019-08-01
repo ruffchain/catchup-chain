@@ -1,5 +1,5 @@
-import { RawCmd, RawCmdType, ArgsType, RawCmd_NTHT } from "../RawCmd";
-import { HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBase";
+import { RawCmd, RawCmdType, ArgsType, RawCmd_NTHT, RawCmd_TAT, RawCmd_ATS, RawCmd_TTTT } from "../RawCmd";
+import { HASH_TYPE, } from "../../../storage/StorageDataBase";
 
 export function pCheckTransferTo(receipt: any): RawCmd[] {
     let cmdLst: RawCmd[] = [];
@@ -14,23 +14,23 @@ export function pCheckTransferTo(receipt: any): RawCmd[] {
     let content = Buffer.from(JSON.stringify(receipt.tx));
     let returnCode = receipt.receipt.returnCode;
 
-    // hash table
+    // name to hash table
     cmdLst.push(new RawCmd_NTHT({ name: caller, type: HASH_TYPE.ADDRESS }));
 
     cmdLst.push(new RawCmd_NTHT({ name: to, type: HASH_TYPE.ADDRESS }));
 
     // tx address table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: caller, timestamp: time }));
+    cmdLst.push(new RawCmd_TAT({ hash: hash, address: caller, timestamp: time }));
 
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: to, timestamp: time }));
+    cmdLst.push(new RawCmd_TAT({ hash: hash, address: to, timestamp: time }));
 
     // udpateBalances
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokentype: SYS_TOKEN }));
+    cmdLst.push(new RawCmd_ATS({ address: caller, tokenname: 's' }));
 
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: to, tokentype: SYS_TOKEN }));
+    cmdLst.push(new RawCmd_ATS({ address: to, tokenname: 's' }));
 
     // txTransferTo table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.INSERT_TO_TRANSFERTO_TABLE, {
+    cmdLst.push(new RawCmd_TTTT({
         hash: hash,
         blockhash: blockhash,
         blocknumber: blocknumber,

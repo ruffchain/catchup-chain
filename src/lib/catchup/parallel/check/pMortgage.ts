@@ -1,5 +1,5 @@
-import { RawCmd, RawCmdType, ArgsType } from "../RawCmd";
-import { HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBase";
+import { RawCmd, RawCmd_NTHT, RawCmd_TAT, RawCmd_ATS } from "../RawCmd";
+import { HASH_TYPE } from "../../../storage/StorageDataBase";
 
 export function pCheckMortgage(recept: any): RawCmd[] {
     let cmdLst: RawCmd[] = [];
@@ -10,13 +10,13 @@ export function pCheckMortgage(recept: any): RawCmd[] {
     let time = recept.block.timestamp;
 
     // update names to hash table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { address: caller, type: HASH_TYPE.ADDRESS }));
+    cmdLst.push(new RawCmd_NTHT({ name: caller, type: HASH_TYPE.ADDRESS }));
 
     // txaddress table
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: caller, timestamp: time }));
+    cmdLst.push(new RawCmd_TAT({ hash: hash, address: caller, timestamp: time }));
 
     // update balances
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokentype: SYS_TOKEN }));
+    cmdLst.push(new RawCmd_ATS({ address: caller, tokenname: 's' }));
 
     return cmdLst;
 }

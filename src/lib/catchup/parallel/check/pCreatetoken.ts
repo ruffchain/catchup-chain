@@ -1,8 +1,8 @@
-import { RawCmd, RawCmdType, ArgsType } from "../RawCmd";
+import { RawCmd, RawCmdType, ArgsType, RawCmd_NTHT, RawCmd_TAT, RawCmd_ATS, RawCmd_ITT, RawCmd_ATN } from "../RawCmd";
 import { TOKEN_TYPE, HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBase";
 import { IName } from "../../synchro";
 
-export function pCheckCreateToken(receipt: any, type: string): RawCmd[] {
+export function pCheckCreateToken(receipt: any): RawCmd[] {
     let cmdLst: RawCmd[] = [];
 
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
@@ -16,7 +16,6 @@ export function pCheckCreateToken(receipt: any, type: string): RawCmd[] {
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
 
-    // names to hash table
 
     preBalances.forEach((element: any) => {
         nameLst.push({
@@ -27,25 +26,24 @@ export function pCheckCreateToken(receipt: any, type: string): RawCmd[] {
     });
     addrLst.push(caller);
 
+    // names to hash table
     addrLst.forEach((addr: string) => {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAME_TO_HASH_TABLE, { address: addr, type: HASH_TYPE.ADDRESS }));
+        cmdLst.push(new RawCmd_NTHT({ name: addr, type: HASH_TYPE.ADDRESS }));
     })
 
     // txaddress table
     addrLst.forEach((addr: string) => {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: addr, timestamp: time }));
+        cmdLst.push(new RawCmd_TAT({ hash: hash, address: addr, timestamp: time }));
     })
 
     // update balances
-
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokentype: SYS_TOKEN }));
-
+    cmdLst.push(new RawCmd_ATS({ address: caller, tokenname: 's' }));
 
     if (receipt.receipt.returnCode === 0) {
         // to token table
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.INSERT_TO_TOKEN_TABLE, {
+        cmdLst.push(new RawCmd_ITT({
             tokenname: tokenName,
-            tokentype: type,
+            tokentype: TOKEN_TYPE.NORMAL,
             address: caller,
             datetime: datetime,
             content: Buffer.from(JSON.stringify({
@@ -56,15 +54,13 @@ export function pCheckCreateToken(receipt: any, type: string): RawCmd[] {
 
         // update token account table
         addrLst.forEach((addr: string) => {
-            cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: addr, tokenname: tokenName, tokeytype: type }));
+            cmdLst.push(new RawCmd_ATN({ address: addr, tokenname: tokenName }));
         })
 
         // put tokenname into hash table
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { tokenname: tokenName, type: HASH_TYPE.TOKEN }));
-
+        cmdLst.push(new RawCmd_NTHT({ name: tokenName, type: HASH_TYPE.TOKEN }));
 
     }
-
 
     return cmdLst;
 }

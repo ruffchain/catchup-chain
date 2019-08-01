@@ -1,4 +1,4 @@
-import { RawCmd, RawCmdType, ArgsType } from "../RawCmd";
+import { RawCmd, RawCmdType, ArgsType, RawCmd_NTHT, RawCmd_TAT, RawCmd_ATS, RawCmd_ITT, RawCmd_ATLBT, RawCmd_BTPRM } from "../RawCmd";
 import { IName } from "../../synchro";
 import { HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBase";
 
@@ -30,21 +30,20 @@ export function pCheckCreateLockBancorToken(receipt: any, type: string): RawCmd[
 
     // name to hash table
     addrLst.forEach((addr: string) => {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { address: addr, type: HASH_TYPE.ADDRESS }));
+        cmdLst.push(new RawCmd_NTHT({ name: addr, type: HASH_TYPE.ADDRESS }));
     })
 
     // tx address
     addrLst.forEach((addr: string) => {
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.HASH_TO_TXADDRESS_TABLE, { hash: hash, address: addr, timestamp: time }));
+        cmdLst.push(new RawCmd_TAT({ hash: hash, address: addr, timestamp: time }));
     })
 
     // update caller balance
-    cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_ACCOUNT_TABLE, { address: caller, tokentype: SYS_TOKEN }));
+    cmdLst.push(new RawCmd_ATS({ address: caller, tokenname: 's' }));
 
     if (receipt.receipt.returnCode === 0) {
-        // get add token table
         // inserttoken table 
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.INSERT_TO_TOKEN_TABLE, {
+        cmdLst.push(new RawCmd_ITT({
             tokenname: tokenName,
             tokentype: type,
             address: caller,
@@ -58,22 +57,16 @@ export function pCheckCreateLockBancorToken(receipt: any, type: string): RawCmd[
         }));
 
         // update accounts LockBancor token account table
-        // addrLst.forEach((addr: string) => {
-        //     cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_TABLE_ALBTT, { address: addr, tokenname: tokenName, tokeytype: type }));
-        // })
-        // updateLockBancorBalanceBasic
-        // To use updateShortALTRow
-        // updatePureALTRow
-        // Lock Bancor Token Table, 
-        // a lot of work to do! Why I need this table?
+        addrLst.forEach((addr: string) => {
+            cmdLst.push(new RawCmd_ATLBT({ address: addr, tokenname: tokenName }))
+        });
 
 
         // put tokenname into hash table
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NOPE_ACCESS, ArgsType.NAMES_TO_HASH_TABLE, { tokenname: tokenName, type: HASH_TYPE.TOKEN }));
+        cmdLst.push(new RawCmd_NTHT({ name: tokenName, type: HASH_TYPE.TOKEN }));
 
         // insert bancor token parameters
-        // parameters
-        cmdLst.push(new RawCmd(RawCmdType.NEED_NETWORK_ACCESS, ArgsType.UPDATE_BANCOR_TOKEN_TABLE, { tokenname: tokenName, tokeytype: type }));
+        cmdLst.push(new RawCmd_BTPRM({ tokenname: tokenName }));
 
     }
     return cmdLst;
