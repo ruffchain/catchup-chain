@@ -9,6 +9,7 @@ import * as path from 'path';
  * @var sqlite3 
  */
 var sqlite3 = require('sqlite3').verbose();
+//var sqlite3 = require('better-sqlite3');
 
 export interface IfCUDataBaseOptions {
   path: string;
@@ -39,6 +40,7 @@ export abstract class CUDataBase {
 
           resolv({ err: ErrorCode.RESULT_FAILED, data: err });
         } else {
+
           resolv({ err: ErrorCode.RESULT_OK, data: null });
         }
       });
@@ -204,5 +206,9 @@ export abstract class CUDataBase {
         resolve();
       });
     };
+  }
+
+  public setWALMode() {
+    return this.execRecord('PRAGMA journal_mode=WAL;', {});
   }
 }

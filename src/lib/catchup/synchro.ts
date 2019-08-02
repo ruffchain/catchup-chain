@@ -311,11 +311,12 @@ export class Synchro {
       if (result.err === ErrorCode.RESULT_OK) {
 
         for (let i = 0; i < result.data.length; i++) {
-          console.log('getTxs:', i)
+          // console.log('getTxs:', i)
           // console.log(JSON.parse(result.data[i].content.toString()))
           result.data[i].content = JSON.parse(result.data[i].content);
 
         }
+        console.log('gettxs:', result.data.length);
         let arr = result.data;
         let result1 = await this.pStorageDb.queryTxTableCount();
         let newObj: any;

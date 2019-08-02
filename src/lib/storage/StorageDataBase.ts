@@ -96,6 +96,8 @@ export class StorageDataBase extends CUDataBase {
 
   public init(): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
+      await this.setWALMode();
+
       let result = await this.createTable(this.hashTable, this.hashTableSchema);
 
       let hret = await this.createTable(this.accountTable, this.accountTableSchema);
