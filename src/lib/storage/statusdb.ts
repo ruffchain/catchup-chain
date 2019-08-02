@@ -128,7 +128,7 @@ export class StatusDataBase extends CUDataBase {
   public init(): Promise<IFeedBack> {
     return new Promise<IFeedBack>(async (resolv) => {
 
-      await this.setWALMode();
+      // await this.setWALMode();
 
       let result = await this.createTable(this.statusTableName, this.statusTableSchema);
       result = await this.createTable(this.candyTableName, this.candyTableSchema);
