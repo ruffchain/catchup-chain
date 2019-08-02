@@ -18,6 +18,25 @@ export enum SingleTableType {
     BANCORTOKEN_TABLE = 15,
     ACCOUNT_LBTT_TABLE = 16,
 }
+function table2Str(table: SingleTableType): string {
+    if (table === SingleTableType.HASH_TABLE) {
+        return 'HASH_TABLE'
+    } else if (table === SingleTableType.TXADDRESS_TABLE) {
+        return 'TXADDRESS_TABLE'
+    } else if (table === SingleTableType.ACCOUNT_TABLE) {
+        return 'ACCOUNT_TABLE'
+    } else if (table === SingleTableType.TX_TRANSFERTO_TABLE) {
+        return 'TX_TRANSFERTO_TABLE'
+    } else if (table === SingleTableType.TOKEN_TABLE) {
+        return 'TOKEN_TABLE'
+    } else if (table === SingleTableType.BANCORTOKEN_TABLE) {
+        return 'BANCORTOKEN_TABLE'
+    } else if (table === SingleTableType.ACCOUNT_LBTT_TABLE) {
+        return 'ACCOUNT_LBTT_TABLE'
+    } else {
+        return 'Unknown'
+    }
+}
 export enum SingleOperationtype {
     UPDATE = 100,
 }
@@ -186,6 +205,11 @@ export class SingleCmdSet {
     }
     public len() {
         return this.lst.length;
+    }
+    public print() {
+        for (let i = 0; i < this.lst.length; i++) {
+            console.log(i, table2Str(this.lst[i].table));
+        }
     }
     public get(num: number): SingleCmd {
         return this.lst[num];

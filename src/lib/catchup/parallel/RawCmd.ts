@@ -18,6 +18,7 @@ import { SingleCmd, SingleTableType, SingleOperationtype, newSingleCmdAccountTab
 import { Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { SYS_TOKEN_PRECISION, NORMAL_TOKEN_PRECISION, BANCOR_TOKEN_PRECISION } from "../../storage/dbapi/scoop";
+import { DelayPromise } from "../../../api/common";
 
 // To define a cmd format
 // RawCmdType | ArgsType (to a defined command) | args
@@ -102,6 +103,7 @@ export class RawCmd_NTHT extends RawCmd {
             hash: arg.name,
             type: arg.type
         }));
+        await DelayPromise(0.002);
 
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
@@ -125,6 +127,7 @@ export class RawCmd_TAT extends RawCmd {
             address: arg.address,
             datetime: arg.timestamp
         }));
+        await DelayPromise(0.002);
 
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
@@ -318,6 +321,8 @@ export class RawCmd_TTTT extends RawCmd {
             returncode: arg.returncode
         }));
 
+        await DelayPromise(0.002);
+
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
 }
@@ -344,6 +349,8 @@ export class RawCmd_ITT extends RawCmd {
             datetime: arg.datetime,
             content: arg.content
         }));
+
+        await DelayPromise(0.002);
 
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
@@ -434,6 +441,8 @@ export class RawCmdSet {
 
 export function createRawCmds(recet: any): RawCmd[] {
     let tx = recet.tx;
+
+    console.log('createRawCmd method:', tx.method)
 
     if (tx.method === 'transferTo') {
         return pCheckTransferTo(recet);

@@ -510,11 +510,7 @@ export class Synchro {
 
       // update block-creator's balance
       this.logger.info('save to minerLst , let loopTask2 to do it');
-      // feedback = await this.updateBalances(SYS_TOKEN, [{ address: address }]);
-      // if (feedback.err) {
-      //   resolv(feedback);
-      //   return;
-      // }
+
       let miner1 = this.latestMinerLst.find((item) => {
         return item === address;
       })
@@ -522,6 +518,7 @@ export class Synchro {
         this.latestMinerLst.push(address);
       }
       this.busyIndex = this.calcBusyIndex(txno);
+
       if (txno > 0) {
         this.logger.info('UpdateTx --> :', txno)
         let startUpdateTxNew = new Date().getTime();
@@ -834,6 +831,7 @@ export class Synchro {
       }
     }
     if (newTaskLst.length > 0) {
+      this.logger.error('Error: new TaskLst error len:', newTaskLst.length);
       return await this.getAllReceipts(newTaskLst);
     } else {
       return { err: ErrorCode.RESULT_OK, data: null }
@@ -852,15 +850,19 @@ export class Synchro {
     // await this.updateMultiTx(bhash, nhash, dtime, taskLst1);
 
     // get all tx's receipt, change taskLst1 , return until finish fetching all tx receipts
+    let startTime = new Date().getTime();
     console.log('start GetallReceipts:', new Date());
     await this.getAllReceipts(taskLst1);
     console.log('End of getAllReceipts:', new Date());
+    let endTime = new Date().getTime();
+    console.log('Delta of get all receipts:', endTime - startTime)
 
     let feedback = await this.batchInsertTxToHashTable(taskLst1);
     if (feedback.err) {
       this.logger.error('batchInsertTxToHashTable failed');
       return { err: feedback.err, data: null };
     }
+    console.log('Delta of insert all tx to hash table:', new Date().getTime() - endTime)
 
     // put it into tx table, insertOrReplace
     feedback = await this.batchInsertTxTable(bhash, nhash, dtime, taskLst1);
@@ -902,7 +904,8 @@ export class Synchro {
     return feedback;
 
   }
-  private async batchCheckAccountAndToken(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+  // Old version, 
+  private async batchCheckAccountAndToken2(taskLst: IfTaskItem[]): Promise<IFeedBack> {
     let receiptLst: any[] = [];
     this.logger.info('batchCheckAccountAndToken length:', taskLst.length);
 
@@ -910,12 +913,32 @@ export class Synchro {
 
       let recet = taskLst[i].receipt;
       receiptLst.push(recet);
+      let feedback2 = await this.checkAccountAndToken(recet);
+      if (feedback2.err) {
+        this.logger.error('batchCheckAccountAndToken2() failed.')
+        return { err: feedback2.err, data: null };
+      }
     }
+    return { err: ErrorCode.RESULT_OK, data: null };
+  }
+  // new version
+  private async batchCheckAccountAndToken(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+    let receiptLst: any[] = [];
+    this.logger.info('\nbatchCheckAccountAndToken length: [', taskLst.length, ']');
+
+    for (let i = 0; i < taskLst.length; i++) {
+
+      let recet = taskLst[i].receipt;
+      receiptLst.push(recet);
+    }
+    let startTime = new Date().getTime();
     let feedback2 = await parallelCheckAccountAndToken(this, receiptLst);
     if (feedback2.err) {
       this.logger.error('parallelCheckAccountAndToken() failed.')
       return { err: feedback2.err, data: null };
     }
+    let endTime = new Date().getTime();
+    console.log('parallelCheckAccountAndToken delta is:', endTime - startTime);
 
     return { err: ErrorCode.RESULT_OK, data: null };
   }
@@ -1628,6 +1651,7 @@ export class Synchro {
   public async getReceiptInfo(strHash: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('getReceiptInfo\n')
+      // await DelayPromise(Math.random() * 5)
       let result = await getReceipt(this.ctx, [strHash]);
       // console.log(result.resp);
       // console.log(typeof result.resp)
@@ -1641,12 +1665,13 @@ export class Synchro {
   }
   public async getBalanceInfo(token: string, strHash: string) {
     console.log('\ngetBalanceInfo', token, ' ', strHash, '\n')
+    // await DelayPromise(Math.random() * 5);
     let result = await getBalance(this.ctx, [strHash]);
-    if (result.ret === 10001) {
 
-    }
+
     if (result.ret !== 200) {
-      this.logger.error('wrong result', result)
+      this.logger.error('getBalanceInfo wrong result');
+      console.log(result)
     } else {
       this.logger.info(JSON.stringify(result));
       this.logger.info('balance:', JSON.parse(result.resp!).value);

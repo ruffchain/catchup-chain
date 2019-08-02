@@ -3,6 +3,7 @@ import { TOKEN_TYPE, HASH_TYPE, SYS_TOKEN } from "../../../storage/StorageDataBa
 import { IName } from "../../synchro";
 
 export function pCheckCreateToken(receipt: any): RawCmd[] {
+    console.log('pCheckCreateToken')
     let cmdLst: RawCmd[] = [];
 
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();

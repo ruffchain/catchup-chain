@@ -2,6 +2,7 @@ import { RawCmd, RawCmdType, ArgsType, RawCmd_NTHT, RawCmd_TAT, RawCmd_ATS, RawC
 import { HASH_TYPE, } from "../../../storage/StorageDataBase";
 
 export function pCheckTransferTo(receipt: any): RawCmd[] {
+    console.log('pCheckTransferTo')
     let cmdLst: RawCmd[] = [];
 
     let caller = receipt.tx.caller;
