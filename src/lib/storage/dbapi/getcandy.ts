@@ -42,7 +42,6 @@ export async function laGetCandy(handle: WRQueue, args: any) {
     }
     else if (result.err === ErrorCode.RESULT_SYNC_GETCANDY_ALREADY_DONE) {
       resolv({ err: ErrorCode.RESULT_OK, data: { status: 1, hash: 'Already got' } })
-      return;
     } else if (result.err === ErrorCode.RESULT_SYNC_GETCANDY_NOT_YET) {
       // result data can not be null,it will stuck the JSON API
       // resolv({ err: ErrorCode.RESULT_OK, data: "Not yet" })
@@ -53,14 +52,14 @@ export async function laGetCandy(handle: WRQueue, args: any) {
         // resolv({ err: ErrorCode.RESULT_OK, data: 'Success' })
         handle.logger.info('getCandy: start to transferCandy');
         let result1 = await handle.pSynchro.transferCandy(addr, CANDY_AMOUNT);
-        handle.logger.info('getCandy, result1', result1)
+        handle.logger.info('getCandy, result:', result1)
         console.log(result);
 
         if (result1.ret === 0) {
           handle.logger.info('getCandy, transfer candy 1000 succeed')
           let tmpLst: string[] = result1.resp!.split(':');
           console.log(tmpLst)
-          resolv({ err: ErrorCode.RESULT_OK, data: { stauts: 0, hash: tmpLst[1] } });
+          resolv({ err: ErrorCode.RESULT_OK, data: { status: 0, hash: tmpLst[1] } });
           return;
         } else {
           // how to do with it? If remove failed
