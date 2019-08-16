@@ -1634,12 +1634,12 @@ export class Synchro {
 
   // Basic commands 
   public async getLatestBlock() {
-    let result = await getBlock(this.ctx, ['latest', 'true']);
+    let result = await getBlock(this.ctx, ['latest', 'true', 'false', 'true']);
     this.logger.info(result.resp!);
     return result;
   }
   public async getBlock(num: number) {
-    let result = await getBlock(this.ctx, [num + '', 'true']);
+    let result = await getBlock(this.ctx, [num + '', 'true', 'false', 'true']);
     // this.logger.info(result.resp!);
     return result;
   }
@@ -1652,7 +1652,8 @@ export class Synchro {
   public async getReceiptInfo(strHash: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('getReceiptInfo\n')
-      // await DelayPromise(Math.random() * 5)
+      await DelayPromise(Math.random() * 2)
+
       let result = await getReceipt(this.ctx, [strHash]);
       // console.log(result.resp);
       // console.log(typeof result.resp)
@@ -1666,7 +1667,8 @@ export class Synchro {
   }
   public async getBalanceInfo(token: string, strHash: string) {
     console.log('\ngetBalanceInfo', token, ' ', strHash, '\n')
-    // await DelayPromise(Math.random() * 5);
+    await DelayPromise(Math.random() * 2);
+
     let result = await getBalance(this.ctx, [strHash]);
 
 
@@ -1763,7 +1765,7 @@ export class Synchro {
   }
 
   public async laGetBlocks(min: number, max: number, flag: boolean) {
-    let result = await getBlocks(this.ctx, [min.toString(), max.toString(), flag.toString()]);
+    let result = await getBlocks(this.ctx, [min.toString(), max.toString(), flag.toString(), 'false', 'true']);
     return result;
   }
 
