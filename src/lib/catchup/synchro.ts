@@ -25,7 +25,6 @@ import { getBancorTokenParams } from '../../api/getBancorTokenParams';
 import { getBlocks } from '../../api/getblocks';
 import { checkMortgage, checkUnmortgage, checkVote, checkRegister, checkUnregister } from './vote/check';
 import { checkCreateToken } from './token/token';
-import { checkCreateBancorToken } from './bancortoken/bancortoken';
 import { checkCreateLockBancorToken, updateShortALTRow, updatePureALTRow } from './lockbancortoken/lockbancor';
 import { getLockBancorTokenBalance } from '../../api/getLockBancorTokenBalance';
 import { checkTransferLockBancorTokenTo } from './lockbancortoken/transfer';
@@ -35,7 +34,6 @@ import { checkTransferLockBancorTokenToMulti } from './lockbancortoken/transferm
 import { checkRunUserMethod } from './usercode/runusermethod';
 import { getCandidates } from '../../api/getCandidates';
 import { localCache } from './localcache';
-import { IfTask } from '../storage/queue';
 import { parallelCheckAccountAndToken } from './parallel';
 
 /**
