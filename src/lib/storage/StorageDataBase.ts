@@ -181,7 +181,7 @@ export class StorageDataBase extends CUDataBase {
     return this.getAllRecords(sql);
   }
   public async batchInsertOrReplaceHashTAble(hashLst: string[], type: string) {
-    this.logger.info('into batchInsertOrReplaceHashTAble()');
+    this.logger.debug('into batchInsertOrReplaceHashTAble()');
 
     await this.execRecord('BEGIN;', {});
     for (let i = 0; i < hashLst.length; i++) {

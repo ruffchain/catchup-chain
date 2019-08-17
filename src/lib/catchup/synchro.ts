@@ -420,16 +420,28 @@ export class Synchro {
   }
   private updateBlockRangeGroup(nStart: number, nStop: number) {
     return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('updateBlockRangeGroup');
       let result = await this.laGetBlocks(nStart, nStop, true);
       if (result.ret === 200) {
         try {
           let objAll = JSON.parse(result.resp!);
           if (objAll.err === 0) {
-            // console.log(objAll.blocks);
+            console.log(objAll.blocks.length, ' blocks');
             for (let i = 0; i < objAll.blocks.length; i++) {
+              console.log('block : ', i)
               let obj = objAll.blocks[i];
               // console.log('\nobj:')
-              console.log(obj);
+              console.log(obj.block);
+              console.log('transactions:', obj.transactions.length)
+              if (obj.transactions.length > 0) {
+                console.log(obj.transactions[0])
+              }
+              console.log('receipts:', obj.receipts.length);
+              if (obj.receipts.length > 0) {
+                console.log(obj.receipts[0])
+                console.log(JSON.stringify(obj.receipts[0]))
+              }
+
               let feedback = await this.syncBlockData(obj);
               if (feedback.err) {
                 resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
@@ -524,7 +536,7 @@ export class Synchro {
         this.logger.info('UpdateTx --> :', txno)
         let startUpdateTxNew = new Date().getTime();
         console.log('Start of updateTexNew', new Date());
-        feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.transactions);
+        feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.block, obj.transactions, obj.receipts);
         console.log('End of updateTexNew', new Date());
         console.log('Delta of updateTxNew is:', new Date().getTime() - startUpdateTxNew)
         if (feedback.err) {
@@ -642,11 +654,12 @@ export class Synchro {
         }
 
         this.busyIndex = this.calcBusyIndex(txno);
+
         if (txno > 0) {
           this.logger.info('UpdateTx -->:', txno)
           let startTxTime = new Date().getTime();
           console.log('Start of updateTxNew', new Date());
-          feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.transactions);
+          feedback = await this.updateTxNew(hash, hashnumber, timestamp, obj.block, obj.transactions, obj.receipts);
           console.log('End of updateTxNew', new Date());
           let endTxTime = new Date().getTime()
           console.log('Delta of udpateTxNew is:', endTxTime - startTxTime);
@@ -841,19 +854,25 @@ export class Synchro {
   // Here task is transaction we get from block structure
   // receipt is a placeholder for receipt we get by tx.hash
   // I will rename task to be tx
-  private async updateTxNew(bhash: string, nhash: number, dtime: number, txs: any[]) {
+  private async updateTxNew(bhash: string, nhash: number, dtime: number, block: any, txs: any[], receipts: any[]) {
     // To store all information to update to local database
     let taskLst1: IfTaskItem[] = [];
 
     for (let j = 0; j < txs.length; j++) {
-      taskLst1.push({ id: j, tx: txs[j], receipt: null });
+      taskLst1.push({
+        id: j, tx: txs[j], receipt: {
+          block: block,
+          tx: txs[j],
+          receipt: receipts[j]
+        }
+      });
     }
     // await this.updateMultiTx(bhash, nhash, dtime, taskLst1);
 
     // get all tx's receipt, change taskLst1 , return until finish fetching all tx receipts
     let startTime = new Date().getTime();
     console.log('start GetallReceipts:', new Date());
-    await this.getAllReceipts(taskLst1);
+    // await this.getAllReceipts(taskLst1);
     console.log('End of getAllReceipts:', new Date());
     let endTime = new Date().getTime();
     console.log('Delta of get all receipts:', endTime - startTime)

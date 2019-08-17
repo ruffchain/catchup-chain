@@ -15,7 +15,7 @@ import * as fs from 'fs';
 
 const SECRET = 'da6feae3ca249c359200487934216f45dd1c2159116c3eecc348a74a3c7d16ba';
 const ADDRESS = '1KNjtioDXuALgFD2eLonZvLxv3VsyQcBjy'
-const HOST = '40.73.35.23'
+const HOST = '40.73.35.23' // 127.0.0.1 40.73.35.23
 const PORT = 18089
 
 let SUM = 10000;
