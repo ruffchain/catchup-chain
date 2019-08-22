@@ -145,34 +145,7 @@ export class Synchro {
   // add for miner balance sync
   private async loopTask2() {
     this.logger.info('loopTask2()\n');
-    // get miners list
-    // let minerLst: string[] = [];
-    // let result = await this.laGetMiners();
 
-    // if (result.ret === 200) {
-    //   let obj = JSON.parse(result.resp!);
-    //   if (obj.err === 0) {
-    //     obj.value.forEach((item: string) => {
-    //       minerLst.push(item.substring(1));
-    //     })
-    //     // ?? Use getBalances to fetch multiple balances
-    //     // let feedback = await this.updateBalances(SYS_TOKEN, minerLst);
-    //     let feedback = await this.getMinerBalances(minerLst);
-
-    //     this.logger.info('feedback.data', feedback.data)
-
-    //     if (feedback.err) {
-    //       this.logger.error('loopTask2 getMinerBalances fail!\n')
-    //     } else {
-    //       feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
-    //       if (feedback.err) {
-    //         this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
-    //       }
-    //     }
-    //   } else {
-    //     this.logger.error('loopTask2 fetch miners fail!\n');
-    //   }
-    // }
     let minerLst: string[] = [];
     this.latestMinerLst.forEach((item) => {
       minerLst.push(item);
@@ -549,30 +522,7 @@ export class Synchro {
 
     });
   }
-  // main task
-  // private updateBlockRange(nStart: number, nStop: number): Promise<IFeedBack> {
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     for (let i = nStart; i <= nStop; i++) {
-  //       // update database by block, one by one
-  //       let result = await this.updateBlock(i);
-  //       if (result.err) {
-  //         this.logger.error('UpdataeBlockRange block ', i, ' failed');
-  //         resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: i });
-  //         return;
-  //       } else {
-  //         // update statusDB current Height
-  //         let feedback = await this.pStatusDb.setCurrentHeight(i);
-  //         if (feedback.err) {
-  //           this.logger.error('Save block ', i, ' to db failedd');
-  //           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: i });
-  //           return;
-  //         }
-  //         this.pStatusDb.nCurrentHeight = i;
-  //       }
-  //     }
-  //     resolv({ err: ErrorCode.RESULT_OK, data: null });
-  //   });
-  // }
+
   private async updateBlockSingle(nBlock: number): Promise<IFeedBack> {
     this.logger.info('updateBlockSingle()')
     return new Promise<IFeedBack>(async (resolv) => {
@@ -733,122 +683,122 @@ export class Synchro {
     console.log('End of udpateSingleTx', new Date());
     return { err: ErrorCode.RESULT_OK, data: taskitem.id };
   }
-  private async  updateMultiTx(bhash: string, nhash: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
-    let promiseLst: Promise<IFeedBack>[] = [];
+  // private async  updateMultiTx(bhash: string, nhash: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
+  //   let promiseLst: Promise<IFeedBack>[] = [];
 
-    this.logger.info('UpdateTxMulti -- length:', taskLst.length);
+  //   this.logger.info('UpdateTxMulti -- length:', taskLst.length);
 
-    // Parallel processing 
-    for (let i = 0; i < taskLst.length; i++) {
-      let func = new Promise<IFeedBack>(async (resolve) => {
-        let task: IfTaskItem = taskLst[i];
-        let result = await this.updateSingleTx(bhash, nhash, dtime, task);
-        resolve(result);
-      });
-      promiseLst.push(func);
-    }
-    let finishedId: number[] = [];
-    await Promise.all(promiseLst).then((result) => {
-      for (let item of result) {
-        this.logger.info('returned:', JSON.stringify(item));
-        if (item.err === 0) {
-          // remove item.data id from 
-          finishedId.push(item.data);
-        }
-      }
-    });
-    console.log('finishedId:', finishedId);
+  //   // Parallel processing 
+  //   for (let i = 0; i < taskLst.length; i++) {
+  //     let func = new Promise<IFeedBack>(async (resolve) => {
+  //       let task: IfTaskItem = taskLst[i];
+  //       let result = await this.updateSingleTx(bhash, nhash, dtime, task);
+  //       resolve(result);
+  //     });
+  //     promiseLst.push(func);
+  //   }
+  //   let finishedId: number[] = [];
+  //   await Promise.all(promiseLst).then((result) => {
+  //     for (let item of result) {
+  //       this.logger.info('returned:', JSON.stringify(item));
+  //       if (item.err === 0) {
+  //         // remove item.data id from 
+  //         finishedId.push(item.data);
+  //       }
+  //     }
+  //   });
+  //   console.log('finishedId:', finishedId);
 
-    let newTaskLst: IfTaskItem[] = [];
-    for (let i = 0; i < taskLst.length; i++) {
-      let id = taskLst[i].id;
-      if (finishedId.indexOf(id) === -1) {
-        newTaskLst.push(taskLst[i]);
-      }
-    }
-    // Check if 
-    if (newTaskLst.length > 0) {
-      return await this.updateMultiTx(bhash, nhash, dtime, newTaskLst);
-    } else {
-      return { err: ErrorCode.RESULT_OK, data: null }
-    }
-  }
-  private async getAllReceipt(taskLst: IfTaskItem[]): Promise<IFeedBack> {
-    let promiseLst: Promise<IFeedBack>[] = [];
-    this.logger.info('getAllReceipt, num:', taskLst.length);
+  //   let newTaskLst: IfTaskItem[] = [];
+  //   for (let i = 0; i < taskLst.length; i++) {
+  //     let id = taskLst[i].id;
+  //     if (finishedId.indexOf(id) === -1) {
+  //       newTaskLst.push(taskLst[i]);
+  //     }
+  //   }
+  //   // Check if 
+  //   if (newTaskLst.length > 0) {
+  //     return await this.updateMultiTx(bhash, nhash, dtime, newTaskLst);
+  //   } else {
+  //     return { err: ErrorCode.RESULT_OK, data: null }
+  //   }
+  // }
+  // private async getAllReceipt(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+  //   let promiseLst: Promise<IFeedBack>[] = [];
+  //   this.logger.info('getAllReceipt, num:', taskLst.length);
 
-    // Parallel processing 
-    for (let i = 0; i < taskLst.length; i++) {
+  //   // Parallel processing 
+  //   for (let i = 0; i < taskLst.length; i++) {
 
-      let func = new Promise<IFeedBack>(async (resolve) => {
-        let taskitem: IfTaskItem = taskLst[i];
-        let hash = taskitem.tx.hash;
-        let feedback = await this.getReceiptInfo(hash);
-        if (!feedback.err) {
-          let recet: any;
-          try {
-            recet = JSON.parse(feedback.data.toString());
-            // Notify!!
-            // taskitem.task.cost = recet.receipt.cost;
-          } catch (e) {
-            this.logger.error('parse receipt failed')
-            resolve({
-              err: ErrorCode.RESULT_PARSE_ERROR,
-              data: {}
-            });
-            return;
-          }
-          resolve({
-            err: ErrorCode.RESULT_OK,
-            data: { id: taskitem.id, receipt: recet }
-          });
-          return;
-        } else {
-          resolve({
-            err: ErrorCode.RESULT_NEED_SYNC,
-            data: {}
-          });
-        }
-      });
-      promiseLst.push(func);
-    }
+  //     let func = new Promise<IFeedBack>(async (resolve) => {
+  //       let taskitem: IfTaskItem = taskLst[i];
+  //       let hash = taskitem.tx.hash;
+  //       let feedback = await this.getReceiptInfo(hash);
+  //       if (!feedback.err) {
+  //         let recet: any;
+  //         try {
+  //           recet = JSON.parse(feedback.data.toString());
+  //           // Notify!!
+  //           // taskitem.task.cost = recet.receipt.cost;
+  //         } catch (e) {
+  //           this.logger.error('parse receipt failed')
+  //           resolve({
+  //             err: ErrorCode.RESULT_PARSE_ERROR,
+  //             data: {}
+  //           });
+  //           return;
+  //         }
+  //         resolve({
+  //           err: ErrorCode.RESULT_OK,
+  //           data: { id: taskitem.id, receipt: recet }
+  //         });
+  //         return;
+  //       } else {
+  //         resolve({
+  //           err: ErrorCode.RESULT_NEED_SYNC,
+  //           data: {}
+  //         });
+  //       }
+  //     });
+  //     promiseLst.push(func);
+  //   }
 
-    let receiptLst: IfReceiptItem[] = [];
-    await Promise.all(promiseLst).then((result) => {
-      for (let item of result) {
-        this.logger.info('returned:', JSON.stringify(item));
-        if (item.err === ErrorCode.RESULT_OK) {
-          // remove item.data id from 
-          receiptLst.push(item.data);
-        }
-      }
-    });
-    return { err: ErrorCode.RESULT_OK, data: receiptLst }
-  }
+  //   let receiptLst: IfReceiptItem[] = [];
+  //   await Promise.all(promiseLst).then((result) => {
+  //     for (let item of result) {
+  //       this.logger.info('returned:', JSON.stringify(item));
+  //       if (item.err === ErrorCode.RESULT_OK) {
+  //         // remove item.data id from 
+  //         receiptLst.push(item.data);
+  //       }
+  //     }
+  //   });
+  //   return { err: ErrorCode.RESULT_OK, data: receiptLst }
+  // }
   // In charge of failure of getAllReceipt()
-  private async getAllReceipts(taskLst: IfTaskItem[]): Promise<IFeedBack> {
-    let result = await this.getAllReceipt(taskLst);
+  // private async getAllReceipts(taskLst: IfTaskItem[]): Promise<IFeedBack> {
+  //   let result = await this.getAllReceipt(taskLst);
 
-    let newTaskLst: IfTaskItem[] = [];
+  //   let newTaskLst: IfTaskItem[] = [];
 
-    for (let i = 0; i < taskLst.length; i++) {
-      let id = taskLst[i].id;
-      let itemFind: IfReceiptItem | undefined = result.data.find((item: IfReceiptItem) => {
-        return id === item.id;
-      })
-      if (itemFind === undefined) {
-        newTaskLst.push(taskLst[i]);
-      } else {
-        taskLst[i].receipt = itemFind.receipt;
-      }
-    }
-    if (newTaskLst.length > 0) {
-      this.logger.error('Error: new TaskLst error len:', newTaskLst.length);
-      return await this.getAllReceipts(newTaskLst);
-    } else {
-      return { err: ErrorCode.RESULT_OK, data: null }
-    }
-  }
+  //   for (let i = 0; i < taskLst.length; i++) {
+  //     let id = taskLst[i].id;
+  //     let itemFind: IfReceiptItem | undefined = result.data.find((item: IfReceiptItem) => {
+  //       return id === item.id;
+  //     })
+  //     if (itemFind === undefined) {
+  //       newTaskLst.push(taskLst[i]);
+  //     } else {
+  //       taskLst[i].receipt = itemFind.receipt;
+  //     }
+  //   }
+  //   if (newTaskLst.length > 0) {
+  //     this.logger.error('Error: new TaskLst error len:', newTaskLst.length);
+  //     return await this.getAllReceipts(newTaskLst);
+  //   } else {
+  //     return { err: ErrorCode.RESULT_OK, data: null }
+  //   }
+  // }
   // Here task is transaction we get from block structure
   // receipt is a placeholder for receipt we get by tx.hash
   // I will rename task to be tx
@@ -870,7 +820,7 @@ export class Synchro {
     // get all tx's receipt, change taskLst1 , return until finish fetching all tx receipts
     let startTime = new Date().getTime();
     console.log('start GetallReceipts:', new Date());
-    // await this.getAllReceipts(taskLst1);
+
     console.log('End of getAllReceipts:', new Date());
     let endTime = new Date().getTime();
     console.log('Delta of get all receipts:', endTime - startTime)
@@ -960,70 +910,7 @@ export class Synchro {
 
     return { err: ErrorCode.RESULT_OK, data: null };
   }
-  // Need to check if address is already in hash table here, 
-  // Because information is got from tx
-  // private async updateTx(bhash: string, nhash: number, dtime: number, txs: any[]) {
-  //   return new Promise<IFeedBack>(async (resolv) => {
 
-  //     for (let j = 0; j < txs.length; j++) {
-
-  //       let hash = txs[j].hash;
-  //       let blockhash = bhash;
-  //       let blocknumber = nhash;
-  //       let address = txs[j].caller;
-  //       let datetime = dtime;
-
-  //       // insertOrReplace it into hash table
-  //       let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.TX);
-  //       if (feedback.err) {
-  //         resolv({ err: feedback.err, data: null });
-  //         return;
-  //       }
-
-  //       // get receipt
-  //       feedback = await this.getReceiptInfo(hash);
-  //       if (feedback.err) {
-  //         this.logger.error('getReceipt for tx failed')
-  //         resolv({ err: feedback.err, data: null });
-  //         return;
-  //       }
-  //       this.logger.info('get receipt for tx -->\n')
-  //       console.log(feedback.data)
-
-  //       // put it into tx table, insertOrReplace
-  //       // let fee = txs[j].fee;
-  //       let recet: any;
-  //       try {
-  //         recet = JSON.parse(feedback.data.toString());
-  //         txs[j].cost = recet.receipt.cost;
-  //       } catch (e) {
-  //         this.logger.error('parse receipt failed')
-  //         resolv({ err: ErrorCode.RESULT_PARSE_ERROR, data: null });
-  //         return;
-  //       }
-
-  //       let content: Buffer = Buffer.from(JSON.stringify(txs[j]))
-  //       feedback = await this.pStorageDb.insertTxTable(hash, blockhash, blocknumber, address, datetime, content);
-
-  //       if (feedback.err) {
-  //         this.logger.error('put tx into txtable failed')
-  //         resolv({ err: feedback.err, data: null });
-  //         return;
-  //       }
-  //       console.log('updateTx:')
-  //       console.log(content);
-  //       // console.log(typeof content)
-
-  //       let feedback2 = await this.checkAccountAndToken(recet);
-  //       if (feedback2.err) {
-  //         this.logger.error('checkAccountAndToken() failed.')
-  //         resolv({ err: feedback2.err, data: null });
-  //         return;
-  //       }
-  //     }
-  //     resolv({ err: ErrorCode.RESULT_OK, data: null })
-  //   });
-  // }
 
   // Based on tx method name
   // 1, token table
@@ -1259,73 +1146,19 @@ export class Synchro {
   private fetchBancorTokenNumberReserve(tokenName: string) {
     this.logger.info('fetchBancorTokenNumberReserve')
     return this.fetchBancorTokenNumber(tokenName, this.getReserve);
-    // return new Promise<IFeedBack>(async (resolv) => {
+
   }
   private fetchBancorTokenNumberFactor(tokenName: string) {
     this.logger.info('fetchBancorTokenNumberFactor')
     return this.fetchBancorTokenNumber(tokenName, this.getFactor)
-    //return new Promise<IFeedBack>(async (resolv) => {
+
   }
 
-  //   });
-  // }
-  // get R, S, F parameters
-  // private handleBancorTokenParameters(tokenName: string, func: (token: string, f: number, r: number, s: number) => Promise<IFeedBack>) {
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     this.logger.info('handleBancorTokenParameters')
-  //     let result = await this.fetchBancorTokenNumberFactor(tokenName);
-  //     if (result.err) {
-  //       resolv(result);
-  //       return;
-  //     }
-  //     let F = result.data;
-
-  //     result = await this.fetchBancorTokenNumberSupply(tokenName);
-  //     if (result.err) {
-  //       resolv(result);
-  //       return;
-  //     }
-  //     let S = result.data;
-
-  //     result = await this.fetchBancorTokenNumberReserve(tokenName);
-  //     if (result.err) {
-  //       resolv(result);
-  //       return;
-  //     }
-  //     let R: number = result.data;
-
-  //     result = await func.call(this, tokenName, F, R, S);
-  //     if (result.err) {
-  //       resolv(result);
-  //       return;
-  //     }
-  //     resolv({ err: ErrorCode.RESULT_OK, data: null })
-  //   });
-  // }
   public insertBancorTokenParameters(tokenName: string) {
     this.logger.info('insertBancorTokenParameters, with: ', tokenName)
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('handleBancorTokenParameters')
-      // let result = await this.fetchBancorTokenNumberFactor(tokenName);
-      // if (result.err) {
-      //   resolv(result);
-      //   return;
-      // }
-      // let F = result.data;
 
-      // result = await this.fetchBancorTokenNumberSupply(tokenName);
-      // if (result.err) {
-      //   resolv(result);
-      //   return;
-      // }
-      // let S = result.data;
-
-      // result = await this.fetchBancorTokenNumberReserve(tokenName);
-      // if (result.err) {
-      //   resolv(result);
-      //   return;
-      // }
-      // let R: number = result.data;
       let result0 = await this.laGetBancorTokenParams(tokenName);
       if (result0.ret !== 200) {
         this.logger.error("insertBancorTokenParameters, get params failed");
@@ -1509,20 +1342,6 @@ export class Synchro {
         resolv(feedback);
         return;
       }
-      // }
-
-      // Update txTransferTo txs
-      // if (receipt.receipt.returnCode === 0) {
-      // this.logger.info('Put it into txTransferToTable')
-      // startTime = new Date().getTime();
-      // feedback = await this.pStorageDb.insertTxTransferToTable(hash, blockhash, blocknumber, caller, datetime, content, to, returnCode);
-      // endTime = new Date().getTime();
-      // this.logger.info('Used time for insertTxTransferToTable:', endTime - startTime);
-      // if (feedback.err) {
-      //   this.logger.error('put tx into txtransfertotable failed');
-      //   resolv(feedback);
-      //   return;
-      // }
 
       resolv({ err: ErrorCode.RESULT_OK, data: null });
     });
@@ -1645,9 +1464,7 @@ export class Synchro {
       this.updateLockBancorTokenBalance);
   }
 
-
   // ------------ 3 -------------
-
 
   // Basic commands 
   public async getLatestBlock() {

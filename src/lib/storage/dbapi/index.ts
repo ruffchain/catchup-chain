@@ -21,8 +21,7 @@ import { laGetSysByToken } from "./getsysbytoken";
 import { laGetTokenBySys } from "./gettokenbysys";
 import { laGetTxsTransferFrom } from "./gettxstransferfrom";
 import { laGetTxsTransferTo } from "./gettxstransferto";
-import { localCache, fetchCacheGetCandidates } from "../../catchup/localcache";
-import { WRQueue } from "../queue";
+import { fetchCacheGetCandidates } from "../../catchup/localcache";
 
 /**
  * Get function by name

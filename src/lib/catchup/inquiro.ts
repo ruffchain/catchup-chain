@@ -1,7 +1,5 @@
-import { Logger } from '../../api/logger';
 import winston = require('winston');
 import { RPCServer } from '../../client/client/rfc_server';
-import { ErrorCode, IFeedBack } from '../../core';
 import { WRQueue, createTask } from '../storage/queue';
 import { getFunc } from '../storage/dbapi';
 
@@ -18,23 +16,23 @@ export interface IfReq {
   funName: string;
   args: any;
 }
-interface IfResp {
-  funName: string;
-  args: any;
-}
-interface IBundle {
-  name: string;
-  nameResp: string;
-  func: (msg: IfReq) => IfResp;
-}
+// interface IfResp {
+//   funName: string;
+//   args: any;
+// }
+// interface IBundle {
+//   name: string;
+//   nameResp: string;
+//   func: (msg: IfReq) => IfResp;
+// }
 
 /**
  * getName
  * args:'s'
  */
 
-let lst: any;
-lst = [];
+// let lst: any;
+// lst = [];
 
 export class Inquiro {
   public logger: winston.LoggerInstance;
@@ -64,18 +62,10 @@ export class Inquiro {
 
       resp.writeHead(200, { 'Content-Type': 'application/json' });
 
-      // let result = await this.handle(obj);
-      // change this to be parallel
       let result = Object.create(null);
       let task = createTask(obj, () => { });
 
-      // if (['getCandy'].indexOf(obj.funName) !== -1) {
-      // this.queue.emit('write', createTask(obj, resolv))
       result = await getFunc(obj.funName)(this.queue, task.request.args);
-      // } else {
-      // this.queue.emit('read', createTask(obj, resolv));
-      //   result = await getFunc(obj.funName)(this.queue, task.request.args);
-      // }
 
       this.logger.info('send out');
       let strFb = JSON.stringify(result.data);
@@ -84,26 +74,25 @@ export class Inquiro {
       resp.end();
     });
   }
-  private handleMessageAsync(msg: IfReq): Promise<IFeedBack> {
-    return new Promise<IFeedBack>((resolv) => {
-      if (['getCandy'].indexOf(msg.funName) !== -1) {
-        this.queue.emit('write', createTask(msg, resolv))
-      } else {
-        this.queue.emit('read', createTask(msg, resolv));
-      }
+  // private handleMessageAsync(msg: IfReq): Promise<IFeedBack> {
+  //   return new Promise<IFeedBack>((resolv) => {
+  //     if (['getCandy'].indexOf(msg.funName) !== -1) {
+  //       this.queue.emit('write', createTask(msg, resolv))
+  //     } else {
+  //       this.queue.emit('read', createTask(msg, resolv));
+  //     }
 
-    })
-  }
+  //   })
+  // }
 
-  private async handle(msg: IfReq): Promise<IFeedBack> {
-    return new Promise<IFeedBack>(async (resolv) => {
-      this.logger.info('handleMessageAsync\n')
-      // this.testAsync();
-      let result = await this.handleMessageAsync(msg);
+  // private async handle(msg: IfReq): Promise<IFeedBack> {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     this.logger.info('handleMessageAsync\n')
+  //     // this.testAsync();
+  //     let result = await this.handleMessageAsync(msg);
 
-      resolv({ err: ErrorCode.RESULT_OK, data: result.data });
+  //     resolv({ err: ErrorCode.RESULT_OK, data: result.data });
 
-    });
-  }
-
+  //   });
+  // }
 }

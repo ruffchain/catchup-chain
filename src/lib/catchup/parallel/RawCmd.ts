@@ -103,7 +103,6 @@ export class RawCmd_NTHT extends RawCmd {
             hash: arg.name,
             type: arg.type
         }));
-        await DelayPromise(0.002);
 
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
@@ -127,8 +126,6 @@ export class RawCmd_TAT extends RawCmd {
             address: arg.address,
             datetime: arg.timestamp
         }));
-        await DelayPromise(0.002);
-
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
 }
@@ -321,8 +318,6 @@ export class RawCmd_TTTT extends RawCmd {
             returncode: arg.returncode
         }));
 
-        await DelayPromise(0.002);
-
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }
 }
@@ -349,8 +344,6 @@ export class RawCmd_ITT extends RawCmd {
             datetime: arg.datetime,
             content: arg.content
         }));
-
-        await DelayPromise(0.002);
 
         return { err: ErrorCode.RESULT_OK, data: cmdLst };
     }

@@ -1,8 +1,56 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { Synchro } from "../synchro";
 import { RawCmd, createRawCmds, RawCmdSet, RawCmdType } from "./RawCmd";
-import { SingleCmdSet, SingleCmd } from "./SingleCmd";
+import { SingleCmdSet } from "./SingleCmd";
+import { DelayPromise } from "../../../api/common";
 
+function computeDelay(len: number) {
+    if (len > 6000) {
+        return 3.5
+    }
+    if (len > 5000) {
+        return 3
+    }
+    if (len > 4000) {
+        return 2.5
+    }
+    if (len > 3000) {
+        return 2.5
+    }
+    if (len > 2000) {
+        return 2
+    }
+    if (len > 1000) {
+        return 1.5
+    }
+    if (len > 800) {
+        return 0.5
+    }
+    if (len > 600) {
+        return 0.5
+    }
+    if (len > 400) {
+        return 0.5
+    }
+    if (len > 200) {
+        return 0.5
+    }
+    if (len > 100) {
+        return 0.2;
+    }
+    // if (len > 50) {
+    //     return 0.5;
+    // }
+    // if (len > 25) {
+    //     return 0.4
+    // }
+    // if (len > 10) {
+    //     return 0.2;
+    // }
+
+    return 0;
+
+}
 
 export async function parallelCheckAccountAndToken(handler: Synchro, receiptLst: any[]): Promise<IFeedBack> {
 
@@ -20,10 +68,16 @@ export async function parallelCheckAccountAndToken(handler: Synchro, receiptLst:
 
     let singleCmdSet = new SingleCmdSet();
     // use parallel method to get singleCmd
+
+    let randDelay = computeDelay(rawCmdSet.len());
+
     let promiseLst: Promise<IFeedBack>[] = [];
     for (let i = 0; i < rawCmdSet.len(); i++) {
         let rawcmd = rawCmdSet.get(i);
         let func = new Promise<IFeedBack>(async (resolv) => {
+            // Add by Yang Jun
+            await DelayPromise(randDelay * Math.random());
+
             let feedback: IFeedBack = await rawcmd.createSingleCmds(handler);
             resolv(feedback);
         });
@@ -31,6 +85,7 @@ export async function parallelCheckAccountAndToken(handler: Synchro, receiptLst:
     }
     let faultCounter = 0;
     let startTime = new Date().getTime();
+
     await Promise.all(promiseLst).then((result) => {
         for (let item of result) {
             if (item.err === ErrorCode.RESULT_OK) {
@@ -42,6 +97,7 @@ export async function parallelCheckAccountAndToken(handler: Synchro, receiptLst:
     });
     let endTime = new Date().getTime();
     console.log('Delta of promise.all: ', endTime - startTime);
+
     if (faultCounter > 0) {
         return { err: ErrorCode.RESULT_EXECUTE_ERROR, data: null }
     }

@@ -602,19 +602,6 @@ export class StorageDataBase extends CUDataBase {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await this.insertTxAddressTable(hash, address, datetime);
       resolv(result);
-      // let result = await this.queryHashFromTx(hash, address);
-
-      // if (result.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-
-      //   let result1 = await this.insertTxAddressTable(hash, address, datetime);
-      //   console.log('updateTxAddressTable result1:', result1)
-      //   resolv(result1);
-      // } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
-      //   resolv(result);
-      // } else {
-      //   resolv({ err: ErrorCode.RESULT_OK, data: null })
-      // }
-
     });
   }
   // Query 2 tables
