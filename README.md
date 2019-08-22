@@ -14,12 +14,24 @@
 - ES2017
 - tsc, typescript compiler (version == 2.8.1)
 - winston v2.4.2 , 去掉兼容性，想办法，新版本是v3.1.0
+- sqlite3
 
 ## install
 
 ```
+// config rpc server ip & port
+// under ./config/server.json file
+
 // under directory, run
 npm install
+
+// Need to clean old db
+npm run cleandb
+
+// run
+npm run start
+
+// Or use pm2 to start the app
 
 ```
 

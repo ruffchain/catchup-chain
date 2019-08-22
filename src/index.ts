@@ -3,7 +3,7 @@ import { StatusDataBase } from './lib/storage/statusdb';
 import { StorageDataBase, SYS_TOKEN, HASH_TYPE, TOKEN_TYPE } from './lib/storage/StorageDataBase';
 import { IFeedBack } from './core';
 import winston = require('winston');
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import { Synchro } from './lib/catchup/synchro';
 import { Inquiro } from './lib/catchup/inquiro';
 import { WRQueue } from './lib/storage/queue';
@@ -57,11 +57,12 @@ let storageDB = new StorageDataBase(logger, {
 })
 
 // let queue = new WRQueue(logger, statusDB, storageDB);
+let serverObj = fs.readJsonSync('./config/server.json');
 
 let client = new Synchro({
 
-  ip: '127.0.0.1', // '127.0.0.1'   '139.219.184.44', 40.73.35.23 , newpeer 40.73.1.241
-  port: 18089,
+  ip: serverObj.ip,
+  port: serverObj.port,
   batch: 20
 }, logger, statusDB, storageDB);
 

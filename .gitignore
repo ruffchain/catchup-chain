@@ -3,6 +3,7 @@ node_modules/
 dist/*
 .tern-port
 package-lock.json
+config/server.json
 data/*
 secret/*
 doc/*
