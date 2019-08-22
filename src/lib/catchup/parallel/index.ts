@@ -6,16 +6,16 @@ import { DelayPromise } from "../../../api/common";
 
 function computeDelay(len: number) {
     if (len > 6000) {
-        return 3.5
+        return 11
     }
     if (len > 5000) {
-        return 3
+        return 10
     }
     if (len > 4000) {
-        return 2.5
+        return 9
     }
     if (len > 3000) {
-        return 2.5
+        return 8
     }
     if (len > 2000) {
         return 2

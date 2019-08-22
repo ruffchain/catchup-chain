@@ -79,6 +79,14 @@ export interface IfTxTableItem {
   content: Buffer;
 
 }
+export interface IfBlockItem {
+  bhash: string;
+  nhash: number;
+  dtime: number;
+  block: any;
+  txs: any[];
+  receipts: any[];
+}
 
 export class Synchro {
   public logger: winston.LoggerInstance;
@@ -380,13 +388,69 @@ export class Synchro {
   private updateBlockRangeBatch(nStart: number, nStop: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       for (let i = nStart; i <= nStop; i = i + this.nBatch) {
-        let result = await this.updateBlockRangeGroup(i, ((i + this.nBatch - 1) > nStop) ? nStop : (i + this.nBatch - 1));
+        let result = await this.updateBlockRangeGroupNew(i, ((i + this.nBatch - 1) > nStop) ? nStop : (i + this.nBatch - 1));
         if (result.err !== 0) {
           resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
           return;
         }
       }
       resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
+  private updateBlockRangeGroupNew(nStart: number, nStop: number) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      this.logger.info('updateBlockRangeGroupNew');
+      let result = await this.laGetBlocks(nStart, nStop, true);
+      if (result.ret === 200) {
+        try {
+          let objAll = JSON.parse(result.resp!);
+          if (objAll.err === 0) {
+            console.log(objAll.blocks.length, ' blocks');
+            // for (let i = 0; i < objAll.blocks.length; i++) {
+            //   console.log('block : ', i)
+            // }
+            // let obj = objAll.blocks[i];
+            // // console.log('\nobj:')
+            // console.log(obj.block);
+            // console.log('transactions:', obj.transactions.length)
+            // if (obj.transactions.length > 0) {
+            //   console.log(obj.transactions[0])
+            // }
+            // console.log('receipts:', obj.receipts.length);
+            // if (obj.receipts.length > 0) {
+            //   console.log(obj.receipts[0])
+            //   console.log(JSON.stringify(obj.receipts[0]))
+            // }
+            let length = objAll.blocks.length;
+            let heightNew = objAll.blocks[length - 1].block.number;
+
+            let feedback = await this.syncBlockDataGroup(objAll.blocks);
+            if (feedback.err) {
+              resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
+              return;
+            } else {
+              // update lib
+              // update statusDB current Height
+              let feedback2 = await this.syncHeightAndMineAward(heightNew);
+              if (feedback2.err) {
+                this.logger.error('Save blocks ', length, ' to db failedd');
+                resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: length });
+                return;
+              }
+              // this.pStatusDb.nCurrentHeight = obj.block.number;
+              this.pStatusDb.nCurrentHeight = heightNew;
+            }
+
+            resolv({ err: ErrorCode.RESULT_OK, data: null });
+            return;
+          }
+        } catch (e) {
+          this.logger.error('udpateBlockRangeBatch parsing error');
+        }
+
+      }
+      resolv({ err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null })
+
     });
   }
   private updateBlockRangeGroup(nStart: number, nStop: number) {
@@ -522,7 +586,79 @@ export class Synchro {
 
     });
   }
+  private async syncBlockDataGroup(obj: any[]) {
+    return new Promise<IFeedBack>(async (resolv) => {
+      let blkLst: IfBlockItem[] = [];
 
+      this.logger.info('save block hash to hash table')
+      let startSyncBlockDataTime = new Date().getTime();
+      console.log('Start of syncBlockDataGroup ', new Date());
+      // save to hash table
+      for (let i = 0; i < obj.length; i++) {
+        let hash = obj[i].block.hash;
+        let hashnumber = obj[i].block.number;
+        let timestamp = obj[i].block.timestamp;
+        let address = obj[i].block.creator;
+        let txno = obj[i].transactions.length;
+        let height = obj[i].block.number;
+
+        let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
+        if (feedback.err) {
+          this.logger.error('updateBlock ', hashnumber, ' number indertToHashTable failed')
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+
+        // save to block table
+        feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, height, txno, address, timestamp);
+        if (feedback.err) {
+          this.logger.error('updateBlock ', hashnumber, ' put into block able failed')
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+        if (txno > 0) {
+          blkLst.push({
+            bhash: hash,
+            nhash: hashnumber,
+            dtime: timestamp,
+            block: obj[i].block,
+            txs: obj[i].transactions,
+            receipts: obj[i].receipts
+          });
+        }
+
+      }
+
+      // update block-creator's balance
+      // this.logger.info('save to minerLst , let loopTask2 to do it');
+
+      // let miner1 = this.latestMinerLst.find((item) => {
+      //   return item === address;
+      // })
+      // if (!miner1) {
+      //   this.latestMinerLst.push(address);
+      // }
+      // this.busyIndex = this.calcBusyIndex(txno);
+
+      if (blkLst.length > 0) {
+        this.logger.info('UpdateTx --> :', blkLst.length)
+        let startUpdateTxNew = new Date().getTime();
+        console.log('Start of updateTexNew', new Date());
+        // feedback = await this.updateTxNewGroup(hash, hashnumber, timestamp, obj.block, obj.transactions, obj.receipts);
+        let feedback = await this.updateTxNewGroup(blkLst);
+        console.log('End of updateTexNewGroup', new Date());
+        console.log('Delta of updateTxNewGroup is:', new Date().getTime() - startUpdateTxNew)
+        if (feedback.err) {
+
+          resolv({ err: feedback.err, data: null });
+          return;
+        }
+      }
+      console.log('End of syncBlockDataGroup', new Date());
+      console.log('Delta of syncBlockDataGroup is:', new Date().getTime() - startSyncBlockDataTime)
+      resolv({ err: ErrorCode.RESULT_OK, data: null })
+    });
+  }
   private async updateBlockSingle(nBlock: number): Promise<IFeedBack> {
     this.logger.info('updateBlockSingle()')
     return new Promise<IFeedBack>(async (resolv) => {
@@ -808,7 +944,9 @@ export class Synchro {
 
     for (let j = 0; j < txs.length; j++) {
       taskLst1.push({
-        id: j, tx: txs[j], receipt: {
+        id: j,
+        tx: txs[j],
+        receipt: {
           block: block,
           tx: txs[j],
           receipt: receipts[j]
@@ -841,6 +979,66 @@ export class Synchro {
 
     // console.log('Begin batchcheckAccountAndToken:', new Date());
     feedback = await this.batchCheckAccountAndToken(taskLst1);
+    if (feedback.err) {
+      this.logger.error('batchCheckAccountAndToken failed');
+      return { err: feedback.err, data: null };
+    }
+
+    return { err: ErrorCode.RESULT_OK, data: null };
+  }
+  // private async updateTxNewGroup(bhash: string, nhash: number, dtime: number, block: any, txs: any[], receipts: any[]) {
+  private async updateTxNewGroup(objs: IfBlockItem[]) {
+    // To store all information to update to local database
+    let taskLst: IfTaskItem[] = [];
+
+    for (let i = 0; i < objs.length; i++) {
+      let taskLst1: IfTaskItem[] = [];
+      for (let j = 0; j < objs[i].txs.length; j++) {
+        taskLst1.push({
+          id: j,
+          tx: objs[i].txs[j],
+          receipt: {
+            block: objs[i].block,
+            tx: objs[i].txs[j],
+            receipt: objs[i].receipts[j]
+          }
+        });
+        taskLst.push({
+          id: j,
+          tx: objs[i].txs[j],
+          receipt: {
+            block: objs[i].block,
+            tx: objs[i].txs[j],
+            receipt: objs[i].receipts[j]
+          }
+        });
+      }
+      let endTime = new Date().getTime();
+      let feedback = await this.batchInsertTxToHashTable(taskLst1);
+      if (feedback.err) {
+        this.logger.error('batchInsertTxToHashTable failed');
+        return { err: feedback.err, data: null };
+      }
+      console.log('Delta of insert all tx to hash table:', new Date().getTime() - endTime)
+
+      // put it into tx table, insertOrReplace
+      feedback = await this.batchInsertTxTable(objs[i].bhash, objs[i].nhash, objs[i].dtime, taskLst1);
+      if (feedback.err) {
+        this.logger.error('batchInsertTxToHashTable failed');
+        return { err: feedback.err, data: null };
+      }
+    }
+
+    // get all tx's receipt, change taskLst1 , return until finish fetching all tx receipts
+    // let startTime = new Date().getTime();
+    // console.log('start GetallReceipts:', new Date());
+
+    // console.log('End of getAllReceipts:', new Date());
+    // let endTime = new Date().getTime();
+    // console.log('Delta of get all receipts:', endTime - startTime)
+
+    // console.log('Begin batchcheckAccountAndToken:', new Date());
+    let feedback = await this.batchCheckAccountAndToken(taskLst);
     if (feedback.err) {
       this.logger.error('batchCheckAccountAndToken failed');
       return { err: feedback.err, data: null };
