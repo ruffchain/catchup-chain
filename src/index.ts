@@ -29,7 +29,7 @@ function assert(flag: IFeedBack, infoLog: string, log: winston.LoggerInstance) {
   }
 }
 
-function getPreBanaces(filename: string): IPreBalance[] {
+function getPreBalances(filename: string): IPreBalance[] {
   let buf = fs.readFileSync(filename);
 
   let obj: any;
@@ -56,7 +56,6 @@ let storageDB = new StorageDataBase(logger, {
   path: './data/db/'
 })
 
-// let queue = new WRQueue(logger, statusDB, storageDB);
 let serverObj = fs.readJsonSync('./config/server.json');
 
 let client = new Synchro({
@@ -82,15 +81,13 @@ async function main() {
 
   assert(await statusDB.init(), 'statusDB init tables', logger);
 
-  // assert(await statusDB.getCurrentHeight(), 'query current block height', logger);
-
   assert(await storageDB.open(), 'storageDB open', logger);
 
   assert(await storageDB.init(), 'storageDB init tables', logger);
 
   if (statusDB.nLoadGenesisFile === 0) {
     logger.info('\nShould load address into account table, hash table')
-    let arrPreBalances = getPreBanaces('./config/genesis.json');
+    let arrPreBalances = getPreBalances('./config/genesis.json');
 
     assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + 'SYS', logger);
 
@@ -113,10 +110,6 @@ async function main() {
 
     assert(await statusDB.setLoadGenesisFileBool(1), 'set load genesis bool to :' + 1, logger);
   }
-
-  // let result = await storageDB.queryHashTable("15", 5);
-  // logger.info(result.data.length);
-
 
   client.start();
 

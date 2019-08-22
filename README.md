@@ -25,13 +25,17 @@
 // under directory, run
 npm install
 
+// compile
+npm compile
+
 // Need to clean old db
 npm run cleandb
 
 // run
 npm run start
 
-// Or use pm2 to start the app
+// Or use pm2 to manage the app
+pm2 start dist/index.js
 
 ```
 
