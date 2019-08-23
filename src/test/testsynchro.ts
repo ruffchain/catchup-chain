@@ -159,6 +159,11 @@ async function main() {
   await statusDB.open();
   await storageDB.open();
 
+  let result2 = await storageDB.queryAccountTableByTokenAndAddress('17qMsJfCWz97Ag2rkrMttWjyiNybXioz3d', SYS_TOKEN);
+  logger.info(result2);
+  console.log(result2)
+  console.log(result2.data.value)
+
   // let result2 = await storageDB.insertTxTransferToTable('244512954a7ab1f14144c71c8961a5d3990aad733c8b16e253fd6cd07b73e419', '0c7926ff96551f6ac948582f88b7e3044a36ba920d7215280ef4afeb444c6e7f', 99, '1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J', 123, Buffer.from([0x11]), '1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J', 0);
   // logger.info(result2);
   // console.log(result2)

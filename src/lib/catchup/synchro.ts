@@ -35,6 +35,7 @@ import { checkRunUserMethod } from './usercode/runusermethod';
 import { getCandidates } from '../../api/getCandidates';
 import { localCache } from './localcache';
 import { parallelCheckAccountAndToken } from './parallel';
+import { parseTransferTo } from './parse/transferto';
 
 /**
  * This is a client , always syncing with the Chain
@@ -86,6 +87,17 @@ export interface IfBlockItem {
   block: any;
   txs: any[];
   receipts: any[];
+}
+
+export interface IfParseItem {
+  block: any;
+  transactions: any[];
+  receipts: any[];
+}
+export interface IfParseReceiptItem {
+  block: any;
+  tx: any;
+  receipt: any;
 }
 
 export class Synchro {
@@ -155,25 +167,25 @@ export class Synchro {
     this.logger.info('loopTask2()\n');
 
     let minerLst: string[] = [];
-    this.latestMinerLst.forEach((item) => {
-      minerLst.push(item);
-    });
-    if (minerLst.length > 0) {
-      this.logger.info('getminerbalance start=>');
-      console.log(new Date())
-      let feedback = await this.getMinerBalances(minerLst);
-      this.logger.info('feedback.data', feedback.data)
-      if (feedback.err) {
-        this.logger.error('loopTask2 getMinerBalances fail!\n')
-      } else {
-        feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
-        if (feedback.err) {
-          this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
-        }
-      }
-      this.logger.info('getminerbalance end=>');
-      console.log(new Date())
-    }
+    // this.latestMinerLst.forEach((item) => {
+    //   minerLst.push(item);
+    // });
+    // if (minerLst.length > 0) {
+    //   this.logger.info('getminerbalance start=>');
+    //   console.log(new Date())
+    //   let feedback = await this.getMinerBalances(minerLst);
+    //   this.logger.info('feedback.data', feedback.data)
+    //   if (feedback.err) {
+    //     this.logger.error('loopTask2 getMinerBalances fail!\n')
+    //   } else {
+    //     feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
+    //     if (feedback.err) {
+    //       this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
+    //     }
+    //   }
+    //   this.logger.info('getminerbalance end=>');
+    //   console.log(new Date())
+    // }
 
     this.latestMinerLst = [];
 
@@ -200,38 +212,278 @@ export class Synchro {
 
     // update miner balance one by one, we won't take time to retry here.
     this.logger.info('-------- end of looptask2() -----------\n');
+
     let delay = PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX;
     this.logger.info('Delay ', delay, ' seconds\n');
     await DelayPromise(delay);
     this.loopTask();
   }
-  private async getMinerBalances(addrs: string[]) {
-    console.log(addrs);
+  // private async getMinerBalances(addrs: string[]) {
+  //   console.log(addrs);
 
-    return new Promise<IFeedBack>(async (resolv) => {
-      let result = await this.laGetBalances(addrs);
-      console.log(result);
-      if (result.ret === 200) {
-        try {
-          let obj = JSON.parse(result.resp!);
-          let outObj: IBalance[] = [];
-          if (obj.err === 0) {
-            for (let i = 0; i < obj.value.length; i++) {
-              outObj.push({
-                address: obj.value[i].address,
-                balance: obj.value[i].balance.substring(1)
-              })
-            }
-            resolv({ err: ErrorCode.RESULT_OK, data: outObj })
-            return;
-          }
-        } catch (e) {
-          this.logger.error('getMinerBalances parsing error')
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     let result = await this.laGetBalances(addrs);
+  //     console.log(result);
+  //     if (result.ret === 200) {
+  //       try {
+  //         let obj = JSON.parse(result.resp!);
+  //         let outObj: IBalance[] = [];
+  //         if (obj.err === 0) {
+  //           for (let i = 0; i < obj.value.length; i++) {
+  //             outObj.push({
+  //               address: obj.value[i].address,
+  //               balance: obj.value[i].balance.substring(1)
+  //             })
+  //           }
+  //           resolv({ err: ErrorCode.RESULT_OK, data: outObj })
+  //           return;
+  //         }
+  //       } catch (e) {
+  //         this.logger.error('getMinerBalances parsing error')
+  //       }
+  //     }
+  //     resolv({ err: ErrorCode.RESULT_FAILED, data: null })
+  //   });
+  // }
+  // New way of parsing block
+  private async parseBlockRange(start: number, end: number): Promise<IFeedBack> {
+    // Choose to use getBlock or getBlocks
+    if (start === end) {
+      return this.parseBlock(start);
+    } else {
+      for (let i = start; i <= end; i = i + this.nBatch) {
+        let result = await this.parseBlocks(i, ((i + this.nBatch - 1) > end) ? end : (i + this.nBatch - 1));
+        if (result.err) {
+          return { err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null }
         }
       }
-      resolv({ err: ErrorCode.RESULT_FAILED, data: null })
-    });
+    }
+    return { err: ErrorCode.RESULT_OK, data: null }
   }
+  private async parseBlock(start: number): Promise<IFeedBack> {
+    let blockItems: IfParseItem[] = [];
+    let hret = await this.laGetBlock(start);
+    if (hret.ret !== 200) {
+      return { err: ErrorCode.RESULT_SYNC_GETBLOCKS_FAILED, data: {} }
+    }
+    try {
+      let obj = JSON.parse(hret.resp!);
+      blockItems.push(obj);
+    } catch (e) {
+      this.logger.error('parseBlock parsing error');
+      return { err: ErrorCode.RESULT_PARSE_ERROR, data: {} }
+    }
+    return this.parseBlockItems(blockItems);
+  }
+  private async parseBlocks(start: number, end: number): Promise<IFeedBack> {
+    let blockItems: IfParseItem[] = [];
+    let hret = await this.laGetBlocks(start, end);
+    if (hret.ret !== 200) {
+      return { err: ErrorCode.RESULT_SYNC_GETBLOCKS_FAILED, data: {} }
+    }
+    try {
+      let objAll = JSON.parse(hret.resp!);
+      for (let i = 0; i < objAll.blocks.length; i++) {
+        blockItems.push(objAll.blocks[i])
+      }
+    } catch (e) {
+      this.logger.error('parseBlocks parsing error');
+      return { err: ErrorCode.RESULT_PARSE_ERROR, data: {} }
+    }
+    return this.parseBlockItems(blockItems);
+  }
+  private async parseBlockItems(items: IfParseItem[]): Promise<IFeedBack> {
+    // parse one block itme
+    for (let i = 0; i < items.length; i++) {
+      let hret = await this.parseBlockItem(items[i]);
+
+      if (hret.err) {
+        return { err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null }
+      }
+      let feedback2 = await this.syncHeightAndMineAward(items[i].block.number);
+      if (feedback2.err) {
+        this.logger.error('Save block ', items[i].block.number, ' to height failedd');
+        return { err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: {} }
+      }
+      this.pStatusDb.nCurrentHeight = items[i].block.number;
+    }
+    return { err: ErrorCode.RESULT_OK, data: {} }
+  }
+  private async parseBlockItem(obj: IfParseItem): Promise<IFeedBack> {
+
+    let hash = obj.block.hash;
+    let hashnumber = obj.block.number;
+    let timestamp = obj.block.timestamp;
+    let creator = obj.block.creator;
+    let txno = obj.transactions.length;
+    let height = obj.block.number;
+    let reward = obj.block.reward;
+
+    // save block hash
+    this.logger.info('save block hash to hash table, update block: ' + hashnumber)
+    // save to hash table
+    let startT = new Date().getTime();
+    let feedback = await this.pStorageDb.insertOrReplaceHashTable(hash, HASH_TYPE.BLOCK);
+    if (feedback.err) {
+      this.logger.error('updateBlock ', hashnumber, ' number indertToHashTable failed')
+      return { err: feedback.err, data: null }
+    }
+    let endT = new Date().getTime();
+    this.logger.info('Delta of insert block hash: ' + (endT - startT));
+
+    // save to block table
+    this.logger.info('save block to blocktable:' + hashnumber);
+    let startT2 = new Date().getTime();
+    feedback = await this.pStorageDb.insertOrReplaceBlockTable(hash, height, txno, creator, timestamp);
+    if (feedback.err) {
+      this.logger.error('updateBlock ', hashnumber, ' put into block table failed')
+      return { err: feedback.err, data: null }
+    }
+    let endT2 = new Date().getTime();
+    this.logger.info('Delta of insertOrReplaceBlockTable :' + (endT2 - startT2));
+
+    // update creator balance, getFrom Account table
+    feedback = await this.laUpdateAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, reward);
+    // add reward 
+
+    if (txno > 0) {
+      let startT3 = new Date().getTime();
+      this.logger.info('parseTxs --> : [ ' + txno + ' ]')
+      feedback = await this.parseTxs(obj);
+      if (feedback.err) {
+        return { err: feedback.err, data: null }
+      }
+      let endT3 = new Date().getTime();
+      this.logger.info('Delta of parseTxs :' + (endT3 - startT3));
+    }
+
+    return { err: ErrorCode.RESULT_OK, data: {} }
+  }
+
+  private async parseTxs(obj: IfParseItem): Promise<IFeedBack> {
+    let taskLst1: IfTaskItem[] = [];
+    let txs = obj.transactions;
+    let bhash = obj.block.hash;
+    let nhash = obj.block.number;
+    let dtime = obj.block.timestamp;
+
+    for (let j = 0; j < txs.length; j++) {
+      taskLst1.push({
+        id: j,
+        tx: txs[j],
+        receipt: {
+          block: obj.block,
+          tx: txs[j],
+          receipt: obj.receipts[j]
+        }
+      });
+    }
+    let startT1 = new Date().getTime();
+    let feedback = await this.batchInsertTxToHashTable(taskLst1);
+    if (feedback.err) {
+      this.logger.error('batchInsertTxToHashTable failed');
+      return { err: feedback.err, data: null };
+    }
+    let endT1 = new Date().getTime();
+    this.logger.info('Delta of insert all tx to hash table:' + (endT1 - startT1));
+
+    // put it into tx table, insertOrReplace
+    feedback = await this.batchInsertTxTable(bhash, nhash, dtime, taskLst1);
+    if (feedback.err) {
+      this.logger.error('batchInsertTxToHashTable failed');
+      return { err: feedback.err, data: null };
+    }
+    let endT2 = new Date().getTime();
+    this.logger.info('Delta of batchInsertTxTable:' + (endT2 - endT1));
+
+    let receptlst: IfParseReceiptItem[] = [];
+    for (let i = 0; i < taskLst1.length; i++) {
+      receptlst.push(taskLst1[i].receipt);
+    }
+
+    feedback = await this.parseAccountAndTokens(receptlst);
+    if (feedback.err) {
+      this.logger.error('parseAccountAndTokens failed');
+      return { err: feedback.err, data: null };
+    }
+    let endT3 = new Date().getTime();
+    this.logger.info('Delta of batchInsertTxTable:' + (endT3 - endT2));
+
+
+    return { err: ErrorCode.RESULT_OK, data: {} }
+  }
+
+  private async parseAccountAndTokens(receiptlst: IfParseReceiptItem[]): Promise<IFeedBack> {
+    this.logger.info('parseAccountAndTokens , len: ' + receiptlst.length);
+    for (let i = 0; i < receiptlst.length; i++) {
+      let feedback = await this.parseAccountAndToken(receiptlst[i])
+      if (feedback.err) {
+        return { err: ErrorCode.RESULT_ERROR_STATE, data: {} }
+      }
+    }
+
+    return { err: ErrorCode.RESULT_OK, data: {} }
+  }
+  private async parseAccountAndToken(recet: IfParseReceiptItem): Promise<IFeedBack> {
+    this.logger.info('parseAccountAndToken');
+    let tx = recet.tx;
+
+    if (tx.method === 'transferTo') {
+      return parseTransferTo(this, recet);
+    }
+    else if (tx.method === 'createToken') {
+      return parseCreateToken(this, recet, TOKEN_TYPE.NORMAL);
+    }
+    else if (tx.method === 'transferTokenTo') {
+      return parseTransferTokenTo(recet);
+    }
+    else if (tx.method === 'mortgage') {
+      return parseMortgage(this, recet);
+    }
+    else if (tx.method === 'unmortgage') {
+      return parseUnmortgage(this, recet);
+    }
+    else if (tx.method === 'vote') {
+      return parseVote(this, recet);
+    }
+    else if (tx.method === 'register') {
+      return parseRegister(this, recet);
+    }
+    else if (tx.method === 'unregister') {
+      return parseUnregister(this, recet);
+    }
+    else if (tx.method === 'createBancorToken') {
+      return parseCreateLockBancorToken(this, recet, TOKEN_TYPE.BANCOR);
+    }
+    else if (tx.method === 'transferBancorTokenTo') {
+      return parseTransferLockBancorTokenTo(this, recet, TOKEN_TYPE.BANCOR);
+    }
+    else if (tx.method === 'transferBancorTokenToMulti') {
+      return parseTransferLockBancorTokenToMulti(this, recet, TOKEN_TYPE.BANCOR);
+    }
+    else if (tx.method === 'sellBancorToken') {
+      return parseSellLockBancorToken(this, recet, TOKEN_TYPE.BANCOR);
+    }
+    else if (tx.method === 'buyBancorToken') {
+      return parseBuyLockBancorToken(this, recet, TOKEN_TYPE.BANCOR);
+    }
+    else if (tx.method === 'runUserMethod') {
+      return parseRunUserMethod(this, recet);
+    }
+    else if (tx.method === 'setUserCode'
+      || tx.method === 'getUserCode'
+    ) {
+      this.logger.info('We wont handle tx:', tx.method, '\n')
+      return parseDefaultCommand(recet);
+    }
+    else {
+      return new Promise<IFeedBack>(async (resolv) => {
+        this.logger.error('Unrecognized account and token method:');
+        resolv({ err: ErrorCode.RESULT_SYNC_TX_UNKNOWN_METHOD, data: null })
+      });
+    }
+  }
+
   private calcBusyIndex(txno: number) {
     if (txno === 0) {
       return 0;
@@ -357,13 +609,13 @@ export class Synchro {
 
     let result2: any;
     if (nCurrentHeight === 0) {
-      result2 = await this.updateBlockRangeBatch(0, this.nCurrentLIBHeight);
+      result2 = await this.parseBlockRange(0, this.nCurrentLIBHeight);
     }
     else if (this.nCurrentLIBHeight - nCurrentHeight === 1) {
-      result2 = await this.updateBlockSingle(nCurrentHeight + 1);
+      result2 = await this.parseBlockRange(nCurrentHeight + 1, nCurrentHeight + 1);
     }
     else if (nCurrentHeight < this.nCurrentLIBHeight) {
-      result2 = await this.updateBlockRangeBatch(nCurrentHeight + 1, this.nCurrentLIBHeight);
+      result2 = await this.parseBlockRange(nCurrentHeight + 1, this.nCurrentLIBHeight);
     }
     else if (nCurrentHeight > this.nCurrentLIBHeight) {
       throw new Error('Obsolete storage! consider to clean by running: npm run clean && npm run cleandb')
@@ -400,7 +652,7 @@ export class Synchro {
   private updateBlockRangeGroupNew(nStart: number, nStop: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('updateBlockRangeGroupNew');
-      let result = await this.laGetBlocks(nStart, nStop, true);
+      let result = await this.laGetBlocks(nStart, nStop);
       if (result.ret === 200) {
         try {
           let objAll = JSON.parse(result.resp!);
@@ -456,7 +708,7 @@ export class Synchro {
   private updateBlockRangeGroup(nStart: number, nStop: number) {
     return new Promise<IFeedBack>(async (resolv) => {
       this.logger.info('updateBlockRangeGroup');
-      let result = await this.laGetBlocks(nStart, nStop, true);
+      let result = await this.laGetBlocks(nStart, nStop);
       if (result.ret === 200) {
         try {
           let objAll = JSON.parse(result.resp!);
@@ -684,7 +936,7 @@ export class Synchro {
       this.logger.info('Get block ' + nBlock + '\n')
       let startUpdateBlockTime = new Date().getTime();
       console.log('Start of updateBlock', new Date());
-      let result = await this.getBlock(nBlock)
+      let result = await this.laGetBlock(nBlock)
       console.log('getBlock finished:', new Date());
 
       if (result.ret === 200) {
@@ -1670,7 +1922,7 @@ export class Synchro {
     this.logger.info(result.resp!);
     return result;
   }
-  public async getBlock(num: number) {
+  public async laGetBlock(num: number) {
     let result = await getBlock(this.ctx, [num + '', 'true', 'false', 'true']);
     // this.logger.info(result.resp!);
     return result;
@@ -1796,14 +2048,35 @@ export class Synchro {
     return result;
   }
 
-  public async laGetBlocks(min: number, max: number, flag: boolean) {
-    let result = await getBlocks(this.ctx, [min.toString(), max.toString(), flag.toString(), 'false', 'true']);
+  public async laGetBlocks(min: number, max: number) {
+    let result = await getBlocks(this.ctx, [min.toString(), max.toString(), 'true', 'false', 'true']);
     return result;
   }
 
   public async laGetCandidates() {
     let result = await getCandidates(this.ctx, []);
     return result;
+  }
+
+  public async laUpdateAccountTable(addr: string, token: string, tokenType: string, amount: number): Promise<IFeedBack> {
+    let oldValue = 0;
+    let feedback2 = await this.pStorageDb.queryAccountTableByTokenAndAddress(addr, token);
+
+    if (feedback2.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+      oldValue = 0;
+    } else if (feedback2.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+      return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
+    } else {
+      oldValue = feedback2.data.value
+    }
+    oldValue += amount;
+
+    feedback2 = await this.pStorageDb.updateAccountTable(addr, token, tokenType, oldValue.toString(), oldValue);
+
+    if (feedback2.err) {
+      return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
+    }
+    return { err: ErrorCode.RESULT_OK, data: {} }
   }
 
 

@@ -101,7 +101,6 @@ async function main() {
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 
-
     }
     assert(await storageDB.insertTokenTable('SYS', TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
       supply: amountAll,

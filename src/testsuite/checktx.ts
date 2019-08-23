@@ -66,7 +66,7 @@ async function main() {
   let numTx: number = 0;
 
   for (let i = startHeight; i < endHeight; i++) {
-    let result = await synchro.getBlock(i);
+    let result = await synchro.laGetBlock(i);
     if (result.ret === 200) {
       try {
         let obj = JSON.parse(result.resp!);
