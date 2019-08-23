@@ -39,6 +39,9 @@ import { parseTransferTo } from './parse/transferto';
 import { parseCreateToken } from './parse/createtoken';
 import { parseTransferTokenTo } from './parse/transfertokento';
 import { parseMortgage } from './parse/mortgage';
+import { parseVote } from './parse/vote';
+import { parseRegister, parseUnregister } from './parse/register';
+import { parseUnmortgage } from './parse/unmortgage';
 
 /**
  * This is a client , always syncing with the Chain
@@ -2081,6 +2084,4 @@ export class Synchro {
     }
     return { err: ErrorCode.RESULT_OK, data: {} }
   }
-
-
 }

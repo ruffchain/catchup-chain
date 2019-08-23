@@ -58,10 +58,6 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         }
 
         // update accounts token account table
-        result = await handler.updateTokenBalances(tokenName, nameLst);
-        if (result.err) {
-            return result
-        }
         for (let i = 0; i < preBalances.length; i++) {
             let elem = preBalances[i]
             result = await handler.laUpdateAccountTable(elem.address, tokenName, tokenType, parseFloat(elem.amount));
