@@ -10,7 +10,7 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
     let fee = parseFloat(recept.tx.fee);
     let val = parseFloat(recept.tx.value);
 
-    handler.logger.info('checkMortgage, updateNamesToHashTable')
+    handler.logger.info('parseMortgage, updateNamesToHashTable')
     let feedback = await handler.pStorageDb.updateNamesToHashTable([caller], HASH_TYPE.ADDRESS);
 
     if (feedback.err) {
@@ -23,7 +23,7 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
         return (feedback);
     }
 
-    handler.logger.info('checkMortgage, updateBalances')
+    handler.logger.info('parseMortgage, updateBalances')
     let valNew = -fee;
 
     if (recept.receipt.returnCode === 0) {
