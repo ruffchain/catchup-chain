@@ -48,6 +48,7 @@ import { parseTransferLockBancorTokenToMulti } from './parse/transferlockbancort
 import { parseSellLockBancorToken } from './parse/selllockbancortoken';
 import { parseBuyLockBancorToken } from './parse/buylockbancortoken';
 import { parseRunUserMethod } from './parse/runusermethod';
+import { parseDefaultCommand } from './parse/defaultcommand';
 
 /**
  * This is a client , always syncing with the Chain
@@ -369,6 +370,9 @@ export class Synchro {
       this.logger.info('Delta of parseTxs :' + (endT3 - startT3));
     }
 
+    this.logger.info('End of save block hash to hash table, update block: ' + hashnumber)
+    console.log('::', hashnumber)
+
     return { err: ErrorCode.RESULT_OK, data: {} }
   }
 
@@ -486,7 +490,7 @@ export class Synchro {
       || tx.method === 'getUserCode'
     ) {
       this.logger.info('We wont handle tx:', tx.method, '\n')
-      return parseDefaultCommand(recet);
+      return parseDefaultCommand(this, recet);
     }
     else {
       return new Promise<IFeedBack>(async (resolv) => {
