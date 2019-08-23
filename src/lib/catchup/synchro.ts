@@ -42,6 +42,12 @@ import { parseMortgage } from './parse/mortgage';
 import { parseVote } from './parse/vote';
 import { parseRegister, parseUnregister } from './parse/register';
 import { parseUnmortgage } from './parse/unmortgage';
+import { parseCreateLockBancorToken } from './parse/createlockbancortoken';
+import { parseTransferLockBancorTokenTo } from './parse/transferlockbancortokento';
+import { parseTransferLockBancorTokenToMulti } from './parse/transferlockbancortokentomulti';
+import { parseSellLockBancorToken } from './parse/selllockbancortoken';
+import { parseBuyLockBancorToken } from './parse/buylockbancortoken';
+import { parseRunUserMethod } from './parse/runusermethod';
 
 /**
  * This is a client , always syncing with the Chain
