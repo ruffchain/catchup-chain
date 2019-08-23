@@ -10,10 +10,10 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
     let nameLst: IName[] = [];
     let addrLst: string[] = [];
     let amountAll: number = 0;
-    let precision: number = receipt.tx.input.precision;
+    let precision: number = parseInt(receipt.tx.input.precision);
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = receipt.tx.fee;
+    let fee = parseFloat(receipt.tx.fee);
 
     // put it into hash table–––
 
@@ -22,7 +22,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
             address: element.address
         })
         addrLst.push(element.address)
-        amountAll += parseInt(element.amount);
+        amountAll += parseFloat(element.amount);
     });
 
     addrLst.push(caller);
@@ -64,7 +64,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         }
         for (let i = 0; i < preBalances.length; i++) {
             let elem = preBalances[i]
-            result = await handler.laUpdateAccountTable(elem.address, tokenName, tokenType, parseInt(elem.amount));
+            result = await handler.laUpdateAccountTable(elem.address, tokenName, tokenType, parseFloat(elem.amount));
             if (result.err) {
                 return result
             }

@@ -36,6 +36,9 @@ import { getCandidates } from '../../api/getCandidates';
 import { localCache } from './localcache';
 import { parallelCheckAccountAndToken } from './parallel';
 import { parseTransferTo } from './parse/transferto';
+import { parseCreateToken } from './parse/createtoken';
+import { parseTransferTokenTo } from './parse/transfertokento';
+import { parseMortgage } from './parse/mortgage';
 
 /**
  * This is a client , always syncing with the Chain
@@ -435,7 +438,7 @@ export class Synchro {
       return parseCreateToken(this, recet, TOKEN_TYPE.NORMAL);
     }
     else if (tx.method === 'transferTokenTo') {
-      return parseTransferTokenTo(recet);
+      return parseTransferTokenTo(this, recet);
     }
     else if (tx.method === 'mortgage') {
       return parseMortgage(this, recet);

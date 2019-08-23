@@ -11,7 +11,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let to = receipt.tx.input.to;
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = receipt.tx.fee;
+    let fee = parseFloat(receipt.tx.fee);
 
     let blockhash = receipt.block.hash;
     let blocknumber = receipt.block.number;
@@ -42,8 +42,8 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let valCaller: number = -fee;
 
     if (receipt.receipt.returnCode === 0) {
-        let valTo: number = receipt.tx.value;
-        valCaller -= receipt.tx.value;
+        let valTo: number = parseFloat(receipt.tx.value);
+        valCaller -= parseFloat(receipt.tx.value);
 
         let feedback = await handler.laUpdateAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo);
         if (feedback.err) {
