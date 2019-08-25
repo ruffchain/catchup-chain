@@ -5,7 +5,7 @@ import { SYS_TOKEN } from "../../storage/dbapi/scoop";
 
 export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     handler.logger.info('parseTransferTo()');
-    console.log(receipt);
+    // console.log(receipt);
 
     let caller = receipt.tx.caller;
     let to = receipt.tx.input.to;

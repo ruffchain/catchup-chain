@@ -179,27 +179,6 @@ export class Synchro {
   private async loopTask2() {
     this.logger.info('loopTask2()\n');
 
-    let minerLst: string[] = [];
-    // this.latestMinerLst.forEach((item) => {
-    //   minerLst.push(item);
-    // });
-    // if (minerLst.length > 0) {
-    //   this.logger.info('getminerbalance start=>');
-    //   console.log(new Date())
-    //   let feedback = await this.getMinerBalances(minerLst);
-    //   this.logger.info('feedback.data', feedback.data)
-    //   if (feedback.err) {
-    //     this.logger.error('loopTask2 getMinerBalances fail!\n')
-    //   } else {
-    //     feedback = await this.updateBatchBalances(SYS_TOKEN, TOKEN_TYPE.SYS, feedback.data);
-    //     if (feedback.err) {
-    //       this.logger.error('loopTask2 update BatchBalances miners balance fail!\n')
-    //     }
-    //   }
-    //   this.logger.info('getminerbalance end=>');
-    //   console.log(new Date())
-    // }
-
     this.latestMinerLst = [];
 
     // get candidatesinfo
@@ -231,33 +210,7 @@ export class Synchro {
     await DelayPromise(delay);
     this.loopTask();
   }
-  // private async getMinerBalances(addrs: string[]) {
-  //   console.log(addrs);
 
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     let result = await this.laGetBalances(addrs);
-  //     console.log(result);
-  //     if (result.ret === 200) {
-  //       try {
-  //         let obj = JSON.parse(result.resp!);
-  //         let outObj: IBalance[] = [];
-  //         if (obj.err === 0) {
-  //           for (let i = 0; i < obj.value.length; i++) {
-  //             outObj.push({
-  //               address: obj.value[i].address,
-  //               balance: obj.value[i].balance.substring(1)
-  //             })
-  //           }
-  //           resolv({ err: ErrorCode.RESULT_OK, data: outObj })
-  //           return;
-  //         }
-  //       } catch (e) {
-  //         this.logger.error('getMinerBalances parsing error')
-  //       }
-  //     }
-  //     resolv({ err: ErrorCode.RESULT_FAILED, data: null })
-  //   });
-  // }
   // New way of parsing block
   private async parseBlockRange(start: number, end: number): Promise<IFeedBack> {
     // Choose to use getBlock or getBlocks
@@ -640,7 +593,6 @@ export class Synchro {
       this.logger.info('height equal \n');
     }
     this.logger.info(JSON.stringify(result2));
-    // delay 5s
 
     await this.updateTxUserCount();
 
