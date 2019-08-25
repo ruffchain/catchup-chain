@@ -7,7 +7,8 @@ import * as fs from 'fs-extra';
 import { Synchro } from './lib/catchup/synchro';
 import { Inquiro } from './lib/catchup/inquiro';
 import { WRQueue } from './lib/storage/queue';
-import { SYS_TOKEN_PRECISION } from './lib/storage/dbapi/scoop';
+import { SYS_TOKEN_PRECISION, MINE_REWARD } from './lib/storage/dbapi/scoop';
+
 
 interface IPreBalance {
   address: string;
@@ -39,6 +40,17 @@ function getPreBalances(filename: string): IPreBalance[] {
     throw new Error('Wrong open ' + filename);
   }
   return obj.preBalances as IPreBalance[];
+}
+function getMiners(filename: string): string[] {
+  let buf = fs.readFileSync(filename);
+
+  let obj: any;
+  try {
+    obj = JSON.parse(buf.toString());
+  } catch (e) {
+    throw new Error('Wrong open ' + filename);
+  }
+  return obj.miners as string[];
 }
 
 const logger = Logger.init({
@@ -91,13 +103,24 @@ async function main() {
 
     assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + 'SYS', logger);
 
+
+    // update miner reward for Zero block
+    let miners: string[] = getMiners('./config/genesis.json');
+
     let amountAll = 0;
     for (let i = 0; i < arrPreBalances.length; i++) {
       let preBalance = arrPreBalances[i];
       logger.info(preBalance);
 
       amountAll += preBalance.amount; // add it up
-      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, preBalance.amount.toString(), preBalance.amount), 'add to account table ', logger);
+
+      let newAmount = preBalance.amount;
+      if (miners.indexOf(preBalance.address) !== -1) {
+        newAmount += MINE_REWARD;
+        amountAll += MINE_REWARD;
+      }
+
+      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, newAmount.toString(), newAmount), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 

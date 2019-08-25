@@ -8,7 +8,7 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
     let hash = receipt.tx.hash;
     let addrLst = [caller];
     let time = receipt.block.timestamp;
-    let fee = receipt.tx.fee;
+    let fee = parseFloat(receipt.receipt.cost);
 
     // insert into txaddresstable
     let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
@@ -28,46 +28,51 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
 }
 
 
-async function checkOtherAction(handler: Synchro, receipt: any): Promise<IFeedBack> {
-    let outAddrLst: { address: string }[] = [];
-    outAddrLst.push({ address: receipt.tx.caller });
+// async function checkOtherAction(handler: Synchro, receipt: any): Promise<IFeedBack> {
+//     let outAddrLst: { address: string }[] = [];
+//     outAddrLst.push({ address: receipt.tx.caller });
 
-    if (receipt.tx.caller !== receipt.tx.input.to) {
-        outAddrLst.push({ address: receipt.tx.input.to });
-    }
+//     if (receipt.tx.caller !== receipt.tx.input.to) {
+//         outAddrLst.push({ address: receipt.tx.input.to });
+//     }
 
-    let feedback = await handler.updateBalances(SYS_TOKEN, outAddrLst);
-    if (feedback.err) {
-        return feedback;
-    }
+//     let feedback = await handler.updateBalances(SYS_TOKEN, outAddrLst);
+//     if (feedback.err) {
+//         return feedback;
+//     }
 
-    return { err: ErrorCode.RESULT_OK, data: null };
-}
+//     return { err: ErrorCode.RESULT_OK, data: null };
+// }
 async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBack> {
     let addrLst: string[] = [receipt.tx.caller, receipt.tx.input.to];
     let mReceipt = receipt.receipt;
+    let fee = parseFloat(receipt.receipt.cost);
+    let caller = receipt.tx.caller;
 
-    mReceipt.logs.forEach((item: any) => {
-        addrLst.push(item.param.from);
-        addrLst.push(item.param.to)
-    })
-
-    // remove redundant addresses
-    let uniqAddrLst: string[] = [];
-    addrLst.forEach((item) => {
-        if (uniqAddrLst.indexOf(item) === -1) {
-            uniqAddrLst.push(item);
-        }
-    })
-
-    let outAddrLst: { address: string }[] = [];
-    uniqAddrLst.forEach((item: string) => {
-        outAddrLst.push({ address: item });
-    })
-
-    let feedback = await handler.updateBalances(SYS_TOKEN, outAddrLst);
+    let feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
     if (feedback.err) {
         return feedback;
+    }
+
+    if (receipt.receipt.returnCode !== 0) {
+        return { err: ErrorCode.RESULT_OK, data: null };
+    }
+
+    for (let i = 0; i < mReceipt.logs.length; i++) {
+        let item = mReceipt.logs[i];
+        let from = item.param.from;
+        let to = item.param.to;
+        let value = parseFloat(item.param.value)
+
+        let feedback = await handler.laUpdateAccountTable(from, SYS_TOKEN, TOKEN_TYPE.SYS, value);
+        if (feedback.err) {
+            return feedback;
+        }
+
+        feedback = await handler.laUpdateAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, value);
+        if (feedback.err) {
+            return feedback;
+        }
     }
 
     return { err: ErrorCode.RESULT_OK, data: null };
