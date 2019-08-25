@@ -19,12 +19,12 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
         return feedback;
     }
 
-    feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, - fee);
+    feedback = await handler.updateTokenBalances(SYS_TOKEN, [caller]);
     if (feedback.err) {
         return feedback;
     }
 
-    // Still use get from server method
+    // Still use get from server , we don't the locked token status
     if (receipt.receipt.returnCode === 0) {
         // update caller lockBancortoken account
         let result = await handler.updateLockBancorTokenBalances(tokenName, [{ address: caller }]);
@@ -37,7 +37,6 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
             return result;
         }
     }
-
 
     return { err: ErrorCode.RESULT_OK, data: null }
 }

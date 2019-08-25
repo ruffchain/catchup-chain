@@ -21,23 +21,48 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
         return feedback;
     }
 
-    // update caller balance
-    feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
-    if (feedback.err) {
-        return feedback;
-    }
-
-    if (receipt.receipt.returnCode === 0) {
-
-        let result = await handler.laUpdateAccountTable(caller, tokenName, tokenType, -amount);
-        if (result.err) {
-            handler.logger.error('error laUpdateAccountTable minus caller');
-            return result;
+    if (receipt.receipt.returnCode !== 0) {
+        // update caller balance
+        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        if (feedback.err) {
+            return feedback;
         }
-        result = await handler.laUpdateAccountTable(to, tokenName, tokenType, amount);
+    }
+    else {
+        // query caller balance
+        let result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
         if (result.err) {
-            handler.logger.error('error laUpdateAccountTable plus caller');
-            return result;
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valCaller = result.data
+
+        // query caller token balance
+        result = await handler.laQueryAccountTable(caller, tokenName)
+        if (result.err) {
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valTokenCaller = result.data
+
+        //query to token balance
+        result = await handler.laQueryAccountTable(to, tokenName)
+        if (result.err) {
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valTokenTo = result.data
+
+        // use transaction
+        await handler.pStorageDb.execRecord('BEGIN', {})
+
+        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+
+        await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller - amount);
+
+        await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo + amount);
+
+        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
+        if (hret.err) {
+            await handler.pStorageDb.execRecord('ROLLBACK', {})
+            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
     }
 

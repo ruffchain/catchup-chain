@@ -22,7 +22,10 @@ export async function parseUnmortgage(handler: Synchro, recept: IfParseReceiptIt
         return feedback
     }
 
-    let valNew = -fee + val;
+    let valNew = -fee
+    if (recept.receipt.returnCode === 0) {
+        valNew += val;
+    }
     handler.logger.info('parseUnmortgage, updateBalances')
     feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valNew);
     if (feedback.err) {

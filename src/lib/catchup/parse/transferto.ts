@@ -38,26 +38,46 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         return feedback
     }
 
-    // update caller, to balance
-    let valCaller: number = -fee;
+    // query caller, sys to balance
+    let result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
+    if (result.err) {
+        return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+    }
+    let valCaller = result.data
 
-    if (receipt.receipt.returnCode === 0) {
-        let valTo: number = parseFloat(receipt.tx.value);
-        valCaller -= parseFloat(receipt.tx.value);
+    // query to sys balance
+    result = await handler.laQueryAccountTable(to, SYS_TOKEN);
+    if (result.err) {
+        return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+    }
+    let valTo = result.data
 
-        let feedback = await handler.laUpdateAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo);
-        if (feedback.err) {
-            handler.logger.error('error laUpdateAccountTable to to');
+    if (receipt.receipt.returnCode !== 0) {
+        let feedback1 = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+        if (feedback1.err) {
+            handler.logger.error('error laWriteAccountTable to caller');
             return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
         }
 
+    } else {
+        let val: number = parseFloat(receipt.tx.value);
+        // use transaction
+        await handler.pStorageDb.execRecord('BEGIN', {})
+
+        // update caller sys balance
+        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee - val);
+        // udpate to sys balance
+        result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo + val);
+
+        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
+
+        if (hret.err) {
+            await handler.pStorageDb.execRecord('ROLLBACK', {})
+            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
+        }
     }
 
-    let feedback1 = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller);
-    if (feedback1.err) {
-        handler.logger.error('error laUpdateAccountTable to caller');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
-    }
+
 
     // update to txTransferToTable
     handler.logger.info('Put it into txTransferToTable')

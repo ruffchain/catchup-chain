@@ -79,9 +79,6 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
             let elem = preBalances[i]
             // Here is some problem about lock token
             result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, parseFloat(elem.amount));
-            if (result.err) {
-                return result
-            }
         }
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})

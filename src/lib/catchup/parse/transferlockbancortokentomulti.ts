@@ -30,26 +30,53 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
         return feedback;
     }
 
-    // update caller balance
-    feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
-    if (feedback.err) {
-        return feedback;
-    }
-    if (receipt.receipt.returnCode === 0) {
-
-        let result = await handler.laUpdateAccountTable(caller, tokenName, tokenType, -amountAll);
-
-        if (result.err) {
-            handler.logger.error('error laUpdateAccountTable minus caller');
-            return result;
+    if (receipt.receipt.returnCode !== 0) {
+        // update caller balance
+        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        if (feedback.err) {
+            return feedback;
         }
-        for (let i = 0; i < tos.length; i++) {
-            let result = await handler.laUpdateAccountTable(tos[i].address, tokenName, tokenType, parseFloat(tos[i].amount));
+    } else {
+        // query caller SYS balance
+        let result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
+        if (result.err) {
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valCaller = result.data
 
-            if (result.err) {
-                handler.logger.error('error laUpdateAccountTable add to address');
-                return result;
+        // query caller token balance
+        result = await handler.laQueryAccountTable(caller, tokenName)
+        if (result.err) {
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valTokenCaller = result.data
+
+        // query tos token balance
+        let tosTokenLst: { address: string, amount: number }[] = [];
+        for (let i = 0; i < tos.length; i++) {
+            let hres = await handler.laQueryAccountTable(tos[i].address, tokenName);
+            if (hres.err) {
+                return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
             }
+            tosTokenLst.push({ address: tos[i].address, amount: hres.data + tos[i].amount })
+        }
+
+        // use transaction
+        await handler.pStorageDb.execRecord('BEGIN', {})
+        // update caller SYS balance
+        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+
+        // update caller token balance
+        result = await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller - amountAll);
+
+        // update tos token balance
+        for (let i = 0; i < tosTokenLst.length; i++) {
+            await handler.laWriteAccountTable(tosTokenLst[i].address, tokenName, tokenType, tosTokenLst[i].amount)
+        }
+        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
+        if (hret.err) {
+            await handler.pStorageDb.execRecord('ROLLBACK', {})
+            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
     }
 

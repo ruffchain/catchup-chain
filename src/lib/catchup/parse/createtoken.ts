@@ -40,15 +40,17 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         return feedback
     }
 
-    // update caller balance
-    let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
-    if (result.err) {
-        return result
-    }
 
-    if (receipt.receipt.returnCode === 0) {
+
+    if (receipt.receipt.returnCode !== 0) {
+        // update caller balance
+        let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        if (result.err) {
+            return result
+        }
+    } else {
         // add a new token to token table
-        result = await handler.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
+        let result = await handler.pStorageDb.insertTokenTable(tokenName, tokenType, caller, datetime, Buffer.from(JSON.stringify({
             supply: amountAll,
             precision: precision
         })));
@@ -57,19 +59,35 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
             return (result);
         }
 
-        // update accounts token account table
-        for (let i = 0; i < preBalances.length; i++) {
-            let elem = preBalances[i]
-            result = await handler.laUpdateAccountTable(elem.address, tokenName, tokenType, parseFloat(elem.amount));
-            if (result.err) {
-                return result
-            }
-        }
-
         // put tokenname into hash table
         result = await handler.pStorageDb.updateNameToHashTable(tokenName, HASH_TYPE.TOKEN);
         if (result.err) {
             return result;
+        }
+
+        // query caller sys balance
+        result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
+        if (result.err) {
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valCaller = result.data
+
+
+        // use transaction
+        await handler.pStorageDb.execRecord('BEGIN', {})
+
+        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+
+        // update accounts token account table
+        for (let i = 0; i < preBalances.length; i++) {
+            let elem = preBalances[i]
+            result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, parseFloat(elem.amount));
+        }
+        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
+
+        if (hret.err) {
+            await handler.pStorageDb.execRecord('ROLLBACK', {})
+            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
 
     }
