@@ -180,7 +180,7 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? LIMIT ?;', [this.hashTable, s, num])
     return this.getAllRecords(sql);
   }
-  public async batchInsertOrReplaceHashTAble(hashLst: string[], type: string) {
+  public async batchInsertOrReplaceHashTAble(hashLst: string[], type: string): Promise<IFeedBack> {
     this.logger.debug('into batchInsertOrReplaceHashTAble()');
 
     await this.execRecord('BEGIN;', {});
@@ -323,7 +323,7 @@ export class StorageDataBase extends CUDataBase {
   }
 
   public insertAccountTable(hash: string, token: string, tokentype: string, amount: string, value: number): Promise<IFeedBack> {
-    let sql = SqlString.format('INSERT INTO ? (hash, token, tokentype, amount, value) VALUES(?, ?, ?, ?, ?);', [this.accountTable, hash, token, tokentype, amount, value]);
+    let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, tokentype, amount, value) VALUES(?, ?, ?, ?, ?);', [this.accountTable, hash, token, tokentype, amount, value]);
     return this.insertRecord(sql, {});
   }
 

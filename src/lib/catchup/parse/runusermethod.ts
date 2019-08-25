@@ -44,36 +44,76 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
 //     return { err: ErrorCode.RESULT_OK, data: null };
 // }
 async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBack> {
-    let addrLst: string[] = [receipt.tx.caller, receipt.tx.input.to];
     let mReceipt = receipt.receipt;
     let fee = parseFloat(receipt.receipt.cost);
     let caller = receipt.tx.caller;
 
-    let feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
-    if (feedback.err) {
+    if (receipt.receipt.returnCode !== 0) {
+        let feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        if (feedback.err) {
+            return feedback;
+        }
         return feedback;
     }
-
-    if (receipt.receipt.returnCode !== 0) {
-        return { err: ErrorCode.RESULT_OK, data: null };
+    // return code === 0
+    let feedback = await handler.laQueryAccountTable(caller, SYS_TOKEN);
+    if (feedback.err) {
+        handler.logger.error('query account table fail');
+        return feedback;
     }
+    let valCaller = feedback.data;
 
+    let receiptLogLst: { from: string, to: string, fromValue: number, toValue: number }[] = [];
     for (let i = 0; i < mReceipt.logs.length; i++) {
         let item = mReceipt.logs[i];
         let from = item.param.from;
         let to = item.param.to;
         let value = parseFloat(item.param.value)
+        let fromV = 0;
+        let toV = 0
 
-        let feedback = await handler.laUpdateAccountTable(from, SYS_TOKEN, TOKEN_TYPE.SYS, value);
+        let feedback = await handler.laQueryAccountTable(from, SYS_TOKEN);
         if (feedback.err) {
-            return feedback;
+            return { err: ErrorCode.RESULT_READ_RECORD_FAILED, data: null }
         }
+        fromV = feedback.data;
 
-        feedback = await handler.laUpdateAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, value);
+        feedback = await handler.laQueryAccountTable(to, SYS_TOKEN);
         if (feedback.err) {
-            return feedback;
+            return { err: ErrorCode.RESULT_READ_RECORD_FAILED, data: null }
         }
+        toV = feedback.data;
+
+        receiptLogLst.push(
+            {
+                'from': from,
+                'to': to,
+                'fromValue': fromV - value,
+                'toValue': toV + value
+            })
     }
 
-    return { err: ErrorCode.RESULT_OK, data: null };
+
+    await handler.pStorageDb.execRecord('BEGIN', {});
+
+    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+
+    for (let i = 0; i < receiptLogLst.length; i++) {
+        let recept = receiptLogLst[i];
+        let feedback = await handler.laWriteAccountTable(recept.from, SYS_TOKEN, TOKEN_TYPE.SYS, recept.fromValue);
+
+        feedback = await handler.laWriteAccountTable(recept.to, SYS_TOKEN, TOKEN_TYPE.SYS, recept.toValue);
+    }
+    // update caller account
+    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+
+    let hret = await handler.pStorageDb.execRecord('COMMIT', {})
+
+    if (hret.err) {
+        await handler.pStorageDb.execRecord('ROLLBACK', {})
+        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
+    } else {
+        return { err: ErrorCode.RESULT_OK, data: null };
+    }
+
 }

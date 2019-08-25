@@ -2025,7 +2025,30 @@ export class Synchro {
     let result = await getCandidates(this.ctx, []);
     return result;
   }
+  public async laQueryAccountTable(addr: string, token: string): Promise<IFeedBack> {
+    let oldValue = 0;
 
+    let feedback2 = await this.pStorageDb.queryAccountTableByTokenAndAddress(addr, token);
+    if (feedback2.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
+      oldValue = 0;
+    } else if (feedback2.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
+      return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
+    } else {
+      oldValue = feedback2.data.value
+    }
+
+    return { err: ErrorCode.RESULT_OK, data: oldValue };
+  }
+  public async laWriteAccountTable(addr: string, token: string, tokenType: string, amount: number): Promise<IFeedBack> {
+    let feedback2 = await this.pStorageDb.insertAccountTable(addr, token, tokenType, amount.toString(), amount);
+
+    if (feedback2.err) {
+      return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
+    }
+    return { err: ErrorCode.RESULT_OK, data: {} }
+  }
+
+  // single write command
   public async laUpdateAccountTable(addr: string, token: string, tokenType: string, amount: number): Promise<IFeedBack> {
     let oldValue = 0;
     let feedback2 = await this.pStorageDb.queryAccountTableByTokenAndAddress(addr, token);
