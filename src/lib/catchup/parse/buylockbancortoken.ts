@@ -59,7 +59,7 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
         if (hres.ret !== 200) {
             return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
         }
-        let amountBancor: string = JSON.parse(hres.resp!).value.replace('n', '');
+        let amountBancor: string = JSON.parse(hres.resp!).value.amount.substr(1);
         let laAmount: number = parseFloat(amountBancor);
         let valueBancor: number = parseFloat(parseFloat(amountBancor).toFixed(BANCOR_TOKEN_PRECISION));
         amountBancor = laAmount.toFixed(BANCOR_TOKEN_PRECISION);

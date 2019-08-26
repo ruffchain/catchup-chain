@@ -3,7 +3,7 @@ import { IFeedBack, ErrorCode } from "../../../core";
 import { SYS_TOKEN } from "../../storage/dbapi/scoop";
 import { TOKEN_TYPE } from "../../storage/StorageDataBase";
 
-export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
+export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
 
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
     let caller = receipt.tx.caller;
@@ -13,20 +13,16 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
 
+    handler.logger.info('\n## parseTransferTokenTo()');
+
     // insert into txaddresstable
     let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
     if (feedback.err) {
         return feedback;
     }
 
-    // update caller balance, -fee
-    let feedback1 = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
-    if (feedback1.err) {
-        handler.logger.error('error laUpdateAccountTable to caller');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
-    }
-
     if (receipt.receipt.returnCode !== 0) {
+        handler.logger.debug('Failed transaction, fee: ' + fee)
         let feedback1 = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
         if (feedback1.err) {
             handler.logger.error('error laUpdateAccountTable to caller');
@@ -59,9 +55,9 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
 
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
 
-        await handler.laWriteAccountTable(caller, tokenName, TOKEN_TYPE.NORMAL, valTokenCaller - amount);
+        await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller - amount);
 
-        await handler.laWriteAccountTable(to, tokenName, TOKEN_TYPE.NORMAL, valTokenTo + amount);
+        await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo + amount);
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 
@@ -69,7 +65,7 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
             await handler.pStorageDb.execRecord('ROLLBACK', {})
             return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
-
+        handler.logger.info('\n## parseTransferTokenTo() succeed');
     }
     return { err: ErrorCode.RESULT_OK, data: null }
 }

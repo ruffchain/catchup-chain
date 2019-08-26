@@ -89,7 +89,6 @@ export class StatusDataBase extends CUDataBase {
   }
   public setCurrentHeight(height: number) {
     // Update token table, + MINE_REWARD, for every block
-
     return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
   }
   // get Candy function

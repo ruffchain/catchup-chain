@@ -4,7 +4,7 @@ import { HASH_TYPE, TOKEN_TYPE } from "../../storage/StorageDataBase";
 import { SYS_TOKEN } from "../../storage/dbapi/scoop";
 
 export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
-    handler.logger.info('parseTransferTo()');
+    handler.logger.info('\n## parseTransferTo()');
     // console.log(receipt);
 
     let caller = receipt.tx.caller;
@@ -19,10 +19,11 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let content = Buffer.from(JSON.stringify(receipt.tx));
     let returnCode = receipt.receipt.returnCode;
 
+    // update name to hash table
     let startT = new Date().getTime();
     let feedback = await handler.pStorageDb.updateNamesToHashTable([caller, to], HASH_TYPE.ADDRESS);
     let endT = new Date().getTime();
-    handler.logger.info('Used time for updateNamesToHashTable:', endT - startT);
+    handler.logger.info('Used time for updateNamesToHashTable:' + (endT - startT));
     if (feedback.err) {
         handler.logger.error('error updateNamesToHashTable');
         return feedback
@@ -38,7 +39,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         return feedback
     }
 
-    // query caller, sys to balance
+    // query caller, sys balance
     let result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
     if (result.err) {
         return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
@@ -53,6 +54,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let valTo = result.data
 
     if (receipt.receipt.returnCode !== 0) {
+        handler.logger.debug('Failed transaction, fee: ' + fee + ' old balance : ' + valCaller)
         let feedback1 = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
         if (feedback1.err) {
             handler.logger.error('error laWriteAccountTable to caller');
@@ -66,8 +68,12 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
 
         // update caller sys balance
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee - val);
+
+        handler.logger.debug('caller balance: ' + (valCaller - fee - val))
         // udpate to sys balance
         result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo + val);
+
+        handler.logger.debug('to balance: ' + (valTo + val))
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 
@@ -88,6 +94,8 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         handler.logger.error('put tx into txtransfertotable failed');
         return feedback
     }
+
+    handler.logger.info('\n## parseTransferTo() succeed');
 
     return { err: ErrorCode.RESULT_OK, data: null }
 }

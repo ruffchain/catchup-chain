@@ -8,6 +8,7 @@ const TOKEN_MIN_LEN = 3;
 const TOKEN_MAX_LEN = 12;
 
 export const MINE_REWARD = 12;
+export const DEPOSIT_VALUE = 3000000;
 
 
 const REGPAT = /^[A-Z]{1}[0-9A-Z]{2,11}$/g

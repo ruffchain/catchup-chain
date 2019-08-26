@@ -1,6 +1,7 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { DEPOSIT_VALUE } from "../../storage/dbapi/scoop";
 
 export async function parseRegister(handler: Synchro, recept: IfParseReceiptItem): Promise<IFeedBack> {
     let caller = recept.tx.caller;
@@ -28,7 +29,7 @@ export async function parseUnregister(handler: Synchro, recept: IfParseReceiptIt
     let hash = recept.tx.hash;
     let time = recept.block.timestamp;
     let fee = parseFloat(recept.tx.fee)
-    let val = 3000000
+    let val = DEPOSIT_VALUE;
     handler.logger.info('parseUnRegister')
     let feedback = await updateHashTxAddressTable(handler, [caller], hash, time);
     if (feedback.err) {

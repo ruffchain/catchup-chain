@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import { Synchro } from './lib/catchup/synchro';
 import { Inquiro } from './lib/catchup/inquiro';
 import { WRQueue } from './lib/storage/queue';
-import { SYS_TOKEN_PRECISION, MINE_REWARD } from './lib/storage/dbapi/scoop';
+import { SYS_TOKEN_PRECISION, MINE_REWARD, DEPOSIT_VALUE } from './lib/storage/dbapi/scoop';
 
 
 interface IPreBalance {
@@ -118,6 +118,7 @@ async function main() {
 
       if (miners.indexOf(preBalance.address) !== -1) {
         newAmount += MINE_REWARD;
+        newAmount -= DEPOSIT_VALUE;
         amountAll += MINE_REWARD;
       }
 

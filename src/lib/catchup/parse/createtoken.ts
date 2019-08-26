@@ -1,6 +1,7 @@
 import { IfParseReceiptItem, Synchro, IName } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { HASH_TYPE, TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
+import { NORMAL_TOKEN_PRECISION } from "../../storage/dbapi/scoop";
 
 export async function parseCreateToken(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
@@ -16,18 +17,19 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
     let fee = parseFloat(receipt.tx.fee);
 
     // put it into hash table–––
+    handler.logger.info('\n## parseCreateToken()');
 
     preBalances.forEach((element: any) => {
         nameLst.push({
             address: element.address
         })
         addrLst.push(element.address)
-        amountAll += parseFloat(element.amount);
+        amountAll += parseFloat(parseFloat(element.amount).toPrecision(NORMAL_TOKEN_PRECISION));
     });
 
     addrLst.push(caller);
 
-    handler.logger.info('parseCreateToken, updateNamesToHashTable')
+    handler.logger.info('updateNamesToHashTable')
     // put address into hash table
     let feedback = await handler.pStorageDb.updateNamesToHashTable(addrLst, HASH_TYPE.ADDRESS);
     if (feedback.err) {
@@ -40,9 +42,8 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         return feedback
     }
 
-
-
     if (receipt.receipt.returnCode !== 0) {
+        handler.logger.debug('Failed transaction, fee: ' + fee)
         // update caller balance
         let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
         if (result.err) {
@@ -72,11 +73,11 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         }
         let valCaller = result.data
 
-
         // use transaction
         await handler.pStorageDb.execRecord('BEGIN', {})
 
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+        handler.logger.debug('caller balance: ' + (valCaller - fee))
 
         // update accounts token account table
         for (let i = 0; i < preBalances.length; i++) {
@@ -89,6 +90,8 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
             await handler.pStorageDb.execRecord('ROLLBACK', {})
             return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
+
+        handler.logger.info('\n## parseCreateToken() succeed');
 
     }
 

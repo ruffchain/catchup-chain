@@ -1,6 +1,7 @@
 import { IfParseReceiptItem, Synchro, IName } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { BANCOR_TOKEN_PRECISION } from "../../storage/dbapi/scoop";
 
 export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
@@ -90,4 +91,49 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
     }
 
     return { err: ErrorCode.RESULT_OK, data: null }
+}
+
+
+export async function updatePureALTRow(handler: Synchro, valueObj: any, token: string, type: string, account: IName): Promise<IFeedBack> {
+    let amount: string = (valueObj.amount).substr(1);
+    let laAmount: number = parseFloat(amount);
+    let value: number = parseFloat(laAmount.toFixed(BANCOR_TOKEN_PRECISION));
+
+    let lockAmount: string = (valueObj.amountLock).substr(1);
+    let laLockAmount: number = parseFloat(lockAmount);
+    let valueLock: number = parseFloat(laLockAmount.toFixed(BANCOR_TOKEN_PRECISION));
+
+    let dueBlock: number = parseInt((valueObj.dueBlock).substr(1));
+    let dueTime: number = valueObj.dueTime;
+
+    let amountTotal = laAmount + laLockAmount;
+
+    // save to account table
+    handler.logger.info('updatePureALTRow ->\n')
+    let result2 = await handler.pStorageDb.updateAccountTable(account.address, token, type, amountTotal.toString(), value + valueLock);
+    if (result2.err) { return result2; }
+
+    // save to LBTT table
+    result2 = await handler.pStorageDb.updateALTTable(account.address, token, amount, lockAmount, dueBlock, dueTime);
+    if (result2.err) { return result2; }
+
+    return { err: ErrorCode.RESULT_OK, data: null }
+
+}
+export async function updateShortALTRow(handler: Synchro, valueObj: any, token: string, type: string, account: IName): Promise<IFeedBack> {
+    let amount: string = (valueObj.amount).substr(1);
+    let laAmount: number = parseFloat(amount);
+    let value: number = parseFloat(laAmount.toFixed(BANCOR_TOKEN_PRECISION));
+
+    // save to account table
+    handler.logger.info('updateShortALTRow ->\n')
+    let result2 = await handler.pStorageDb.updateAccountTable(account.address, token, type, amount, value);
+    if (result2.err) { return result2; }
+
+    // save to LBTT table
+    result2 = await handler.pStorageDb.updateALTTable(account.address, token, amount, '0', 0, 0);
+    if (result2.err) { return result2; }
+
+    return { err: ErrorCode.RESULT_OK, data: null }
+
 }

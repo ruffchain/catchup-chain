@@ -4,7 +4,7 @@ import { ErrorCode, IFeedBack } from '../../core/error_code';
 //import { subtractBN3, addBN2 } from './computer';
 import * as SqlString from 'sqlstring';
 import { IfTxTableItem } from '../catchup/synchro';
-import { SingleCmd, IfHashTableArgs, IfTxAddressTableArgs, IfAccountTableArgs, IfTTTTArgs, IfTokenTableArgs, IfBancorTokenTableArgs, IfLBTTTArgs } from '../catchup/parallel/SingleCmd';
+// import { SingleCmd, IfHashTableArgs, IfTxAddressTableArgs, IfAccountTableArgs, IfTTTTArgs, IfTokenTableArgs, IfBancorTokenTableArgs, IfLBTTTArgs } from '../catchup/parallel/SingleCmd';
 
 
 export const HASH_TYPE = {
@@ -155,27 +155,27 @@ export class StorageDataBase extends CUDataBase {
   //   let sql = SqlString.format('SELECT * FROM ? WHERE hash LIKE "?%" LIMIT ?;', [this.hashTable, s, num])
   //   return this.getAllRecords(sql);
   // }
-  public async singleCmdInsertHashTable(cmdsHashTable: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertHashTable')
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < cmdsHashTable.length; i++) {
-      try {
-        let args = cmdsHashTable[i].args as IfHashTableArgs;
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, args.hash, args.type])
-        let result = await this.execRecord(sql, {});
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, batchInsertOrReplaceHashTAble');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  // public async singleCmdInsertHashTable(cmdsHashTable: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertHashTable')
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < cmdsHashTable.length; i++) {
+  //     try {
+  //       let args = cmdsHashTable[i].args as IfHashTableArgs;
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, args.hash, args.type])
+  //       let result = await this.execRecord(sql, {});
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, batchInsertOrReplaceHashTAble');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
   public queryHashTableFullName(s: string, num: number) {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? LIMIT ?;', [this.hashTable, s, num])
     return this.getAllRecords(sql);
@@ -300,27 +300,27 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
 
-  public async singleCmdInsertAccountTable(cmds: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertAccountTable')
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < cmds.length; i++) {
-      try {
-        let args = cmds[i].args as IfAccountTableArgs;
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, tokentype, amount, value) VALUES(?, ?, ?, ?, ?);', [this.accountTable, args.hash, args.token, args.tokentype, args.amount, args.value]);
-        let result = await this.execRecord(sql, {});
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, singleCmdInsertAccountTable');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  // public async singleCmdInsertAccountTable(cmds: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertAccountTable')
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < cmds.length; i++) {
+  //     try {
+  //       let args = cmds[i].args as IfAccountTableArgs;
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, tokentype, amount, value) VALUES(?, ?, ?, ?, ?);', [this.accountTable, args.hash, args.token, args.tokentype, args.amount, args.value]);
+  //       let result = await this.execRecord(sql, {});
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, singleCmdInsertAccountTable');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
 
   public insertAccountTable(hash: string, token: string, tokentype: string, amount: string, value: number): Promise<IFeedBack> {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, token, tokentype, amount, value) VALUES(?, ?, ?, ?, ?);', [this.accountTable, hash, token, tokentype, amount, value]);
@@ -472,27 +472,27 @@ export class StorageDataBase extends CUDataBase {
     return this.getRecord(sql);
   }
 
-  public async singleCmdInsertTokenTable(cmds: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertTokenTable')
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < cmds.length; i++) {
-      try {
-        let args = cmds[i].args as IfTokenTableArgs;
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp, content) VALUES(?, ?, ?, ?, $content);', [this.tokenTable, args.tokenname, args.type, args.address, args.datetime]);
-        let result = await this.execRecord(sql, { $content: args.content });
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, singleCmdInsertTokenTable');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  // public async singleCmdInsertTokenTable(cmds: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertTokenTable')
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < cmds.length; i++) {
+  //     try {
+  //       let args = cmds[i].args as IfTokenTableArgs;
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, type, address, timestamp, content) VALUES(?, ?, ?, ?, $content);', [this.tokenTable, args.tokenname, args.type, args.address, args.datetime]);
+  //       let result = await this.execRecord(sql, { $content: args.content });
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, singleCmdInsertTokenTable');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
 
 
   public insertTokenTable(tokenname: string, type: string, address: string, datetime: number, content: Buffer) {
@@ -510,27 +510,27 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE name = ?;', [this.bancorTokenTable, name])
     return this.getRecord(sql);
   }
-  public async singleCmdInsertBancorTokenTable(cmds: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertBancorTokenTable')
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < cmds.length; i++) {
-      try {
-        let args = cmds[i].args as IfBancorTokenTableArgs;
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, factor, reserve, supply) VALUES(?, ?, ?, ?);', [this.bancorTokenTable, args.tokenname, args.factor, args.reserve, args.supply])
-        let result = await this.execRecord(sql, {});
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, singleCmdInsertBancorTokenTable');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  // public async singleCmdInsertBancorTokenTable(cmds: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertBancorTokenTable')
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < cmds.length; i++) {
+  //     try {
+  //       let args = cmds[i].args as IfBancorTokenTableArgs;
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, factor, reserve, supply) VALUES(?, ?, ?, ?);', [this.bancorTokenTable, args.tokenname, args.factor, args.reserve, args.supply])
+  //       let result = await this.execRecord(sql, {});
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, singleCmdInsertBancorTokenTable');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
 
   public insertBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, factor, reserve, supply) VALUES(?, ?, ?, ?);', [this.bancorTokenTable, tokenname, factor, reserve, supply])
@@ -561,28 +561,28 @@ export class StorageDataBase extends CUDataBase {
   //////////////////////
   // txaddress table
   //////////////////////
-  public async singleCmdInsertTxAddress(cmds: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertTxAddress')
-    await this.execRecord('BEGIN;', {});
+  // public async singleCmdInsertTxAddress(cmds: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertTxAddress')
+  //   await this.execRecord('BEGIN;', {});
 
-    for (let i = 0; i < cmds.length; i++) {
-      try {
-        let args = cmds[i].args as IfTxAddressTableArgs;
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, address, timestamp) VALUES(?, ?, ?);', [this.txAddressTable, args.hash, args.address, args.datetime]);
-        let result = await this.execRecord(sql, {});
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, singleCmdInsertTxAddress');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  //   for (let i = 0; i < cmds.length; i++) {
+  //     try {
+  //       let args = cmds[i].args as IfTxAddressTableArgs;
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, address, timestamp) VALUES(?, ?, ?);', [this.txAddressTable, args.hash, args.address, args.datetime]);
+  //       let result = await this.execRecord(sql, {});
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, singleCmdInsertTxAddress');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
   public async queryHashTxAddressTable(addr: string): Promise<IFeedBack> {
     let sql = SqlString.format('SELECT * FROM ? WHERE address = ? ;', [this.txAddressTable, addr]);
 
@@ -648,27 +648,27 @@ export class StorageDataBase extends CUDataBase {
 
   }
 
-  public async singleCmdInsertLBTT(cmds: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertLBTT')
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < cmds.length; i++) {
-      try {
-        let args = cmds[i].args as IfLBTTTArgs;
-        let sql = SqlString.format('REPLACE INTO ? (hash, token, amount, dueamount, dueblock, duetime) VALUES (?,?,?,?,?,?);', [this.accountLockBancorTokenTable, args.address, args.token, args.amount, args.dueAmount, args.dueBlock, args.dueTime]);
-        let result = await this.execRecord(sql, {});
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, singleCmdInsertLBTT');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  // public async singleCmdInsertLBTT(cmds: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertLBTT')
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < cmds.length; i++) {
+  //     try {
+  //       let args = cmds[i].args as IfLBTTTArgs;
+  //       let sql = SqlString.format('REPLACE INTO ? (hash, token, amount, dueamount, dueblock, duetime) VALUES (?,?,?,?,?,?);', [this.accountLockBancorTokenTable, args.address, args.token, args.amount, args.dueAmount, args.dueBlock, args.dueTime]);
+  //       let result = await this.execRecord(sql, {});
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, singleCmdInsertLBTT');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
 
   public updateALTTable(address: string, token: string, amount: string, dueAmount: string, dueBlock: number, dueTime: number): Promise<IFeedBack> {
 
@@ -682,37 +682,37 @@ export class StorageDataBase extends CUDataBase {
   ////////////////////////////////////
   // txTransferTo table
   ////////////////////////////////////
-  public async singleCmdInsertTransferToTable(cmds: SingleCmd[]): Promise<IFeedBack> {
-    this.logger.info('into singleCmdInsertTransferToTable')
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < cmds.length; i++) {
-      try {
-        let args = cmds[i].args as IfTTTTArgs;
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, toaddress, returncode) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $toaddress, $returncode);', [this.txTransferToTable]);
+  // public async singleCmdInsertTransferToTable(cmds: SingleCmd[]): Promise<IFeedBack> {
+  //   this.logger.info('into singleCmdInsertTransferToTable')
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < cmds.length; i++) {
+  //     try {
+  //       let args = cmds[i].args as IfTTTTArgs;
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, toaddress, returncode) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $toaddress, $returncode);', [this.txTransferToTable]);
 
-        let result = await this.execRecord(sql, {
-          $hash: SqlString.escape(args.hash).replace(/\'/g, ''),
-          $blockhash: SqlString.escape(args.blockhash).replace(/\'/g, ''),
-          $blocknumber: SqlString.escape(args.blocknumber),
-          $address: SqlString.escape(args.address).replace(/\'/g, ''),
-          $datetime: SqlString.escape(args.datetime),
-          $content1: args.content,
-          $toaddress: args.toaddress,
-          $returncode: args.returncode
-        });
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, singleCmdInsertTransferToTable');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
+  //       let result = await this.execRecord(sql, {
+  //         $hash: SqlString.escape(args.hash).replace(/\'/g, ''),
+  //         $blockhash: SqlString.escape(args.blockhash).replace(/\'/g, ''),
+  //         $blocknumber: SqlString.escape(args.blocknumber),
+  //         $address: SqlString.escape(args.address).replace(/\'/g, ''),
+  //         $datetime: SqlString.escape(args.datetime),
+  //         $content1: args.content,
+  //         $toaddress: args.toaddress,
+  //         $returncode: args.returncode
+  //       });
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, singleCmdInsertTransferToTable');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
 
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
 
 
   public insertTxTransferToTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer, toaddr: string, returncode: number) {
