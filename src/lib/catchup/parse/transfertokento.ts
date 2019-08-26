@@ -1,7 +1,6 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
-import { SYS_TOKEN } from "../../storage/dbapi/scoop";
-import { TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
 
 export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
 
@@ -15,8 +14,13 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
 
     handler.logger.info('\n## parseTransferTokenTo()');
 
+    let feedback = await handler.pStorageDb.updateNamesToHashTable([to], HASH_TYPE.ADDRESS);
+    if (feedback.err) {
+        return feedback
+    }
+
     // insert into txaddresstable
-    let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
+    feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);
     if (feedback.err) {
         return feedback;
     }

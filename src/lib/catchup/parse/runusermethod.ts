@@ -1,7 +1,6 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
-import { SYS_TOKEN } from "../../storage/dbapi/scoop";
-import { TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 
 export async function parseRunUserMethod(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     let caller = receipt.tx.caller;
@@ -9,6 +8,8 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
     let addrLst = [caller];
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.receipt.cost);
+
+    handler.logger.info('\n## parseRunUserMethod()');
 
     // insert into txaddresstable
     let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
@@ -24,6 +25,7 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
             return feedback;
         }
     }
+    handler.logger.info('\n## parseRunUserMethod() succeed');
     return { err: ErrorCode.RESULT_OK, data: null };
 }
 

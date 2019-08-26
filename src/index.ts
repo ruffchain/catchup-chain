@@ -87,6 +87,7 @@ let server = new Inquiro({
   port: serverObj.localPort,
 }, logger, queue);
 
+const genesisFile = './config/testnodes/genesis.json';
 
 // main entry function
 async function main() {
@@ -101,12 +102,12 @@ async function main() {
 
   if (statusDB.nLoadGenesisFile === 0) {
     logger.info('\nShould load address into account table, hash table')
-    let arrPreBalances = getPreBalances('./config/genesis.json');
+    let arrPreBalances = getPreBalances(genesisFile);
 
-    assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + 'SYS', logger);
+    assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + ' SYS', logger);
 
     // update miner reward for Zero block
-    let miners: string[] = getMiners('./config/genesis.json');
+    let miners: string[] = getMiners(genesisFile);
 
     let amountAll = 0;
     for (let i = 0; i < arrPreBalances.length; i++) {
@@ -121,6 +122,8 @@ async function main() {
         newAmount -= DEPOSIT_VALUE;
         amountAll += MINE_REWARD;
       }
+
+      // console.log(i, ' newAmount: ', newAmount)
 
       assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, newAmount.toString(), newAmount), 'add to account table ', logger);
 

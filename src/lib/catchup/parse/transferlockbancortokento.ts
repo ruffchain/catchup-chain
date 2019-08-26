@@ -1,18 +1,17 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
-import { SYS_TOKEN } from "../../storage/dbapi/scoop";
-import { TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 
 export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
 
-    handler.logger.info('parseTransferLockBancorTokenTo -->');
+    handler.logger.info('\n## parseTransferLockBancorTokenTo()');
 
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
     let caller = receipt.tx.caller;
     let to = receipt.tx.input.to;
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = receipt.tx.fee;
+    let fee = parseFloat(receipt.tx.fee);
     let amount = parseFloat(receipt.tx.input.amount);
 
     // insert into txaddresstable
@@ -64,6 +63,7 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
             await handler.pStorageDb.execRecord('ROLLBACK', {})
             return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
+        handler.logger.info('\n## parseTransferLockBancorTokenTo() succeed');
     }
 
     return { err: ErrorCode.RESULT_OK, data: null }

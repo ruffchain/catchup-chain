@@ -1,20 +1,19 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
-import { SYS_TOKEN } from "../../storage/dbapi/scoop";
-import { TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 
 export async function parseTransferLockBancorTokenToMulti(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
-    handler.logger.info('parseTransferLockBancorTokenToMulti -->');
+    handler.logger.info('\n## parseTransferLockBancorTokenToMulti()');
 
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
     let caller = receipt.tx.caller;
     // let to = receipt.tx.input.to;
-    let to = [];
+    let to: string[] = [];
     let addressArr = [];
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let tos = receipt.tx.input.to;
-    let fee = receipt.tx.fee;
+    let fee = parseFloat(receipt.tx.fee);
     let amountAll: number = 0;
 
     for (let i = 0; i < tos.length; i++) {
@@ -58,7 +57,7 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
             if (hres.err) {
                 return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
             }
-            tosTokenLst.push({ address: tos[i].address, amount: hres.data + tos[i].amount })
+            tosTokenLst.push({ address: tos[i].address, amount: hres.data + parseFloat(tos[i].amount) })
         }
 
         // use transaction
@@ -71,6 +70,7 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
 
         // update tos token balance
         for (let i = 0; i < tosTokenLst.length; i++) {
+            handler.logger.info('update ' + tosTokenLst[i].address + ' val: ' + tosTokenLst[i].amount);
             await handler.laWriteAccountTable(tosTokenLst[i].address, tokenName, tokenType, tosTokenLst[i].amount)
         }
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
@@ -79,6 +79,6 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
             return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
     }
-
+    handler.logger.info('\n## parseTransferLockBancorTokenToMulti() succeed');
     return { err: ErrorCode.RESULT_OK, data: null }
 }

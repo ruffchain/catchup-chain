@@ -18,10 +18,14 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
 
+    handler.logger.info('\n## parseCreateLockBancorToken()');
+
     preBalances.forEach((element: any) => {
         nameLst.push({ address: element.address });
         amountAll += parseFloat(element.amount);
-        amountAll += parseFloat(element.lock_amount);
+        if (element.lock_amount) {
+            amountAll += parseFloat(element.lock_amount);
+        }
 
         addrLst.push(element.address)
     });
@@ -68,10 +72,19 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
 
         // Use transaction
         let F = factor;
-        let R = receipt.tx.value;
+        let R = reserve;
         let S = amountAll;
 
+        // get caller sys value
+        result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
+        if (result.err) {
+            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        }
+        let valCaller = result.data
+
         await handler.pStorageDb.execRecord('BEGIN', {})
+
+        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
         // Still use network method
         result = await handler.pStorageDb.insertBancorTokenTable(tokenName, F, R, S);
 
@@ -89,6 +102,8 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
             return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
     }
+
+    handler.logger.info('\n## parseCreateLockBancorToken() succeed');
 
     return { err: ErrorCode.RESULT_OK, data: null }
 }

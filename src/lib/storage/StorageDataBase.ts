@@ -246,8 +246,8 @@ export class StorageDataBase extends CUDataBase {
       this.logger.info('\n')
       this.logger.info('updateNameToHashTable()\n');
       let feedback = await this.getHashTable(name);
-      console.log('\nfeedback is ->')
-      console.log(feedback)
+      // console.log('\nfeedback is ->')
+      // console.log(feedback)
       if (feedback.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
         let result = await this.insertOrReplaceHashTable(name, type);
         resolv(result);
@@ -552,7 +552,7 @@ export class StorageDataBase extends CUDataBase {
       } else if (result.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
         resolv(result);
       } else {
-        console.log('ERROR: updateBancorTokenTable result2: ', tokenname, ' already exist in db!')
+        // console.log('ERROR: updateBancorTokenTable result2: ', tokenname, ' already exist in db!')
         let result2 = await this.updateBancorTokenByName(tokenname, factor, reserve, supply);
         resolv(result2);
       }

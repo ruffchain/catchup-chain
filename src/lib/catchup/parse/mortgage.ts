@@ -10,6 +10,9 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
     let fee = parseFloat(recept.tx.fee);
     let val = parseFloat(recept.tx.value);
 
+    handler.logger.info('\n## parseMortgage()');
+
+    // update name to hash table
     handler.logger.info('parseMortgage, updateNamesToHashTable')
     let feedback = await handler.pStorageDb.updateNamesToHashTable([caller], HASH_TYPE.ADDRESS);
 
@@ -24,17 +27,23 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
     }
 
     handler.logger.info('parseMortgage, updateBalances')
-    let valNew = -fee;
 
-    if (recept.receipt.returnCode === 0) {
-        valNew -= val;
+    if (recept.receipt.returnCode !== 0) {
+        // update caller balance
+        handler.logger.info('caller value change ' + (- fee));
+        let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        if (result.err) {
+            return result
+        }
+    } else {
+        handler.logger.info('caller value change ' + (-fee - val));
+        let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee - val);
+        if (result.err) {
+            return result
+        }
     }
 
-    // update caller balance
-    let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valNew);
-    if (result.err) {
-        return result
-    }
+    handler.logger.info('\n## parseMortgage() succeed');
 
     return { err: ErrorCode.RESULT_OK, data: null }
 }

@@ -1,7 +1,6 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
-import { HASH_TYPE, TOKEN_TYPE } from "../../storage/StorageDataBase";
-import { SYS_TOKEN } from "../../storage/dbapi/scoop";
+import { HASH_TYPE, TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 
 export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     handler.logger.info('\n## parseTransferTo()');

@@ -425,8 +425,7 @@ export class Synchro {
       return { err: feedback.err, data: null };
     }
     let endT3 = new Date().getTime();
-    this.logger.info('Delta of batchInsertTxTable:' + (endT3 - endT2));
-
+    this.logger.info('\n##Delta of parse one block:' + (endT3 - endT2) + '\n');
 
     return { err: ErrorCode.RESULT_OK, data: {} }
   }

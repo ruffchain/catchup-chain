@@ -18,7 +18,6 @@
 
 ## install
 
-```
 // config rpc server ip & port
 // under ./config/server.json file
 ```
@@ -30,6 +29,9 @@
 }
 
 ```
+
+// need the right genesisFile under ./config/ directory
+
 
 // under directory, run
 npm install

@@ -9,6 +9,8 @@ export async function parseVote(handler: Synchro, recept: IfParseReceiptItem): P
     let time = recept.block.timestamp;
     let fee = parseFloat(recept.tx.fee)
 
+    handler.logger.info('\n## parseVote()');
+
     handler.logger.info('parseVote, updateNamesToHashTable')
     let feedback = await handler.pStorageDb.updateNamesToHashTable([caller], HASH_TYPE.ADDRESS);
 
@@ -23,11 +25,13 @@ export async function parseVote(handler: Synchro, recept: IfParseReceiptItem): P
     }
 
     // update caller balance
-    handler.logger.info('parseVote, updateBalances')
+    handler.logger.info('parseVote, updateBalances, fee: ' + (-fee))
     feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
     if (feedback.err) {
         return feedback;
     }
+
+    handler.logger.info('\n## parseVote() succeed');
 
     return { err: ErrorCode.RESULT_OK, data: null }
 }
