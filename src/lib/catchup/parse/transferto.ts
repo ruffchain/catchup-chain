@@ -77,8 +77,6 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         }
     }
 
-
-
     // update to txTransferToTable
     handler.logger.info('Put it into txTransferToTable')
     let startT3 = new Date().getTime();

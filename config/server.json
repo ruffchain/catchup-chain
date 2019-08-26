@@ -1,4 +1,6 @@
 {
     "ip": "40.73.35.23",
-    "port": 18089
+    "port": 18089,
+    "enableGetCandy": false,
+    "localPort": 18080
 }

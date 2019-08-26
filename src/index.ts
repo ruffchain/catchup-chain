@@ -77,18 +77,20 @@ let client = new Synchro({
   batch: 20
 }, logger, statusDB, storageDB);
 
+// You need privileged account to send candy, default is false
+export const bEnableGetCandy = serverObj.enableGetCandy
 
 let queue = new WRQueue(logger, statusDB, storageDB, client);
 
 let server = new Inquiro({
   ip: '0.0.0.0',
-  port: 18080
+  port: serverObj.localPort,
 }, logger, queue);
-
 
 
 // main entry function
 async function main() {
+
   assert(await statusDB.open(), 'statusDB open', logger)
 
   assert(await statusDB.init(), 'statusDB init tables', logger);
@@ -103,7 +105,6 @@ async function main() {
 
     assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + 'SYS', logger);
 
-
     // update miner reward for Zero block
     let miners: string[] = getMiners('./config/genesis.json');
 
@@ -113,8 +114,8 @@ async function main() {
       logger.info(preBalance);
 
       amountAll += preBalance.amount; // add it up
-
       let newAmount = preBalance.amount;
+
       if (miners.indexOf(preBalance.address) !== -1) {
         newAmount += MINE_REWARD;
         amountAll += MINE_REWARD;

@@ -21,6 +21,15 @@
 ```
 // config rpc server ip & port
 // under ./config/server.json file
+```
+{
+    "ip": "xx.xx.xx.xx",
+    "port": 18089,
+    "enableGetCandy": false,
+    "localPort": 18080
+}
+
+```
 
 // under directory, run
 npm install
@@ -28,14 +37,14 @@ npm install
 // compile
 npm compile
 
-// Need to clean old db
+// Need to clean old db for 1st time
 npm run cleandb
 
 // run
 npm run start
 
 // Or use pm2 to manage the app
-pm2 start dist/index.js
+
 
 ```
 

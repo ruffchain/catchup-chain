@@ -1,5 +1,6 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
+import { bEnableGetCandy } from "../../..";
 
 /** @type {number} - Candy to distribute to one address */
 const CANDY_AMOUNT: number = 1000;
@@ -14,6 +15,11 @@ export async function laGetCandy(handle: WRQueue, args: any) {
     // if it's empty , so it is SYS 
     handle.logger.info('transfer candy task ...')
     // resolv({ err: ErrorCode.RESULT_OK, data: args })
+    if (bEnableGetCandy === false) {
+      handle.logger.err('GetCandy not supported');
+      resolv({ err: ErrorCode.RESULT_OK, data: { status: 1, hash: 'Not support' } });
+      return;
+    }
 
     let obj: any;
     try {
