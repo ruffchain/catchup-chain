@@ -18,9 +18,13 @@
 
 ## install
 
+### Config files:
+
+```
+
 // config rpc server ip & port
 // under ./config/server.json file
-```
+
 {
     "ip": "xx.xx.xx.xx",
     "port": 18089,
@@ -28,10 +32,16 @@
     "localPort": 18080
 }
 
+// need the right genesisFile under ./config/ directory
+{
+    
+}
+
 ```
 
-// need the right genesisFile under ./config/ directory
+### Steps:
 
+```
 
 // under directory, run
 npm install
