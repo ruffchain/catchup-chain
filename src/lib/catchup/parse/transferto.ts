@@ -1,6 +1,7 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { HASH_TYPE, TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
+import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     handler.logger.info('\n## parseTransferTo()');
@@ -11,6 +12,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
+    let creator = receipt.block.creator;
 
     let blockhash = receipt.block.hash;
     let blocknumber = receipt.block.number;
@@ -39,25 +41,26 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     }
 
     // query caller, sys balance
-    let result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
+    let result = await queryCallerCreator(handler, caller, creator);
     if (result.err) {
-        return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        return result;
     }
-    let valCaller = result.data
 
-    // query to sys balance
-    result = await handler.laQueryAccountTable(to, SYS_TOKEN);
+    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+
+    result = await handler.laQueryAccountTable(to, SYS_TOKEN)
     if (result.err) {
-        return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
+        return result;
     }
-    let valTo = result.data
+    let valTo = result.data;
+
 
     if (receipt.receipt.returnCode !== 0) {
         handler.logger.debug('Failed transaction, fee: ' + fee + ' old balance : ' + valCaller)
-        let feedback1 = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
-        if (feedback1.err) {
-            handler.logger.error('error laWriteAccountTable to caller');
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
+        let result = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
+        if (result.err) {
+            handler.logger.error('createToken tx failed.')
+            return result;
         }
 
     } else {
@@ -73,6 +76,8 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo + val);
 
         handler.logger.debug('to balance: ' + (valTo + val))
+
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 

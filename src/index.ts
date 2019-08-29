@@ -15,6 +15,7 @@ interface IPreBalance {
   amount: number;
 }
 
+
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled rejection：', p, '原因：', reason);
   throw new Error('unhandled rejection')
@@ -31,6 +32,7 @@ function assert(flag: IFeedBack, infoLog: string, log: winston.LoggerInstance) {
 }
 
 function getPreBalances(filename: string): IPreBalance[] {
+  console.log('open prebalance file:', filename)
   let buf = fs.readFileSync(filename);
 
   let obj: any;
@@ -52,6 +54,17 @@ function getMiners(filename: string): string[] {
   }
   return obj.miners as string[];
 }
+function getCoinbase(filename: string): string {
+  let buf = fs.readFileSync(filename);
+
+  let obj: any;
+  try {
+    obj = JSON.parse(buf.toString());
+  } catch (e) {
+    throw new Error('Wrong open ' + filename);
+  }
+  return obj.coinbase as string;
+}
 
 const logger = Logger.init({
   path: './data/log/'
@@ -70,12 +83,18 @@ let storageDB = new StorageDataBase(logger, {
 
 let serverObj = fs.readJsonSync('./config/server.json');
 
+console.log("server.json:")
+console.log(serverObj);
+
 let client = new Synchro({
 
   ip: serverObj.ip,
   port: serverObj.port,
   batch: 20
 }, logger, statusDB, storageDB);
+
+
+const genesisFile = serverObj.genesisFile;
 
 // You need privileged account to send candy, default is false
 export const bEnableGetCandy = serverObj.enableGetCandy
@@ -87,7 +106,7 @@ let server = new Inquiro({
   port: serverObj.localPort,
 }, logger, queue);
 
-const genesisFile = './config/testnodes/genesis.json';
+let coinbase = getCoinbase(genesisFile);
 
 // main entry function
 async function main() {
@@ -106,9 +125,6 @@ async function main() {
 
     assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + ' SYS', logger);
 
-    // update miner reward for Zero block
-    let miners: string[] = getMiners(genesisFile);
-
     let amountAll = 0;
     for (let i = 0; i < arrPreBalances.length; i++) {
       let preBalance = arrPreBalances[i];
@@ -117,11 +133,10 @@ async function main() {
       amountAll += preBalance.amount; // add it up
       let newAmount = preBalance.amount;
 
-      if (miners.indexOf(preBalance.address) !== -1) {
-        newAmount += MINE_REWARD;
-        newAmount -= DEPOSIT_VALUE;
-        amountAll += MINE_REWARD;
-      }
+      // if (preBalance.address === coinbase) {
+      //   newAmount += MINE_REWARD;
+      //   amountAll += MINE_REWARD; // 0 block reward
+      // }
 
       // console.log(i, ' newAmount: ', newAmount)
 
@@ -130,6 +145,8 @@ async function main() {
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 
     }
+
+
     assert(await storageDB.insertTokenTable('SYS', TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
       supply: amountAll,
       precision: SYS_TOKEN_PRECISION

@@ -332,6 +332,7 @@ export class Synchro {
     let txno = obj.transactions.length;
     let height = obj.block.number;
     let reward = obj.block.reward;
+    let coinbase = obj.block.coinbase;
 
     // save block hash
     this.logger.info('\nsave block hash to hash table, update block: ' + hashnumber)
@@ -357,7 +358,7 @@ export class Synchro {
     this.logger.info('Delta of insertOrReplaceBlockTable :' + (endT2 - startT2));
 
     // update creator balance, getFrom Account table
-    feedback = await this.laUpdateAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, reward);
+    feedback = await this.laUpdateAccountTable(coinbase, SYS_TOKEN, TOKEN_TYPE.SYS, reward);
     // add reward 
 
     if (txno > 0) {
