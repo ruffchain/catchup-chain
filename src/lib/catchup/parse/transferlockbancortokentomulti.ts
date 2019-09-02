@@ -1,6 +1,7 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
-import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
+import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseTransferLockBancorTokenToMulti(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
     handler.logger.info('\n## parseTransferLockBancorTokenToMulti()');
@@ -15,33 +16,54 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
     let tos = receipt.tx.input.to;
     let fee = parseFloat(receipt.tx.fee);
     let amountAll: number = 0;
+    let creator = receipt.block.creator;
+
+    let newTos: { address: string, amount: string }[] = [];
 
     for (let i = 0; i < tos.length; i++) {
         to.push(tos[i].address);
         addressArr.push({ address: tos[i].address });
         amountAll += parseFloat(tos[i].amount);
+
+        let item = newTos.find((elem) => {
+            return tos[i].address === elem.address;
+        })
+        if (!item) {
+            newTos.push(tos[i]);
+        } else {
+            item.amount = (parseFloat(tos[i].amount) + parseFloat(item.amount)).toString();
+        }
     }
     addressArr.push({ address: caller });
 
-    // insert into txaddresstable
-    let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller].concat(to), time);
+    let feedback = await handler.pStorageDb.updateNamesToHashTable(to, HASH_TYPE.ADDRESS);
+
     if (feedback.err) {
         return feedback;
     }
 
+    // insert into txaddresstable
+    feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller].concat(to), time);
+    if (feedback.err) {
+        return feedback;
+    }
+
+
+    let result = await queryCallerCreator(handler, caller, creator);
+    if (result.err) {
+        return result;
+    }
+
+    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+
     if (receipt.receipt.returnCode !== 0) {
         // update caller balance
-        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
         if (feedback.err) {
             return feedback;
         }
     } else {
         // query caller SYS balance
-        let result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
-        if (result.err) {
-            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
-        }
-        let valCaller = result.data
 
         // query caller token balance
         result = await handler.laQueryAccountTable(caller, tokenName)
@@ -52,18 +74,20 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
 
         // query tos token balance
         let tosTokenLst: { address: string, amount: number }[] = [];
-        for (let i = 0; i < tos.length; i++) {
-            let hres = await handler.laQueryAccountTable(tos[i].address, tokenName);
+        for (let i = 0; i < newTos.length; i++) {
+            let hres = await handler.laQueryAccountTable(newTos[i].address, tokenName);
             if (hres.err) {
                 return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
             }
-            tosTokenLst.push({ address: tos[i].address, amount: hres.data + parseFloat(tos[i].amount) })
+            tosTokenLst.push({ address: newTos[i].address, amount: hres.data + parseFloat(newTos[i].amount) })
         }
 
         // use transaction
         await handler.pStorageDb.execRecord('BEGIN', {})
         // update caller SYS balance
         await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
 
         // update caller token balance
         result = await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller - amountAll);

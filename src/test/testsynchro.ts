@@ -19,11 +19,11 @@ let storageDB = new StorageDataBase(logger, {
   path: './data/db/'
 })
 
-let synchro = new Synchro({
-  ip: '40.73.35.23', // '139.219.184.44'   '127.0.0.1' 40.73.100.56, 40.73.35.23
-  port: 18089,
-  batch: 10
-}, logger, statusDB, storageDB);
+// let synchro = new Synchro({
+//   ip: '40.73.35.23', // '139.219.184.44'   '127.0.0.1' 40.73.100.56, 40.73.35.23
+//   port: 18089,
+//   batch: 10
+// }, logger, statusDB, storageDB);
 
 // synchro.getLastestBlock();
 
@@ -62,9 +62,9 @@ const txLst = [
 async function main() {
   let result;
 
-  result = await synchro.laGetCandidates();
+  //result = await synchro.laGetCandidates();
 
-  console.log(result);
+  //console.log(result);
   // result = await synchro.getLockBancorTokenBalanceInfo('TOKEN2', '16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg');
 
   // console.log(result);
@@ -162,21 +162,26 @@ async function main() {
   let result2 = await storageDB.queryAccountTableByTokenAndAddress('17qMsJfCWz97Ag2rkrMttWjyiNybXioz3d', SYS_TOKEN);
   logger.info(result2);
   console.log(result2)
+
+  console.log('To read bancortoken table')
+  result = await storageDB.queryBancorTokenTable('TOKEN102');
+  console.log(result);
+
   // console.log(result2.data.value)
   // test statement
 
-  statusDB.db.serialize(() => {
-    statusDB.db.exec('BEGIN');
+  // statusDB.db.serialize(() => {
+  //   statusDB.db.exec('BEGIN');
 
 
-    statusDB.db.exec('COMMIT', (err: any) => {
-      if (err) {
-        console.log('Error commit')
-      } else {
-        console.log('Commit succeed')
-      }
-    });
-  })
+  //   statusDB.db.exec('COMMIT', (err: any) => {
+  //     if (err) {
+  //       console.log('Error commit')
+  //     } else {
+  //       console.log('Commit succeed')
+  //     }
+  //   });
+  // })
 
 
   // let result2 = await storageDB.insertTxTransferToTable('244512954a7ab1f14144c71c8961a5d3990aad733c8b16e253fd6cd07b73e419', '0c7926ff96551f6ac948582f88b7e3044a36ba920d7215280ef4afeb444c6e7f', 99, '1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J', 123, Buffer.from([0x11]), '1Bbruv7E4nP62ZD4cJqxiGrUD43psK5E2J', 0);

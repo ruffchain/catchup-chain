@@ -2,6 +2,7 @@ import { IfParseReceiptItem, Synchro, IName } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 import { BANCOR_TOKEN_PRECISION } from "../../storage/dbapi/scoop";
+import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
     let tokenName: string = receipt.tx.input.tokenid.toUpperCase();
@@ -17,6 +18,7 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
+    let creator = receipt.block.creator;
 
     handler.logger.info('\n## parseCreateLockBancorToken()');
 
@@ -43,10 +45,16 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
         return feedback
     }
 
+    let result = await queryCallerCreator(handler, caller, creator);
+    if (result.err) {
+        return result;
+    }
+
+    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
 
     if (receipt.receipt.returnCode !== 0) {
         // update caller balance
-        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
         if (feedback.err) {
             return feedback;
         }
@@ -75,14 +83,9 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
         let R = reserve;
         let S = amountAll;
 
-        // get caller sys value
-        result = await handler.laQueryAccountTable(caller, SYS_TOKEN);
-        if (result.err) {
-            return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
-        }
-        let valCaller = result.data
-
         await handler.pStorageDb.execRecord('BEGIN', {})
+
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
 
         await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
         // Still use network method
