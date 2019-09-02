@@ -37,6 +37,7 @@ export class StorageDataBase extends CUDataBase {
   private accountLockBancorTokenTable: string;
   // Add by Yang Jun 2019-6-24
   private txTransferToTable: string;
+  private statusTable: string;
 
   private hashTableSchema: string;
   private accountTableSchema: string;
@@ -52,6 +53,10 @@ export class StorageDataBase extends CUDataBase {
   private txAddressTable: string;
   private txAddressTableSchema: string;
 
+  private statusTableSchema: string;
+  private nameCurrentHeight: string = 'currentheight';
+  public nCurrentHeight: number = 0;
+
   constructor(logger: winston.LoggerInstance, options: IfCUDataBaseOptions) {
     super(logger, options);
     this.hashTable = 'hashtable';
@@ -63,6 +68,7 @@ export class StorageDataBase extends CUDataBase {
     this.txAddressTable = 'txaddresstable';
     this.accountLockBancorTokenTable = 'albttable';
     this.txTransferToTable = 'txtransfertotable';
+    this.statusTable = 'statustable';
 
     // Token is of uppercase, hash| tokenname - type 
     this.hashTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "type" CHAR(64) NOT NULL, "verified" TINYINT NOT NULL);`;
@@ -92,6 +98,10 @@ export class StorageDataBase extends CUDataBase {
     // txTransferToTable
 
     this.txTransferToTableSchema = `("hash" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "blockhash" CHAR(64) NOT NULL, "blocknumber" INTEGER NOT NULL, "address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, "content" BLOB NOT NULL, "toaddress" CHAR(64) NOT NULL, "returncode" INTEGER NOT NULL);`;
+
+    this.statusTableSchema = '("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE ,"value" INTEGER  NOT NULL, "timestamp" INTEGER NOT NULL);';
+
+    this.nCurrentHeight = 0;
   }
 
   public init(): Promise<IFeedBack> {
@@ -135,6 +145,15 @@ export class StorageDataBase extends CUDataBase {
       // Add by Yang Jun 2019-6-24
       hret = await this.createTable(this.txTransferToTable, this.txTransferToTableSchema);
       if (hret.err) { throw new Error() };
+
+      hret = await this.createTable(this.statusTable, this.statusTableSchema);
+      if (hret.err) { throw new Error() }
+
+      result = await this.getCurrentHeight();
+      if (result.err) {
+        throw new Error('getCurrentHeight');
+      }
+      this.nCurrentHeight = result.data.value;
 
       // add index 
       hret = await this.execRecord(`create unique index IF NOT EXISTS address_timestamp_index on ${this.txTransferToTable}(address, timestamp);`, {});
@@ -180,26 +199,26 @@ export class StorageDataBase extends CUDataBase {
     let sql = SqlString.format('SELECT * FROM ? WHERE hash = ? LIMIT ?;', [this.hashTable, s, num])
     return this.getAllRecords(sql);
   }
-  public async batchInsertOrReplaceHashTAble(hashLst: string[], type: string): Promise<IFeedBack> {
-    this.logger.debug('into batchInsertOrReplaceHashTAble()');
+  // public async batchInsertOrReplaceHashTAble(hashLst: string[], type: string): Promise<IFeedBack> {
+  //   this.logger.debug('into batchInsertOrReplaceHashTAble()');
 
-    await this.execRecord('BEGIN;', {});
-    for (let i = 0; i < hashLst.length; i++) {
-      try {
-        let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, hashLst[i], type])
-        let result = await this.execRecord(sql, {});
-        if (result.err) {
-          throw new Error("execRecord");
-        }
-      } catch (e) {
-        this.logger.err('run insert fail, batchInsertOrReplaceHashTAble');
-        await this.db.run('ROLLBACK;');
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-      }
-    }
-    await this.execRecord('COMMIT;', {});
-    return { err: ErrorCode.RESULT_OK, data: null };
-  }
+  //   await this.execRecord('BEGIN;', {});
+  //   for (let i = 0; i < hashLst.length; i++) {
+  //     try {
+  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, type, verified) VALUES(?, ?, 0);', [this.hashTable, hashLst[i], type])
+  //       let result = await this.execRecord(sql, {});
+  //       if (result.err) {
+  //         throw new Error("execRecord");
+  //       }
+  //     } catch (e) {
+  //       this.logger.err('run insert fail, batchInsertOrReplaceHashTAble');
+  //       await this.db.run('ROLLBACK;');
+  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
+  //     }
+  //   }
+  //   await this.execRecord('COMMIT;', {});
+  //   return { err: ErrorCode.RESULT_OK, data: null };
+  // }
 
   public insertOrReplaceHashTable(hash: string, type: string) {
     this.logger.info('into insertOrReplaceToHashTable()', hash, '\n')
@@ -433,8 +452,6 @@ export class StorageDataBase extends CUDataBase {
     this.logger.info('batchInsertTxTable');
     console.log(new Date())
 
-    await this.execRecord('BEGIN;', {});
-
     try {
 
       for (let i = 0; i < contentLst.length; i++) {
@@ -455,11 +472,9 @@ export class StorageDataBase extends CUDataBase {
 
     } catch (e) {
       this.logger.err('run insert fail, batchInsertTxTable');
-      await this.db.run('ROLLBACK;');
       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
     }
 
-    await this.execRecord('COMMIT;', {});
     this.logger.info('End of batchInsertTxTable');
     console.log(new Date())
     return { err: ErrorCode.RESULT_OK, data: null };
@@ -751,5 +766,33 @@ export class StorageDataBase extends CUDataBase {
   public queryLatestTxTransferToTable() {
     let sql = SqlString.format('SELECT * FROM ? ORDER BY timestamp DESC LIMIT 15;', [this.txTransferToTable])
     return this.getAllRecords(sql)
+  }
+
+  // status table
+  public setCurrentHeight(height: number) {
+    // Update token table, + MINE_REWARD, for every block
+    return this.updateRecord(`UPDATE ${this.statusTable} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
+  }
+  // empty record will also return err=0
+  public getCurrentHeight(): Promise<IFeedBack> {
+    return new Promise<IFeedBack>(async (resolv) => {
+      // read current height if fail
+      let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTable} WHERE name = "${this.nameCurrentHeight}";`);
+
+      if (!result.err) {
+        this.logger.info('-- get height ok')
+        resolv(result);
+      } else {
+        this.logger.info('Insert into statustable now');
+        // insert default height = 0 into the table
+        result = await this.insertRecord(`INSERT INTO ${this.statusTable} (name, value, timestamp) VALUES("${this.nameCurrentHeight}", 0, 0)`, {});
+        if (result.err) {
+          resolv(result);
+        }
+        else {
+          resolv({ err: 0, data: { value: 0 } })
+        }
+      }
+    });
   }
 }

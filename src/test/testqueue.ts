@@ -35,7 +35,7 @@ async function main() {
 
 
   logger.info('get current height');
-  result = await statusDB.getCurrentHeight();
+  result = await otherDB.getCurrentHeight();
   logger.info(result);
 
   logger.warn('set author')

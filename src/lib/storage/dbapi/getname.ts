@@ -58,7 +58,7 @@ export async function laGetName(handle: WRQueue, args: any) {
       // if it is a number
       let num = parseInt(args);
       handle.logger.info('getName: num:', num)
-      if (num >= 0 && num < handle.pStatusDb.nCurrentHeight) {
+      if (num >= 0 && num < handle.pStorageDb.nCurrentHeight) {
         resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: args, type: HASH_TYPE.HEIGHT, verified: 0 }] });
       }
       else {

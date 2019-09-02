@@ -11,10 +11,10 @@ export class StatusDataBase extends CUDataBase {
   private candyTableName: string;
   private statusTableSchema: string;
   private candyTableSchema: string;
-  private nameCurrentHeight: string;
+  // private nameCurrentHeight: string;
   private nameLoadGenesisFile: string;
 
-  public nCurrentHeight: number; // 
+  // public nCurrentHeight: number; // 
   public nLoadGenesisFile: number;
 
   /**
@@ -30,9 +30,9 @@ export class StatusDataBase extends CUDataBase {
     this.statusTableSchema = '("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE ,"value" INTEGER  NOT NULL, "timestamp" INTEGER NOT NULL);';
     this.candyTableSchema = '("name" CHAR(64) NOT NULL,"token" CHAR(64) NOT NULL,"value" INTEGER  NOT NULL, "timestamp" INTEGER NOT NULL, PRIMARY KEY("name", "token"));';
 
-    this.nameCurrentHeight = 'currentheight';
+    // this.nameCurrentHeight = 'currentheight';
     this.nameLoadGenesisFile = 'loadedgenesis';
-    this.nCurrentHeight = 0;
+    // this.nCurrentHeight = 0;
     this.nLoadGenesisFile = 0;
 
   }
@@ -66,31 +66,31 @@ export class StatusDataBase extends CUDataBase {
     return this.setSomeStatus(this.nameLoadGenesisFile, value);
   }
   // empty record will also return err=0
-  public getCurrentHeight(): Promise<IFeedBack> {
-    return new Promise<IFeedBack>(async (resolv) => {
-      // read current height if fail
-      let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${this.nameCurrentHeight}";`);
+  // public getCurrentHeight(): Promise<IFeedBack> {
+  //   return new Promise<IFeedBack>(async (resolv) => {
+  //     // read current height if fail
+  //     let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${this.nameCurrentHeight}";`);
 
-      if (!result.err) {
-        this.logger.info('-- get height ok')
-        resolv(result);
-      } else {
-        this.logger.info('Insert into statustable now');
-        // insert default height = 0 into the table
-        result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameCurrentHeight}", 0, 0)`, {});
-        if (result.err) {
-          resolv(result);
-        }
-        else {
-          resolv({ err: 0, data: { value: 0 } })
-        }
-      }
-    });
-  }
-  public setCurrentHeight(height: number) {
-    // Update token table, + MINE_REWARD, for every block
-    return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
-  }
+  //     if (!result.err) {
+  //       this.logger.info('-- get height ok')
+  //       resolv(result);
+  //     } else {
+  //       this.logger.info('Insert into statustable now');
+  //       // insert default height = 0 into the table
+  //       result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameCurrentHeight}", 0, 0)`, {});
+  //       if (result.err) {
+  //         resolv(result);
+  //       }
+  //       else {
+  //         resolv({ err: 0, data: { value: 0 } })
+  //       }
+  //     }
+  //   });
+  // }
+  // public setCurrentHeight(height: number) {
+  //   // Update token table, + MINE_REWARD, for every block
+  //   return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
+  // }
   // get Candy function
   public async getCandyTable(address: string, token: string) {
     return new Promise<IFeedBack>(async (resolv) => {
@@ -137,14 +137,14 @@ export class StatusDataBase extends CUDataBase {
         return;
       }
 
-      result = await this.getCurrentHeight();
+      // result = await this.getCurrentHeight();
 
-      if (result.err) {
-        resolv({ err: ErrorCode.RESULT_READ_RECORD_FAILED, data: result.err });
-        return;
-      }
+      // if (result.err) {
+      //   resolv({ err: ErrorCode.RESULT_READ_RECORD_FAILED, data: result.err });
+      //   return;
+      // }
 
-      this.nCurrentHeight = result.data.value;
+      // this.nCurrentHeight = result.data.value;
 
       result = await this.getLoadGenesisFileBool();
 

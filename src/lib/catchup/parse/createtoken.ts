@@ -90,9 +90,6 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
             return result;
         }
 
-        // use transaction
-        await handler.pStorageDb.execRecord('BEGIN', {})
-
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
         handler.logger.debug('caller balance: ' + (valCaller.toNumber() - fee))
 
@@ -102,12 +99,6 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         for (let i = 0; i < preBalances.length; i++) {
             let elem = preBalances[i]
             result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, parseInt(elem.amount).toFixed(precision));
-        }
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
 
         handler.logger.info('\n## parseCreateToken() succeed');

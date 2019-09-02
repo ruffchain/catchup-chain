@@ -58,8 +58,6 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
         }
         let valTokenCaller = new BigNumber(result.data)
 
-        // use transaction
-        await handler.pStorageDb.execRecord('BEGIN', {})
 
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
@@ -69,12 +67,6 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
 
         await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo.plus(new BigNumber(amount)).toString());
 
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
-        }
         handler.logger.info('\n## parseTransferTokenTo() succeed');
     }
     return { err: ErrorCode.RESULT_OK, data: null }

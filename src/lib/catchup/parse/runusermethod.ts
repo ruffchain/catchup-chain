@@ -95,9 +95,6 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
             })
     }
 
-
-    await handler.pStorageDb.execRecord('BEGIN', {});
-
     await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
     for (let i = 0; i < receiptLogLst.length; i++) {
@@ -109,13 +106,7 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
     // update caller account
     await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
-    let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 
-    if (hret.err) {
-        await handler.pStorageDb.execRecord('ROLLBACK', {})
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
-    } else {
-        return { err: ErrorCode.RESULT_OK, data: null };
-    }
+    return { err: ErrorCode.RESULT_OK, data: null };
 
 }

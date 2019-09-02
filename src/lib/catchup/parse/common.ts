@@ -4,7 +4,6 @@ import { SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 
 export async function txFailHandle(handler: Synchro, caller: string, valCaller: BigNumber, creator: string, valCreator: BigNumber, fee: number): Promise<IFeedBack> {
 
-    await handler.pStorageDb.execRecord('BEGIN', {})
 
     handler.logger.debug('txFailHandle caller balance: ' + (valCaller.toNumber() - fee))
     // udpate caller  sys balance
@@ -12,7 +11,6 @@ export async function txFailHandle(handler: Synchro, caller: string, valCaller: 
 
     if (result.err) {
         handler.logger.error('WriteAccountTable caller failed')
-        await handler.pStorageDb.execRecord('ROLLBACK', {})
         return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
     }
 
@@ -21,14 +19,6 @@ export async function txFailHandle(handler: Synchro, caller: string, valCaller: 
 
     if (result.err) {
         handler.logger.error('WriteAccountTable creator failed')
-        await handler.pStorageDb.execRecord('ROLLBACK', {})
-        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
-    }
-
-    let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-
-    if (hret.err) {
-        await handler.pStorageDb.execRecord('ROLLBACK', {})
         return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
     }
 

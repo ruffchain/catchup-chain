@@ -83,8 +83,6 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
         let R = reserve;
         let S = amountAll;
 
-        await handler.pStorageDb.execRecord('BEGIN', {})
-
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
         await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + reserve)).toString());
@@ -96,13 +94,6 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
             let elem = preBalances[i]
             // Here is some problem about lock token
             result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, elem.amount);
-        }
-
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
     }
 

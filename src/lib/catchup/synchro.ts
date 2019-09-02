@@ -186,7 +186,7 @@ export class Synchro {
     }
 
     // get currentHeight, load from database , in statsDb.init()
-    let nCurrentHeight = this.pStatusDb.nCurrentHeight;
+    let nCurrentHeight = this.pStorageDb.nCurrentHeight;
 
     this.logger.info('currentHeight:', nCurrentHeight, ' currentLIB:', this.nCurrentLIBHeight);
 
@@ -306,17 +306,30 @@ export class Synchro {
   private async parseBlockItems(items: IfParseItem[]): Promise<IFeedBack> {
     // parse one block itme
     for (let i = 0; i < items.length; i++) {
+
+      await this.pStorageDb.execRecord('BEGIN;', {});
+
       let hret = await this.parseBlockItem(items[i]);
 
       if (hret.err) {
+        await this.pStorageDb.execRecord('ROLLBACK;', {})
         return { err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_FAILED, data: null }
       }
       let feedback2 = await this.syncHeightAndMineAward(items[i].block.number);
       if (feedback2.err) {
+        await this.pStorageDb.execRecord('ROLLBACK;', {})
         this.logger.error('Save block ', items[i].block.number, ' to height failedd');
         return { err: ErrorCode.RESULT_SYNC_BLOCK_RANGE_SAVE_FAILED, data: {} }
       }
-      this.pStatusDb.nCurrentHeight = items[i].block.number;
+
+      hret = await this.pStorageDb.execRecord('COMMIT;', {})
+
+      if (hret.err) {
+        await this.pStorageDb.execRecord('ROLLBACK;', {})
+        return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
+      }
+
+      this.pStorageDb.nCurrentHeight = items[i].block.number;
     }
     return { err: ErrorCode.RESULT_OK, data: {} }
   }
@@ -356,6 +369,9 @@ export class Synchro {
     }
     let endT2 = new Date().getTime();
     this.logger.info('Delta of insertOrReplaceBlockTable :' + (endT2 - startT2));
+
+    // begin
+    this.pStorageDb
 
     // update creator balance, getFrom Account table
     feedback = await this.laUpdateAccountTable(coinbase, SYS_TOKEN, TOKEN_TYPE.SYS, reward);
@@ -504,15 +520,6 @@ export class Synchro {
     }
   }
 
-  // private calcBusyIndex(txno: number) {
-  //   if (txno === 0) {
-  //     return 0;
-  //   } else if (txno >= 50) {
-  //     return MAX_BUSY_INDEX;
-  //   } else {
-  //     return MAX_BUSY_INDEX * txno / 50;
-  //   }
-  // }
   private async updateTxUserCount(): Promise<IFeedBack> {
     let nTxCount = 0;
     // get tx count
@@ -746,7 +753,7 @@ export class Synchro {
       })));
     if (result2.err) { return result2; }
 
-    let hret = await this.pStatusDb.setCurrentHeight(height);
+    let hret = await this.pStorageDb.setCurrentHeight(height);
     return hret;
   }
   // private async syncBlockData(obj: any) {
@@ -1268,12 +1275,16 @@ export class Synchro {
   //   return { err: ErrorCode.RESULT_OK, data: null };
   // }
   private async batchInsertTxToHashTable(taskLst: IfTaskItem[]): Promise<IFeedBack> {
-    let hashLst: string[] = [];
+
     for (let i = 0; i < taskLst.length; i++) {
-      hashLst.push(taskLst[i].tx.hash);
+
+      let feedback = await this.pStorageDb.insertOrReplaceHashTable(taskLst[i].tx.hash, HASH_TYPE.TX);
+      if (feedback.err) {
+        return feedback;
+      }
     }
-    let feedback = await this.pStorageDb.batchInsertOrReplaceHashTAble(hashLst, HASH_TYPE.TX);
-    return feedback;
+
+    return { err: ErrorCode.RESULT_OK, data: {} };
   }
   private async batchInsertTxTable(bhash: string, nheight: number, dtime: number, taskLst: IfTaskItem[]): Promise<IFeedBack> {
     this.logger.info('batchInsertTxTable run ');

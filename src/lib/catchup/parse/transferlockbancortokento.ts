@@ -53,8 +53,6 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
         }
         let valTokenTo = new BigNumber(result.data)
 
-        // use transaction
-        await handler.pStorageDb.execRecord('BEGIN', {})
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
@@ -64,11 +62,6 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
 
         await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo.plus(new BigNumber(amount)).toString());
 
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
-        }
         handler.logger.info('\n## parseTransferLockBancorTokenTo() succeed');
     }
 

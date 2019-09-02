@@ -65,8 +65,6 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
 
     } else {
         let val: number = parseFloat(receipt.tx.value);
-        // use transaction
-        await handler.pStorageDb.execRecord('BEGIN', {})
 
         // update caller sys balance
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + val)).toString());
@@ -79,12 +77,6 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
-        }
     }
 
     // update to txTransferToTable

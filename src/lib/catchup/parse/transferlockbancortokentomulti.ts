@@ -82,8 +82,6 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
             tosTokenLst.push({ address: newTos[i].address, amount: new BigNumber(hres.data).plus(new BigNumber(newTos[i].amount)) })
         }
 
-        // use transaction
-        await handler.pStorageDb.execRecord('BEGIN', {})
         // update caller SYS balance
         await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
@@ -96,11 +94,6 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
         for (let i = 0; i < tosTokenLst.length; i++) {
             handler.logger.info('update ' + tosTokenLst[i].address + ' val: ' + tosTokenLst[i].amount);
             await handler.laWriteAccountTable(tosTokenLst[i].address, tokenName, tokenType, tosTokenLst[i].amount.toString())
-        }
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
         }
     }
     handler.logger.info('\n## parseTransferLockBancorTokenToMulti() succeed');

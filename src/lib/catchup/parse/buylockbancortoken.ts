@@ -85,13 +85,11 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
         R = R.plus(e);
         S = S.plus(out);
 
-        await handler.pStorageDb.execRecord('BEGIN', {})
 
         // change F, S, R
         result = await handler.pStorageDb.insertBancorTokenTable(tokenName, F.toNumber(), R.toString(), S.toString());
         if (result.err) {
             handler.logger.error('insert bancortokentable params failed')
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
             return result;
         }
 
@@ -104,12 +102,6 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
         // update creator balance
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
-        let hret = await handler.pStorageDb.execRecord('COMMIT', {})
-
-        if (hret.err) {
-            await handler.pStorageDb.execRecord('ROLLBACK', {})
-            return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null }
-        }
 
         handler.logger.info('\n## parseBuyLockBancorToken() succeed');
     }

@@ -1,7 +1,7 @@
 import { Logger } from "../api/logger";
 import { Synchro } from "../lib/catchup/synchro";
 import { StatusDataBase } from "../lib/storage/statusdb";
-import { StorageDataBase, TOKEN_TYPE, SYS_TOKEN } from "../lib/storage/StorageDataBase";
+import { StorageDataBase, TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../lib/storage/StorageDataBase";
 import { subtractBN3 } from "../lib/storage/compute";
 import { BigNumber } from "../core";
 
@@ -175,6 +175,14 @@ async function main() {
   console.log('nX: ', nX);
   console.log('number: x', nX.toNumber())
   console.log('nX string: ', nX.toString())
+
+  await storageDB.execRecord('BEGIN', {})
+
+  await storageDB.insertHashTable('abcdefg', HASH_TYPE.TOKEN)
+
+  await storageDB.insertHashTable('hijklmn', HASH_TYPE.TOKEN)
+
+  await storageDB.execRecord('COMMIT', {});
 
   // console.log(result2.data.value)
   // test statement
