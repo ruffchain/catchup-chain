@@ -3,6 +3,7 @@ import { Synchro } from "../lib/catchup/synchro";
 import { StatusDataBase } from "../lib/storage/statusdb";
 import { StorageDataBase, TOKEN_TYPE, SYS_TOKEN } from "../lib/storage/StorageDataBase";
 import { subtractBN3 } from "../lib/storage/compute";
+import { BigNumber } from "../core";
 
 
 const logger = Logger.init({
@@ -166,6 +167,14 @@ async function main() {
   console.log('To read bancortoken table')
   result = await storageDB.queryBancorTokenTable('TOKEN102');
   console.log(result);
+
+  let x = 122.001122334455667788;
+  let nX = new BigNumber(x);
+
+  console.log('x: ', x);
+  console.log('nX: ', nX);
+  console.log('number: x', nX.toNumber())
+  console.log('nX string: ', nX.toString())
 
   // console.log(result2.data.value)
   // test statement

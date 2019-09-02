@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro, IName } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { HASH_TYPE, TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 import { NORMAL_TOKEN_PRECISION } from "../../storage/dbapi/scoop";
 import { queryCallerCreator, txFailHandle } from "./common";
@@ -38,7 +38,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
             address: element.address
         })
         addrLst.push(element.address)
-        amountAll += parseFloat(parseFloat(element.amount).toPrecision(precision));
+        amountAll += parseFloat(parseFloat(element.amount).toFixed(precision));
     });
 
     addrLst.push(caller);
@@ -61,7 +61,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
     if (result.err) {
         return result;
     }
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     if (receipt.receipt.returnCode !== 0) {
         handler.logger.debug('Failed transaction, fee: ' + fee)
@@ -93,15 +93,15 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         // use transaction
         await handler.pStorageDb.execRecord('BEGIN', {})
 
-        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
-        handler.logger.debug('caller balance: ' + (valCaller - fee))
+        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
+        handler.logger.debug('caller balance: ' + (valCaller.toNumber() - fee))
 
-        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
         // update accounts token account table
         for (let i = 0; i < preBalances.length; i++) {
             let elem = preBalances[i]
-            result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, parseFloat(parseFloat(elem.amount).toPrecision(precision)));
+            result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, parseInt(elem.amount).toFixed(precision));
         }
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 

@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
-import { IFeedBack, ErrorCode, ValueBlockExecutor } from "../../../core";
+import { IFeedBack, ErrorCode, ValueBlockExecutor, BigNumber } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
 
@@ -31,7 +31,7 @@ export async function parseUnmortgage(handler: Synchro, recept: IfParseReceiptIt
         return result;
     }
 
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     handler.logger.info('parseUnmortgage, updateBalances ' + (-fee))
     feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);

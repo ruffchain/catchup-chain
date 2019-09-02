@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro, IName } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 import { BANCOR_TOKEN_PRECISION } from "../../storage/dbapi/scoop";
 import { queryCallerCreator, txFailHandle } from "./common";
@@ -50,7 +50,7 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
         return result;
     }
 
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     if (receipt.receipt.returnCode !== 0) {
         // update caller balance
@@ -85,17 +85,17 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
 
         await handler.pStorageDb.execRecord('BEGIN', {})
 
-        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
-        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + reserve)).toString());
         // Still use network method
-        result = await handler.pStorageDb.insertBancorTokenTable(tokenName, F, R, S);
+        result = await handler.pStorageDb.insertBancorTokenTable(tokenName, F, new BigNumber(R).toString(), new BigNumber(S).toString());
 
         // update accounts token account table
         for (let i = 0; i < preBalances.length; i++) {
             let elem = preBalances[i]
             // Here is some problem about lock token
-            result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, parseFloat(elem.amount));
+            result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, elem.amount);
         }
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})

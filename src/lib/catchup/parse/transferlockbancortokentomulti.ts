@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
 
@@ -54,7 +54,7 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
         return result;
     }
 
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     if (receipt.receipt.returnCode !== 0) {
         // update caller balance
@@ -70,32 +70,32 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
         if (result.err) {
             return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
         }
-        let valTokenCaller = result.data
+        let valTokenCaller = new BigNumber(result.data)
 
         // query tos token balance
-        let tosTokenLst: { address: string, amount: number }[] = [];
+        let tosTokenLst: { address: string, amount: BigNumber }[] = [];
         for (let i = 0; i < newTos.length; i++) {
             let hres = await handler.laQueryAccountTable(newTos[i].address, tokenName);
             if (hres.err) {
                 return { err: ErrorCode.RESULT_SYNC_GETBALANCE_FAILED, data: null }
             }
-            tosTokenLst.push({ address: newTos[i].address, amount: hres.data + parseFloat(newTos[i].amount) })
+            tosTokenLst.push({ address: newTos[i].address, amount: new BigNumber(hres.data).plus(new BigNumber(newTos[i].amount)) })
         }
 
         // use transaction
         await handler.pStorageDb.execRecord('BEGIN', {})
         // update caller SYS balance
-        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
-        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
         // update caller token balance
-        result = await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller - amountAll);
+        result = await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller.minus(new BigNumber(amountAll)).toString());
 
         // update tos token balance
         for (let i = 0; i < tosTokenLst.length; i++) {
             handler.logger.info('update ' + tosTokenLst[i].address + ' val: ' + tosTokenLst[i].amount);
-            await handler.laWriteAccountTable(tosTokenLst[i].address, tokenName, tokenType, tosTokenLst[i].amount)
+            await handler.laWriteAccountTable(tosTokenLst[i].address, tokenName, tokenType, tosTokenLst[i].amount.toString())
         }
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
         if (hret.err) {

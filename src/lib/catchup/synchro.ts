@@ -7,7 +7,7 @@ import { getBlock } from '../../api/getblock'
 import { getReceipt } from '../../api/getreceipt';
 import { StatusDataBase } from '../storage/statusdb';
 import { StorageDataBase, HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from '../storage/StorageDataBase';
-import { ErrorCode, IFeedBack } from '../../core';
+import { ErrorCode, IFeedBack, BigNumber } from '../../core';
 import { getBalance } from '../../api/getbalance';
 import { getTokenBalance } from '../../api/getTokenBalance';
 import { getBancorTokenBalance } from '../../api/getBancorTokenBalance';
@@ -1605,7 +1605,7 @@ export class Synchro {
       }
 
 
-      let result = await this.pStorageDb.insertBancorTokenTable(tokenName, F, R, S);
+      let result = await this.pStorageDb.insertBancorTokenTable(tokenName, F, R.toString(), S.toString());
       if (result.err) {
         resolv(result);
         return;
@@ -1643,7 +1643,7 @@ export class Synchro {
         return;
       }
 
-      let result = await this.pStorageDb.updateBancorTokenTable(tokenName, F, R, S);
+      let result = await this.pStorageDb.updateBancorTokenTable(tokenName, F, R.toString(), S.toString());
       if (result.err) {
         this.logger.error('updateBancorTokenTable failed:', F, R, S)
         resolv(result);
@@ -2027,21 +2027,21 @@ export class Synchro {
     return result;
   }
   public async laQueryAccountTable(addr: string, token: string): Promise<IFeedBack> {
-    let oldValue = 0;
+    let oldValue = '';
 
     let feedback2 = await this.pStorageDb.queryAccountTableByTokenAndAddress(addr, token);
     if (feedback2.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-      oldValue = 0;
+      oldValue = '0';
     } else if (feedback2.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
     } else {
-      oldValue = feedback2.data.value
+      oldValue = feedback2.data.amount  // string
     }
 
     return { err: ErrorCode.RESULT_OK, data: oldValue };
   }
-  public async laWriteAccountTable(addr: string, token: string, tokenType: string, amount: number): Promise<IFeedBack> {
-    let feedback2 = await this.pStorageDb.insertAccountTable(addr, token, tokenType, amount.toString(), amount);
+  public async laWriteAccountTable(addr: string, token: string, tokenType: string, amount: string): Promise<IFeedBack> {
+    let feedback2 = await this.pStorageDb.insertAccountTable(addr, token, tokenType, amount, new BigNumber(amount).toNumber());
 
     if (feedback2.err) {
       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
@@ -2050,20 +2050,21 @@ export class Synchro {
   }
 
   // single write command
-  public async laUpdateAccountTable(addr: string, token: string, tokenType: string, amount: number): Promise<IFeedBack> {
-    let oldValue = 0;
+  public async laUpdateAccountTable(addr: string, token: string, tokenType: string, amount: string): Promise<IFeedBack> {
+    let oldValue: BigNumber = new BigNumber(0);
     let feedback2 = await this.pStorageDb.queryAccountTableByTokenAndAddress(addr, token);
 
     if (feedback2.err === ErrorCode.RESULT_DB_RECORD_EMPTY) {
-      oldValue = 0;
+      oldValue = new BigNumber('0');
     } else if (feedback2.err === ErrorCode.RESULT_DB_TABLE_GET_FAILED) {
       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }
     } else {
-      oldValue = feedback2.data.value
-    }
-    oldValue += amount;
+      oldValue = new BigNumber(feedback2.data.amount);
+    };
+    oldValue = oldValue.plus(new BigNumber(amount));
 
-    feedback2 = await this.pStorageDb.updateAccountTable(addr, token, tokenType, oldValue.toString(), oldValue);
+
+    feedback2 = await this.pStorageDb.updateAccountTable(addr, token, tokenType, oldValue.toString(), oldValue.toNumber());
 
     if (feedback2.err) {
       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: {} }

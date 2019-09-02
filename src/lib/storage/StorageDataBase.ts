@@ -81,7 +81,7 @@ export class StorageDataBase extends CUDataBase {
 
     // This is the real-time parameter, name is UpperCase
     // for bancor token parameters, tokenname-factor-reserve-supply
-    this.bancorTokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "factor" INTEGER NOT NULL, "reserve" INTEGER NOT NULL,"supply" INTEGER NOT NULL);`;
+    this.bancorTokenTableSchema = `("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE, "factor" INTEGER NOT NULL, "reserve" TEXT NOT NULL,"supply" TEXT NOT NULL);`;
 
     // tx-address table - address
     this.txAddressTableSchema = `("hash" CHAR(64) NOT NULL ,"address" CHAR(64) NOT NULL, "timestamp" INTEGER NOT NULL, PRIMARY KEY("hash", "address"));`;
@@ -532,15 +532,15 @@ export class StorageDataBase extends CUDataBase {
   //   return { err: ErrorCode.RESULT_OK, data: null };
   // }
 
-  public insertBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
+  public insertBancorTokenTable(tokenname: string, factor: number, reserve: string, supply: string) {
     let sql = SqlString.format('INSERT OR REPLACE INTO ? (name, factor, reserve, supply) VALUES(?, ?, ?, ?);', [this.bancorTokenTable, tokenname, factor, reserve, supply])
     return this.insertRecord(sql, {});
   }
-  public updateBancorTokenByName(tokenname: string, factor: number, reserve: number, supply: number) {
+  public updateBancorTokenByName(tokenname: string, factor: number, reserve: string, supply: string) {
     let sql = SqlString.format('UPDATE ? SET reserve = ? , supply = ? WHERE name =?;', [this.bancorTokenTable, reserve, supply, tokenname])
     return this.updateRecord(sql, {});
   }
-  public updateBancorTokenTable(tokenname: string, factor: number, reserve: number, supply: number) {
+  public updateBancorTokenTable(tokenname: string, factor: number, reserve: string, supply: string) {
     return new Promise<IFeedBack>(async (resolv) => {
       let result = await this.queryBancorTokenTable(tokenname)
 

@@ -1,7 +1,7 @@
 import { Logger } from './api/logger';
 import { StatusDataBase } from './lib/storage/statusdb';
 import { StorageDataBase, SYS_TOKEN, HASH_TYPE, TOKEN_TYPE } from './lib/storage/StorageDataBase';
-import { IFeedBack } from './core';
+import { IFeedBack, BigNumber } from './core';
 import winston = require('winston');
 import * as fs from 'fs-extra';
 import { Synchro } from './lib/catchup/synchro';
@@ -140,7 +140,7 @@ async function main() {
 
       // console.log(i, ' newAmount: ', newAmount)
 
-      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, newAmount.toString(), newAmount), 'add to account table ', logger);
+      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, new BigNumber(newAmount).toString(), newAmount), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 

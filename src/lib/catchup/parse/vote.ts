@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
 
@@ -31,7 +31,7 @@ export async function parseVote(handler: Synchro, recept: IfParseReceiptItem): P
         return result;
     }
 
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     // update caller balance
     handler.logger.info('parseVote, updateBalances, fee: ' + (-fee))

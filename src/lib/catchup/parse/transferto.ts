@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { HASH_TYPE, TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
 
@@ -46,13 +46,13 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         return result;
     }
 
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     result = await handler.laQueryAccountTable(to, SYS_TOKEN)
     if (result.err) {
         return result;
     }
-    let valTo = result.data;
+    let valTo = new BigNumber(result.data);
 
 
     if (receipt.receipt.returnCode !== 0) {
@@ -69,15 +69,15 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         await handler.pStorageDb.execRecord('BEGIN', {})
 
         // update caller sys balance
-        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee - val);
+        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + val)).toString());
 
-        handler.logger.debug('caller balance: ' + (valCaller - fee - val))
+        handler.logger.debug('caller balance: ' + (valCaller.toNumber() - fee - val))
         // udpate to sys balance
-        result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo + val);
+        result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo.plus(new BigNumber(val)).toString());
 
-        handler.logger.debug('to balance: ' + (valTo + val))
+        handler.logger.debug('to balance: ' + (valTo.toNumber() + val))
 
-        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 

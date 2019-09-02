@@ -1,5 +1,5 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
 
 export async function parseRunUserMethod(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
@@ -20,7 +20,7 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
     if (receipt.tx.input.action === 'doTransfer') {
         return checkDoTransfer(handler, receipt);
     } else {
-        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, - fee);
+        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, (-fee).toString());
         if (feedback.err) {
             return feedback;
         }
@@ -51,7 +51,7 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
     let caller = receipt.tx.caller;
 
     if (receipt.receipt.returnCode !== 0) {
-        let feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
+        let feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, (-fee).toString());
         if (feedback.err) {
             return feedback;
         }
@@ -63,7 +63,7 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
         handler.logger.error('query account table fail');
         return feedback;
     }
-    let valCaller = feedback.data;
+    let valCaller = new BigNumber(feedback.data);
 
     let receiptLogLst: { from: string, to: string, fromValue: number, toValue: number }[] = [];
     for (let i = 0; i < mReceipt.logs.length; i++) {
@@ -78,13 +78,13 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
         if (feedback.err) {
             return { err: ErrorCode.RESULT_READ_RECORD_FAILED, data: null }
         }
-        fromV = feedback.data;
+        fromV = parseFloat(feedback.data);
 
         feedback = await handler.laQueryAccountTable(to, SYS_TOKEN);
         if (feedback.err) {
             return { err: ErrorCode.RESULT_READ_RECORD_FAILED, data: null }
         }
-        toV = feedback.data;
+        toV = parseFloat(feedback.data);
 
         receiptLogLst.push(
             {
@@ -98,16 +98,16 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
 
     await handler.pStorageDb.execRecord('BEGIN', {});
 
-    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
     for (let i = 0; i < receiptLogLst.length; i++) {
         let recept = receiptLogLst[i];
-        let feedback = await handler.laWriteAccountTable(recept.from, SYS_TOKEN, TOKEN_TYPE.SYS, recept.fromValue);
+        let feedback = await handler.laWriteAccountTable(recept.from, SYS_TOKEN, TOKEN_TYPE.SYS, recept.fromValue.toString());
 
-        feedback = await handler.laWriteAccountTable(recept.to, SYS_TOKEN, TOKEN_TYPE.SYS, recept.toValue);
+        feedback = await handler.laWriteAccountTable(recept.to, SYS_TOKEN, TOKEN_TYPE.SYS, recept.toValue.toString());
     }
     // update caller account
-    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
     let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 

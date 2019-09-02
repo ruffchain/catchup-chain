@@ -27,7 +27,7 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
         return result;
     }
 
-    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
 
     if (receipt.receipt.returnCode !== 0) {
@@ -45,7 +45,7 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
             return result;
         }
 
-        let valToken = result.data;
+        let valToken = new BigNumber(result.data);
         handler.logger.info('valToken: ' + valToken)
 
         // get old F, S, R
@@ -89,7 +89,7 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
         await handler.pStorageDb.execRecord('BEGIN', {})
 
         // change F, S, R
-        result = await handler.pStorageDb.insertBancorTokenTable(tokenName, F.toNumber(), R.toNumber(), S.toNumber());
+        result = await handler.pStorageDb.insertBancorTokenTable(tokenName, F.toNumber(), R.toString(), S.toString());
         if (result.err) {
             handler.logger.error('insert bancortokentable params failed')
             await handler.pStorageDb.execRecord('ROLLBACK', {})
@@ -97,12 +97,12 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
         }
 
         // udpate caller token
-        result = await handler.laWriteAccountTable(caller, tokenName, TOKEN_TYPE.BANCOR, valToken - e.toNumber());
+        result = await handler.laWriteAccountTable(caller, tokenName, TOKEN_TYPE.BANCOR, valToken.minus(e).toString());
 
         // update caller sys
-        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee + out.toNumber());
+        await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).plus(out).toString());
 
-        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
+        await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
         let hret = await handler.pStorageDb.execRecord('COMMIT', {})
 

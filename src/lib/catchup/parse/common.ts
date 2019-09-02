@@ -1,14 +1,14 @@
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { Synchro } from "../synchro";
 import { SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 
-export async function txFailHandle(handler: Synchro, caller: string, valCaller: number, creator: string, valCreator: number, fee: number): Promise<IFeedBack> {
+export async function txFailHandle(handler: Synchro, caller: string, valCaller: BigNumber, creator: string, valCreator: BigNumber, fee: number): Promise<IFeedBack> {
 
     await handler.pStorageDb.execRecord('BEGIN', {})
 
-    handler.logger.debug('txFailHandle caller balance: ' + (valCaller - fee))
+    handler.logger.debug('txFailHandle caller balance: ' + (valCaller.toNumber() - fee))
     // udpate caller  sys balance
-    let result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller - fee);
+    let result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
     if (result.err) {
         handler.logger.error('WriteAccountTable caller failed')
@@ -17,7 +17,7 @@ export async function txFailHandle(handler: Synchro, caller: string, valCaller: 
     }
 
     // udpate creator sys balance
-    result = await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator + fee);
+    result = await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
     if (result.err) {
         handler.logger.error('WriteAccountTable creator failed')

@@ -21,7 +21,7 @@ export async function parseDefaultCommand(handler: Synchro, receipt: IfParseRece
         return feedback
     }
 
-    feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, - fee);
+    feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, (-fee).toString());
     if (feedback.err) {
         return feedback;
     }
