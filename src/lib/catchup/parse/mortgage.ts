@@ -1,6 +1,7 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode } from "../../../core";
 import { HASH_TYPE, SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
+import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem): Promise<IFeedBack> {
 
@@ -9,6 +10,7 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
     let time = recept.block.timestamp;
     let fee = parseFloat(recept.tx.fee);
     let val = parseFloat(recept.tx.value);
+    let creator = recept.block.creator;
 
     handler.logger.info('\n## parseMortgage()');
 
@@ -26,21 +28,19 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
         return (feedback);
     }
 
-    handler.logger.info('parseMortgage, updateBalances')
+    let result = await queryCallerCreator(handler, caller, creator);
+    if (result.err) {
+        return result;
+    }
 
-    if (recept.receipt.returnCode !== 0) {
-        // update caller balance
-        handler.logger.info('caller value change ' + (- fee));
-        let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee);
-        if (result.err) {
-            return result
-        }
-    } else {
-        handler.logger.info('caller value change ' + (-fee - val));
-        let result = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, -fee - val);
-        if (result.err) {
-            return result
-        }
+    let [valCaller, valCreator] = [result.data.valCaller, result.data.valCreator];
+
+    handler.logger.info('parseMortgage, updateBalances ' + valCaller + ' ' + valCreator);
+
+    handler.logger.info('caller value change ' + (- fee));
+    result = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
+    if (result.err) {
+        return result
     }
 
     handler.logger.info('\n## parseMortgage() succeed');
