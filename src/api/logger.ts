@@ -17,7 +17,7 @@ export class Logger {
       ]
     });
     Logger.logger.configure({
-      level: 'verbose',
+      level: 'debug',
       transports: [
         new winston.transports.Console(),
         new DailyRotateFile({

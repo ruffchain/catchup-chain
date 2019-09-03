@@ -20,8 +20,7 @@ export async function laGetTxsByAddress(handle: WRQueue, args: any) {
     } else {
       try {
         argsObj = JSON.parse(JSON.stringify(args));
-        // result = await handle.pStorageDb.queryTxTableByAddress(argsObj.address,
-        //   (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
+
         handle.logger.info('getTxsByAddress ', argsObj)
 
         result = await handle.pStorageDb.queryHashFromTxAddressTable(argsObj.address, (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);

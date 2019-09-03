@@ -101,7 +101,7 @@ export class StorageDataBase extends CUDataBase {
 
     this.statusTableSchema = '("name" CHAR(64) PRIMARY KEY NOT NULL UNIQUE ,"value" INTEGER  NOT NULL, "timestamp" INTEGER NOT NULL);';
 
-    this.nCurrentHeight = 0;
+    this.nCurrentHeight = -1;
   }
 
   public init(): Promise<IFeedBack> {
@@ -663,28 +663,6 @@ export class StorageDataBase extends CUDataBase {
 
   }
 
-  // public async singleCmdInsertLBTT(cmds: SingleCmd[]): Promise<IFeedBack> {
-  //   this.logger.info('into singleCmdInsertLBTT')
-  //   await this.execRecord('BEGIN;', {});
-  //   for (let i = 0; i < cmds.length; i++) {
-  //     try {
-  //       let args = cmds[i].args as IfLBTTTArgs;
-  //       let sql = SqlString.format('REPLACE INTO ? (hash, token, amount, dueamount, dueblock, duetime) VALUES (?,?,?,?,?,?);', [this.accountLockBancorTokenTable, args.address, args.token, args.amount, args.dueAmount, args.dueBlock, args.dueTime]);
-  //       let result = await this.execRecord(sql, {});
-  //       if (result.err) {
-  //         throw new Error("execRecord");
-  //       }
-  //     } catch (e) {
-  //       this.logger.err('run insert fail, singleCmdInsertLBTT');
-  //       await this.db.run('ROLLBACK;');
-  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-  //     }
-  //   }
-
-  //   await this.execRecord('COMMIT;', {});
-  //   return { err: ErrorCode.RESULT_OK, data: null };
-  // }
-
   public updateALTTable(address: string, token: string, amount: string, dueAmount: string, dueBlock: number, dueTime: number): Promise<IFeedBack> {
 
     // update new one
@@ -697,37 +675,6 @@ export class StorageDataBase extends CUDataBase {
   ////////////////////////////////////
   // txTransferTo table
   ////////////////////////////////////
-  // public async singleCmdInsertTransferToTable(cmds: SingleCmd[]): Promise<IFeedBack> {
-  //   this.logger.info('into singleCmdInsertTransferToTable')
-  //   await this.execRecord('BEGIN;', {});
-  //   for (let i = 0; i < cmds.length; i++) {
-  //     try {
-  //       let args = cmds[i].args as IfTTTTArgs;
-  //       let sql = SqlString.format('INSERT OR REPLACE INTO ? (hash, blockhash, blocknumber, address, timestamp, content, toaddress, returncode) VALUES($hash, $blockhash, $blocknumber ,$address, $datetime, $content1, $toaddress, $returncode);', [this.txTransferToTable]);
-
-  //       let result = await this.execRecord(sql, {
-  //         $hash: SqlString.escape(args.hash).replace(/\'/g, ''),
-  //         $blockhash: SqlString.escape(args.blockhash).replace(/\'/g, ''),
-  //         $blocknumber: SqlString.escape(args.blocknumber),
-  //         $address: SqlString.escape(args.address).replace(/\'/g, ''),
-  //         $datetime: SqlString.escape(args.datetime),
-  //         $content1: args.content,
-  //         $toaddress: args.toaddress,
-  //         $returncode: args.returncode
-  //       });
-  //       if (result.err) {
-  //         throw new Error("execRecord");
-  //       }
-  //     } catch (e) {
-  //       this.logger.err('run insert fail, singleCmdInsertTransferToTable');
-  //       await this.db.run('ROLLBACK;');
-  //       return { err: ErrorCode.RESULT_DB_TABLE_FAILED, data: null };
-  //     }
-  //   }
-
-  //   await this.execRecord('COMMIT;', {});
-  //   return { err: ErrorCode.RESULT_OK, data: null };
-  // }
 
 
   public insertTxTransferToTable(hash: string, blockhash: string, blocknumber: number, address: string, datetime: number, content1: Buffer, toaddr: string, returncode: number) {
@@ -770,7 +717,7 @@ export class StorageDataBase extends CUDataBase {
 
   // status table
   public setCurrentHeight(height: number) {
-    // Update token table, + MINE_REWARD, for every block
+    // Update 
     return this.updateRecord(`UPDATE ${this.statusTable} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
   }
   // empty record will also return err=0

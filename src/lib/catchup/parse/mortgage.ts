@@ -10,7 +10,7 @@ export async function parseMortgage(handler: Synchro, recept: IfParseReceiptItem
     let time = recept.block.timestamp;
     let fee = parseFloat(recept.tx.fee);
     let val = parseFloat(recept.tx.value);
-    let creator = recept.block.creator;
+    let creator = recept.block.coinbase;
 
     handler.logger.info('\n## parseMortgage()');
 

@@ -12,7 +12,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
 
     let blockhash = receipt.block.hash;
     let blocknumber = receipt.block.number;
@@ -56,7 +56,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
 
 
     if (receipt.receipt.returnCode !== 0) {
-        handler.logger.debug('Failed transaction, fee: ' + fee + ' old balance : ' + valCaller)
+        handler.logger.info('Failed transaction, fee: ' + fee + ' old balance : ' + valCaller)
         let result = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
         if (result.err) {
             handler.logger.error('createToken tx failed.')
@@ -69,11 +69,11 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
         // update caller sys balance
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + val)).toString());
 
-        handler.logger.debug('caller balance: ' + (valCaller.toNumber() - fee - val))
+        handler.logger.info('caller balance: ' + (valCaller.toNumber() - fee - val))
         // udpate to sys balance
         result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo.plus(new BigNumber(val)).toString());
 
-        handler.logger.debug('to balance: ' + (valTo.toNumber() + val))
+        handler.logger.info('to balance: ' + (valTo.toNumber() + val))
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 

@@ -18,7 +18,7 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
 
     handler.logger.info('\n## parseCreateLockBancorToken()');
 
@@ -93,7 +93,12 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
         for (let i = 0; i < preBalances.length; i++) {
             let elem = preBalances[i]
             // Here is some problem about lock token
-            result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, elem.amount);
+            if (elem.lock_amount) {
+                let sum: number = parseFloat(elem.amount) + parseFloat(elem.lock_amount);
+                result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, sum.toString());
+            } else {
+                result = await handler.laWriteAccountTable(elem.address, tokenName, tokenType, elem.amount);
+            }
         }
     }
 

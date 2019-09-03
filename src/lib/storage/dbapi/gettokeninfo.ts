@@ -16,16 +16,6 @@ export async function laGetTokenInfo(handle: WRQueue, args: any) {
     if (result.err === ErrorCode.RESULT_OK) {
       result.data.content = JSON.parse(result.data.content);
 
-      // if (token === 'SYS') {
-      //   let result2 = await handle.pStorageDb.querySumOfToken('s');
-      //   if (result2.err === 0) {
-      //     result.data.content = {
-      //       supply: parseFloat(result2.data.nsum),
-      //       precision: SYS_TOKEN_PRECISION
-      //     }
-      //   }
-      // }
-
       resolv(result);
     } else {
       resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENINFO_FAILED, data: {} })

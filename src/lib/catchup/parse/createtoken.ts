@@ -16,7 +16,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
 
     // put it into hash table–––
     handler.logger.info('\n## parseCreateToken()');
@@ -64,7 +64,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
     let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     if (receipt.receipt.returnCode !== 0) {
-        handler.logger.debug('Failed transaction, fee: ' + fee)
+        handler.logger.info('Failed transaction, fee: ' + fee)
         // caller -fee
         // creator + fee
         let result = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
@@ -91,7 +91,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
         }
 
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
-        handler.logger.debug('caller balance: ' + (valCaller.toNumber() - fee))
+        handler.logger.info('caller balance: ' + (valCaller.toNumber() - fee))
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 

@@ -16,7 +16,7 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
     let tos = receipt.tx.input.to;
     let fee = parseFloat(receipt.tx.fee);
     let amountAll: number = 0;
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
 
     let newTos: { address: string, amount: string }[] = [];
 

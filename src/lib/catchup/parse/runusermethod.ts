@@ -1,13 +1,15 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
+import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseRunUserMethod(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     let caller = receipt.tx.caller;
     let hash = receipt.tx.hash;
     let addrLst = [caller];
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.receipt.cost);
+    let fee = parseFloat(receipt.receipt.cost)
+    let creator = receipt.block.coinbase;
 
     handler.logger.info('\n## parseRunUserMethod()');
 
@@ -17,10 +19,17 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
         return feedback;
     }
 
+    let result = await queryCallerCreator(handler, caller, creator);
+    if (result.err) {
+        return result;
+    }
+
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
+
     if (receipt.tx.input.action === 'doTransfer') {
         return checkDoTransfer(handler, receipt);
     } else {
-        feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, (-fee).toString());
+        feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
         if (feedback.err) {
             return feedback;
         }
@@ -49,21 +58,22 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
     let mReceipt = receipt.receipt;
     let fee = parseFloat(receipt.receipt.cost);
     let caller = receipt.tx.caller;
+    let creator = receipt.block.coinbase;
+
+    let result = await queryCallerCreator(handler, caller, creator);
+    if (result.err) {
+        return result;
+    }
+
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
     if (receipt.receipt.returnCode !== 0) {
-        let feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, (-fee).toString());
+        let feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
         if (feedback.err) {
             return feedback;
         }
         return feedback;
     }
-    // return code === 0
-    let feedback = await handler.laQueryAccountTable(caller, SYS_TOKEN);
-    if (feedback.err) {
-        handler.logger.error('query account table fail');
-        return feedback;
-    }
-    let valCaller = new BigNumber(feedback.data);
 
     let receiptLogLst: { from: string, to: string, fromValue: number, toValue: number }[] = [];
     for (let i = 0; i < mReceipt.logs.length; i++) {
@@ -95,16 +105,23 @@ async function checkDoTransfer(handler: Synchro, receipt: any): Promise<IFeedBac
             })
     }
 
-    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
-
     for (let i = 0; i < receiptLogLst.length; i++) {
         let recept = receiptLogLst[i];
         let feedback = await handler.laWriteAccountTable(recept.from, SYS_TOKEN, TOKEN_TYPE.SYS, recept.fromValue.toString());
+        if (feedback.err) {
+            return feedback;
+        }
 
         feedback = await handler.laWriteAccountTable(recept.to, SYS_TOKEN, TOKEN_TYPE.SYS, recept.toValue.toString());
+        if (feedback.err) {
+            return feedback;
+        }
     }
     // update caller account
-    await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
+    let feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
+    if (feedback.err) {
+        return feedback;
+    }
 
 
     return { err: ErrorCode.RESULT_OK, data: null };

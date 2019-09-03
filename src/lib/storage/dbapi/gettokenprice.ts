@@ -25,8 +25,8 @@ export async function laGetTokenPrice(handle: WRQueue, args: any) {
       return;
     } else {
       F = result.data.factor;
-      S = result.data.supply;
-      R = result.data.reserve;
+      S = parseFloat(result.data.supply);
+      R = parseFloat(result.data.reserve);
 
       if (F === 1) {
         result.data.price = 1;

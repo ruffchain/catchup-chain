@@ -25,9 +25,9 @@ export async function laGetBancorTokenParams(handle: WRQueue, args: any) {
       return;
     } else {
       F = result.data.factor;
-      S = result.data.supply;
+      S = parseFloat(result.data.supply);
       // To make the displayed Reserve value to be fixed 
-      R = parseFloat(result.data.reserve.toFixed(NORMAL_TOKEN_PRECISION));
+      R = parseFloat(parseFloat(result.data.reserve).toFixed(NORMAL_TOKEN_PRECISION));
       // result.data.price = S * F / R;
     }
     resolv({

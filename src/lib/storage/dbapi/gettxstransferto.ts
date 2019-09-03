@@ -21,8 +21,7 @@ export async function laGetTxsTransferTo(handle: WRQueue, args: any) {
         } else {
             try {
                 argsObj = JSON.parse(JSON.stringify(args));
-                // result = await handle.pStorageDb.queryTxTableByAddress(argsObj.address,
-                //   (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);
+
                 handle.logger.info('GetTxsTransferTo ', argsObj)
 
                 result = await handle.pStorageDb.queryTxTransferToByPage(argsObj.address, (argsObj.page > 0) ? (argsObj.page - 1) : 0, argsObj.pageSize);

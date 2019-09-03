@@ -17,9 +17,9 @@ export async function laGetTokensByAddress(handle: WRQueue, args: any) {
       arr = result.data;
 
       for (let i = 0; i < arr.length; i++) {
+        arr[i].amount = parseFloat(arr[i].amount)
         if (arr[i].token === 's') {
           arr[i].token = 'SYS'
-          break
         }
       }
 

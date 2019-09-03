@@ -14,9 +14,10 @@ export async function laGetAccounts(handle: WRQueue, args: any) {
       let arr = result.data;
 
       for (let i = 0; i < arr.length; i++) {
+        arr[i].amount = parseFloat(arr[i].amount);
+
         if (arr[i].token === 's') {
           arr[i].token = 'SYS'
-          break;
         }
       }
 

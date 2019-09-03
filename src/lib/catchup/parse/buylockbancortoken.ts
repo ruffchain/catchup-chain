@@ -12,7 +12,7 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
     let value = parseFloat(receipt.tx.value);
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
 
     // insert into txaddresstable
     let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
@@ -54,9 +54,9 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
         let F = new BigNumber(result.data.factor);
         let R = new BigNumber(result.data.reserve);
         let S = new BigNumber(result.data.supply);
-        handler.logger.debug('F: ' + F)
-        handler.logger.debug('R: ', R);
-        handler.logger.debug('S: ' + S);
+        handler.logger.info('F: ' + F)
+        handler.logger.info('R: ', R);
+        handler.logger.info('S: ' + S);
 
         // compute it
         let e = new BigNumber(value);

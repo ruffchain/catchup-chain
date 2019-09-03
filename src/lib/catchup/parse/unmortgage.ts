@@ -9,7 +9,7 @@ export async function parseUnmortgage(handler: Synchro, recept: IfParseReceiptIt
     let time = recept.block.timestamp;
     let val = parseFloat(recept.tx.input);
     let fee = parseFloat(recept.tx.fee);
-    let creator = recept.block.creator;
+    let creator = recept.block.coinbase;
 
     handler.logger.info('\n## parseMortgage()');
     handler.logger.info('parseUnmortgage, updateNamesToHashTable')

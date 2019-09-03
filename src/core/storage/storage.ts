@@ -160,10 +160,10 @@ export abstract class Storage extends IReadWritableStorage {
         await this.uninit();
         if (fs.existsSync(this.m_filePath)) {
             try {
-                this.m_logger.debug(`about to remove storage file `, this.m_filePath);
+                this.m_logger.info(`about to remove storage file `, this.m_filePath);
                 fs.unlinkSync(this.m_filePath);
             } catch (e) {
-                this.m_logger.error(`remove storage ${this.m_filePath} failed `, e);
+                this.m_logger.info(`remove storage ${this.m_filePath} failed `, e);
                 return ErrorCode.RESULT_EXCEPTION;
             }
         }

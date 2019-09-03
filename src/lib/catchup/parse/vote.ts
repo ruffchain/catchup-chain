@@ -9,7 +9,7 @@ export async function parseVote(handler: Synchro, recept: IfParseReceiptItem): P
     let hash = recept.tx.hash;
     let time = recept.block.timestamp;
     let fee = parseFloat(recept.tx.fee)
-    let creator = recept.block.creator;
+    let creator = recept.block.coinbase;
 
     handler.logger.info('\n## parseVote()');
 

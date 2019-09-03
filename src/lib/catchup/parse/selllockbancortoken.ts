@@ -13,7 +13,7 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
     let addrLst = [caller];
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee)
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
     let amount = receipt.tx.input.amount
 
     // insert into txaddresstable

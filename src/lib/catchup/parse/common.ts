@@ -5,7 +5,7 @@ import { SYS_TOKEN, TOKEN_TYPE } from "../../storage/StorageDataBase";
 export async function txFailHandle(handler: Synchro, caller: string, valCaller: BigNumber, creator: string, valCreator: BigNumber, fee: number): Promise<IFeedBack> {
 
 
-    handler.logger.debug('txFailHandle caller balance: ' + (valCaller.toNumber() - fee))
+    handler.logger.info('txFailHandle caller balance: ' + (valCaller.toNumber() - fee))
     // udpate caller  sys balance
     let result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 

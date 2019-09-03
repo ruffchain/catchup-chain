@@ -14,9 +14,11 @@ export async function laGetAccount(handle: WRQueue, args: any) {
       let arr = result.data;
 
       for (let i = 0; i < arr.length; i++) {
+        // Yang Jun 2019-9-3
+        arr[i].amount = parseFloat(arr[i].amount);
+
         if (arr[i].token === 's') {
           arr[i].token = 'SYS'
-          break
         }
       }
 

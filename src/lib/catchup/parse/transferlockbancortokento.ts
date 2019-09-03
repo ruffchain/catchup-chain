@@ -14,7 +14,7 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee);
     let amount = parseFloat(receipt.tx.input.amount);
-    let creator = receipt.block.creator;
+    let creator = receipt.block.coinbase;
 
     // insert into txaddresstable
     let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller, to], time);

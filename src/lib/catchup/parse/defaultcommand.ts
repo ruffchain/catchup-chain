@@ -1,12 +1,14 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
-import { IFeedBack, ErrorCode } from "../../../core";
+import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
+import { txFailHandle, queryCallerCreator } from "./common";
 
 export async function parseDefaultCommand(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     let caller = receipt.tx.caller;
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let fee = parseFloat(receipt.tx.fee)
+    let creator = receipt.block.coinbase;
 
     handler.logger.info('\n## parseDefaultCommand()');
 
@@ -21,9 +23,16 @@ export async function parseDefaultCommand(handler: Synchro, receipt: IfParseRece
         return feedback
     }
 
-    feedback = await handler.laUpdateAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, (-fee).toString());
-    if (feedback.err) {
-        return feedback;
+    let result = await queryCallerCreator(handler, caller, creator);
+    if (result.err) {
+        return result;
+    }
+
+    let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
+
+    result = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
+    if (result.err) {
+        return result
     }
 
     handler.logger.info('\n## parseDefaultCommand() succeed');

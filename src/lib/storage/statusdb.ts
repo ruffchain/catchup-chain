@@ -65,32 +65,7 @@ export class StatusDataBase extends CUDataBase {
   public setLoadGenesisFileBool(value: number) {
     return this.setSomeStatus(this.nameLoadGenesisFile, value);
   }
-  // empty record will also return err=0
-  // public getCurrentHeight(): Promise<IFeedBack> {
-  //   return new Promise<IFeedBack>(async (resolv) => {
-  //     // read current height if fail
-  //     let result = await this.getRecord(`SELECT value, timestamp FROM ${this.statusTableName} WHERE name = "${this.nameCurrentHeight}";`);
 
-  //     if (!result.err) {
-  //       this.logger.info('-- get height ok')
-  //       resolv(result);
-  //     } else {
-  //       this.logger.info('Insert into statustable now');
-  //       // insert default height = 0 into the table
-  //       result = await this.insertRecord(`INSERT INTO ${this.statusTableName} (name, value, timestamp) VALUES("${this.nameCurrentHeight}", 0, 0)`, {});
-  //       if (result.err) {
-  //         resolv(result);
-  //       }
-  //       else {
-  //         resolv({ err: 0, data: { value: 0 } })
-  //       }
-  //     }
-  //   });
-  // }
-  // public setCurrentHeight(height: number) {
-  //   // Update token table, + MINE_REWARD, for every block
-  //   return this.updateRecord(`UPDATE ${this.statusTableName} SET value=${height} WHERE name="${this.nameCurrentHeight}";`, {});
-  // }
   // get Candy function
   public async getCandyTable(address: string, token: string) {
     return new Promise<IFeedBack>(async (resolv) => {

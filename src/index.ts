@@ -133,13 +133,6 @@ async function main() {
       amountAll += preBalance.amount; // add it up
       let newAmount = preBalance.amount;
 
-      // if (preBalance.address === coinbase) {
-      //   newAmount += MINE_REWARD;
-      //   amountAll += MINE_REWARD; // 0 block reward
-      // }
-
-      // console.log(i, ' newAmount: ', newAmount)
-
       assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, new BigNumber(newAmount).toString(), newAmount), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);

@@ -144,7 +144,7 @@ export abstract class CUDataBase {
   public getRecord(sql: string): Promise<IFeedBack> {
     return new Promise<IFeedBack>((resolv) => {
       this.db.get(sql, (err: any, row: any) => {
-        this.logger.info('getRecord', err, row)
+        this.logger.info('getRecord > ', err, row)
         if (err) {
           resolv({ err: ErrorCode.RESULT_DB_TABLE_GET_FAILED, data: err })
         } else if (!row) {

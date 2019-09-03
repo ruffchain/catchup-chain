@@ -10,7 +10,7 @@ export async function parseRegister(handler: Synchro, recept: IfParseReceiptItem
     let time = recept.block.timestamp;
     let fee = parseFloat(recept.tx.fee)
     let val = parseFloat(recept.tx.value);
-    let creator = recept.block.creator;
+    let creator = recept.block.coinbase;
 
     handler.logger.info('\n## parseRegister()');
 
@@ -67,19 +67,3 @@ export async function parseUnregister(handler: Synchro, recept: IfParseReceiptIt
     handler.logger.info('\n## parseUnregister() succeed');
     return { err: ErrorCode.RESULT_OK, data: null }
 }
-// async function updateHashTxAddressTable(handler: Synchro, addresses: string[], hash: string, time: number): Promise<IFeedBack> {
-//     handler.logger.info('updateHashTxAddressTable');
-
-//     let feedback = await handler.pStorageDb.updateNamesToHashTable(addresses, HASH_TYPE.ADDRESS);
-
-//     if (feedback.err) {
-//         return feedback;
-//     }
-
-//     feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, addresses, time);
-//     if (feedback.err) {
-//         return feedback;
-//     }
-
-//     return { err: ErrorCode.RESULT_OK, data: null };
-// }
