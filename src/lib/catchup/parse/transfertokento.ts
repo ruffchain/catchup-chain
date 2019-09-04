@@ -11,7 +11,7 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
     let amount = parseFloat(receipt.tx.input.amount);
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let creator = receipt.block.coinbase;
 
     handler.logger.info('\n## parseTransferTokenTo()');

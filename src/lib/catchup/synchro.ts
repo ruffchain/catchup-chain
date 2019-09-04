@@ -42,6 +42,7 @@ import { parseBuyLockBancorToken } from './parse/buylockbancortoken';
 import { parseRunUserMethod } from './parse/runusermethod';
 import { parseDefaultCommand } from './parse/defaultcommand';
 import { bEnableGetCandy } from '../..';
+import { parseSetUserCode } from './parse/setUserCode';
 
 /**
  * This is a client , always syncing with the Chain
@@ -462,6 +463,10 @@ export class Synchro {
   private async parseAccountAndTokens(receiptlst: IfParseReceiptItem[]): Promise<IFeedBack> {
     this.logger.info('parseAccountAndTokens , len: ' + receiptlst.length);
     for (let i = 0; i < receiptlst.length; i++) {
+      // save hash to hash table
+      let hret = await this.pStorageDb.updateNamesToHashTable([receiptlst[i].tx.hash], HASH_TYPE.TX);
+      if (hret.err) { return hret; }
+
       let feedback = await this.parseAccountAndToken(receiptlst[i])
       if (feedback.err) {
         return { err: ErrorCode.RESULT_ERROR_STATE, data: {} }
@@ -518,9 +523,10 @@ export class Synchro {
     else if (tx.method === 'runUserMethod') {
       return parseRunUserMethod(this, recet);
     }
-    else if (tx.method === 'setUserCode'
-      || tx.method === 'getUserCode'
-    ) {
+    else if (tx.method === 'setUserCode') {
+      return parseSetUserCode(this, recet);
+    }
+    else if (tx.method === 'xxx') {
       this.logger.info('We wont handle tx:', tx.method, '\n')
       return parseDefaultCommand(this, recet);
     }

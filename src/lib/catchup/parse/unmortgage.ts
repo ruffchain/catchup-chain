@@ -8,20 +8,14 @@ export async function parseUnmortgage(handler: Synchro, recept: IfParseReceiptIt
     let hash = recept.tx.hash;
     let time = recept.block.timestamp;
     let val = parseFloat(recept.tx.input);
-    let fee = parseFloat(recept.tx.fee);
+    let fee = parseFloat(recept.receipt.cost);
     let creator = recept.block.coinbase;
 
     handler.logger.info('\n## parseMortgage()');
     handler.logger.info('parseUnmortgage, updateNamesToHashTable')
 
-    let feedback = await handler.pStorageDb.updateNamesToHashTable([caller], HASH_TYPE.ADDRESS);
-
-    if (feedback.err) {
-        return feedback;
-    }
-
     // insert into txaddresstable
-    feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller], time);
+    let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller], time);
     if (feedback.err) {
         return feedback
     }

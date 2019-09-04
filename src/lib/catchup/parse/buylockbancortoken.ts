@@ -1,6 +1,6 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
-import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
@@ -10,12 +10,18 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
     let hash = receipt.tx.hash;
     let addrLst = [caller];
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let value = parseFloat(receipt.tx.value);
     let creator = receipt.block.coinbase;
 
+    let feedback = await handler.pStorageDb.updateNamesToHashTable([hash], HASH_TYPE.TX);
+    if (feedback.err) {
+        handler.logger.error('error updateNamesToHashTable');
+        return feedback
+    }
+
     // insert into txaddresstable
-    let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
+    feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, addrLst, time);
     if (feedback.err) {
         return feedback;
     }

@@ -17,13 +17,14 @@ export async function parseCreateLockBancorToken(handler: Synchro, receipt: IfPa
     let reserve = parseFloat(receipt.tx.value)
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let creator = receipt.block.coinbase;
 
     handler.logger.info('\n## parseCreateLockBancorToken()');
 
     preBalances.forEach((element: any) => {
         nameLst.push({ address: element.address });
+
         amountAll += parseFloat(element.amount);
         if (element.lock_amount) {
             amountAll += parseFloat(element.lock_amount);

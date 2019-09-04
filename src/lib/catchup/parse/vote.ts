@@ -8,20 +8,15 @@ export async function parseVote(handler: Synchro, recept: IfParseReceiptItem): P
     let caller = recept.tx.caller;
     let hash = recept.tx.hash;
     let time = recept.block.timestamp;
-    let fee = parseFloat(recept.tx.fee)
+    let fee = parseFloat(recept.receipt.cost)
     let creator = recept.block.coinbase;
 
     handler.logger.info('\n## parseVote()');
 
     handler.logger.info('parseVote, updateNamesToHashTable')
-    let feedback = await handler.pStorageDb.updateNamesToHashTable([caller], HASH_TYPE.ADDRESS);
-
-    if (feedback.err) {
-        return feedback
-    }
 
     // insert into txaddresstable
-    feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller], time);
+    let feedback = await handler.pStorageDb.updateHashToTxAddressTable(hash, [caller], time);
     if (feedback.err) {
         return feedback
     }

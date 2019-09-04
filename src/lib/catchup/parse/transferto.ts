@@ -11,7 +11,7 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     let to = receipt.tx.input.to;
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let creator = receipt.block.coinbase;
 
     let blockhash = receipt.block.hash;

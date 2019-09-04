@@ -14,7 +14,7 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
     let tos = receipt.tx.input.to;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let amountAll: number = 0;
     let creator = receipt.block.coinbase;
 
@@ -48,7 +48,6 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
         return feedback;
     }
 
-
     let result = await queryCallerCreator(handler, caller, creator);
     if (result.err) {
         return result;
@@ -63,8 +62,6 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
             return feedback;
         }
     } else {
-        // query caller SYS balance
-
         // query caller token balance
         result = await handler.laQueryAccountTable(caller, tokenName)
         if (result.err) {

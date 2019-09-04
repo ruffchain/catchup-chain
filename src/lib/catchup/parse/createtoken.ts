@@ -15,7 +15,7 @@ export async function parseCreateToken(handler: Synchro, receipt: IfParseReceipt
     let precision: number = parseInt(receipt.tx.input.precision);
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let creator = receipt.block.coinbase;
 
     // put it into hash table–––

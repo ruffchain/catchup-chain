@@ -1,6 +1,6 @@
 import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
-import { TOKEN_TYPE, SYS_TOKEN } from "../../storage/StorageDataBase";
+import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
 
 export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: IfParseReceiptItem, tokenType: string): Promise<IFeedBack> {
@@ -12,7 +12,7 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
     let to = receipt.tx.input.to;
     let hash = receipt.tx.hash;
     let time = receipt.block.timestamp;
-    let fee = parseFloat(receipt.tx.fee);
+    let fee = parseFloat(receipt.receipt.cost);
     let amount = parseFloat(receipt.tx.input.amount);
     let creator = receipt.block.coinbase;
 
