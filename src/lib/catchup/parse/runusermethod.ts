@@ -2,6 +2,7 @@ import { IfParseReceiptItem, Synchro } from "../synchro";
 import { IFeedBack, ErrorCode, BigNumber } from "../../../core";
 import { TOKEN_TYPE, SYS_TOKEN, HASH_TYPE } from "../../storage/StorageDataBase";
 import { queryCallerCreator, txFailHandle } from "./common";
+import { laGetSysByToken } from "../../storage/dbapi/getsysbytoken";
 
 export async function parseRunUserMethod(handler: Synchro, receipt: IfParseReceiptItem): Promise<IFeedBack> {
     let caller = receipt.tx.caller;
@@ -11,6 +12,7 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
     let fee = parseFloat(receipt.receipt.cost)
     let creator = receipt.block.coinbase;
     let value = parseFloat(receipt.tx.value)
+    let logs = receipt.receipt.logs;
 
     handler.logger.info('\n## parseRunUserMethod()');
 
@@ -27,9 +29,68 @@ export async function parseRunUserMethod(handler: Synchro, receipt: IfParseRecei
 
     let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
 
-    if (receipt.tx.input.action === 'doTransfer') {
-        return parseDoTransfer(handler, receipt);
+    if (receipt.receipt.returnCode !== 0) {
+        feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
+        if (feedback.err) {
+            return feedback;
+        }
     } else {
+        for (let i = 0; i < logs.length; i++) {
+            let log = logs[i]
+            if (log.name === 'setUserCode') {
+                handler.logger.debug('setUserCode in logs')
+            }
+            else if (log.name === 'transfer') {
+                let from = log.param.from;
+                let to = log.param.to;
+                let value = new BigNumber(log.param.value);
+
+                // update from
+                let result = await handler.laUpdateAccountTable(from, SYS_TOKEN, TOKEN_TYPE.SYS, value.multipliedBy(-1).toString())
+                if (result.err) {
+                    return result;
+                }
+                // update to
+                result = await handler.laUpdateAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, value.toString())
+                if (result.err) {
+                    return result;
+                }
+
+            }
+            else if (log.name === 'tokenTransfer') {
+                let from = log.param.from;
+                let to = log.param.to;
+                let value = new BigNumber(log.param.value);
+                let tokenname = log.param.tokenName;
+
+                // get tokentype
+                let hret = await handler.pStorageDb.queryTokenTable(tokenname);
+                if (hret.err) { return hret }
+                let tokentype = hret.data.type;
+
+                // update from
+                let result = await handler.laUpdateAccountTable(from, tokenname, tokentype, value.multipliedBy(-1).toString())
+                if (result.err) {
+                    return result;
+                }
+                // update to
+                result = await handler.laUpdateAccountTable(to, tokenname, tokentype, value.toString())
+                if (result.err) {
+                    return result;
+                }
+            }
+            else {
+                throw new Error('Unknown name: ' + log.name)
+            }
+        }
+
+        let result = await queryCallerCreator(handler, caller, creator);
+        if (result.err) {
+            return result;
+        }
+
+        let [valCaller, valCreator] = [new BigNumber(result.data.valCaller), new BigNumber(result.data.valCreator)];
+
         feedback = await txFailHandle(handler, caller, valCaller, creator, valCreator, fee);
         if (feedback.err) {
             return feedback;

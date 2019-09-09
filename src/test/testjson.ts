@@ -29,15 +29,15 @@ let storageDB = new StorageDataBase(logger, {
 
 // Operation on RuffChain
 let synchro = new Synchro({
-  ip: '40.73.96.202',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219, 40.73.1.241
+  ip: '40.73.34.219',  // '127.0.0.1'    '139.219.184.44' 40.73.100.56  40.73.34.219, 40.73.1.241
   port: 18089,
   batch: 10
-}, logger, statusDB, storageDB);
+}, logger, statusDB, storageDB, true);
 
 
 let SYSINFO: IfSysinfo = {
   secret: '',
-  host: '40.73.96.202', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219  40.73.35.23 
+  host: '40.73.34.219', // ,     '40.73.1.241'    '127.0.0.1' 40.73.100.56 40.73.34.219  40.73.35.23 
   port: 18080,
   address: '',
   verbose: true
@@ -49,7 +49,7 @@ let client = new RPCClient(
   SYSINFO
 );
 
-let queue = new WRQueue(logger, statusDB, storageDB, synchro);
+// let queue = new WRQueue(logger, statusDB, storageDB, synchro);
 
 // logger.info(queue.isANumber("1B"));
 
@@ -80,7 +80,7 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
   it('getLatestBlocks', async () => {
     this.timeout(33000);
     let cr = await client.callAsync('getLatestBlocks', { page: 1, pageSize: 5 })
-    // logger.info(cr);
+    logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);
@@ -88,8 +88,8 @@ describe('To test Catchup v1.0.2 JSON API', async function () {
 
   it('getCandy', async () => {
     this.timeout(33000);
-    let cr = await client.callAsync('getCandy', { token: 'SYS', address: '159ueJXY2cBK78pjrsJXwhPGsWfJTJeik1' })
-    // logger.info(cr);
+    let cr = await client.callAsync('getCandy', { token: 'SYS', address: '12m7oMvesbfFCmiLuHpGdHMpUpq7B5p4ig' })
+    logger.info(cr);
     logger.info(cr.resp)
     let obj = JSON.parse(cr.resp!)
     expect(1).to.equal(1);

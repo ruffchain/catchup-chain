@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import { Synchro } from './lib/catchup/synchro';
 import { Inquiro } from './lib/catchup/inquiro';
 import { WRQueue } from './lib/storage/queue';
-import { SYS_TOKEN_PRECISION, MINE_REWARD, DEPOSIT_VALUE } from './lib/storage/dbapi/scoop';
+import { SYS_TOKEN_PRECISION } from './lib/storage/dbapi/scoop';
 
 
 interface IPreBalance {
@@ -86,18 +86,20 @@ let serverObj = fs.readJsonSync('./config/server.json');
 console.log("server.json:")
 console.log(serverObj);
 
+// You need privileged account to send candy, default is false
+export const bEnableGetCandy = serverObj.enableGetCandy
+
 let client = new Synchro({
 
   ip: serverObj.ip,
   port: serverObj.port,
   batch: 20
-}, logger, statusDB, storageDB);
+}, logger, statusDB, storageDB, bEnableGetCandy);
 
 
 const genesisFile = serverObj.genesisFile;
 
-// You need privileged account to send candy, default is false
-export const bEnableGetCandy = serverObj.enableGetCandy
+
 
 let queue = new WRQueue(logger, statusDB, storageDB, client);
 

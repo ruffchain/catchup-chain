@@ -30,7 +30,8 @@
     "ip": "xx.xx.xx.xx",
     "port": 18089,
     "enableGetCandy": false,
-    "localPort": 18080
+    "localPort": 18080,
+    "genesisFile": "./config/xxx/genesis.json"
 }
 
 // need the right genesisFile under ./config/ directory

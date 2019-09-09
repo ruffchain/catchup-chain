@@ -48,7 +48,7 @@ let synchro = new Synchro({
   ip: HOST, // '139.219.184.44'   '127.0.0.1'
   port: 18089,
   batch: 10
-}, logger, statusDB, storageDB);
+}, logger, statusDB, storageDB, false);
 
 async function main() {
   // get current height

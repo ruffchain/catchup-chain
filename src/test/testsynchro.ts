@@ -20,11 +20,11 @@ let storageDB = new StorageDataBase(logger, {
   path: './data/db/'
 })
 
-// let synchro = new Synchro({
-//   ip: '40.73.35.23', // '139.219.184.44'   '127.0.0.1' 40.73.100.56, 40.73.35.23
-//   port: 18089,
-//   batch: 10
-// }, logger, statusDB, storageDB);
+let synchro = new Synchro({
+  ip: '40.73.35.23', // '139.219.184.44'   '127.0.0.1' 40.73.100.56, 40.73.35.23
+  port: 18089,
+  batch: 10
+}, logger, statusDB, storageDB, true);
 
 // synchro.getLastestBlock();
 
@@ -63,15 +63,18 @@ const txLst = [
 async function main() {
   let result;
 
-  //result = await synchro.laGetCandidates();
+  result = await synchro.laGetCandidates();
 
   //console.log(result);
   // result = await synchro.getLockBancorTokenBalanceInfo('TOKEN2', '16ZJ7mRgkWf4bMmQFoyLkqW8eUCA5JqTHg');
 
   // console.log(result);
 
-  // result = await synchro.getLIBNumber();
-  // logger.info(result);
+  result = await synchro.getLIBNumber();
+  logger.info(result);
+
+
+
   // result = await synchro.laGetMiners();
   // logger.info(result);
   // if (result.ret === 200) {
@@ -160,29 +163,29 @@ async function main() {
   await statusDB.open();
   await storageDB.open();
 
-  let result2 = await storageDB.queryAccountTableByTokenAndAddress('17qMsJfCWz97Ag2rkrMttWjyiNybXioz3d', SYS_TOKEN);
-  logger.info(result2);
-  console.log(result2)
+  // let result2 = await storageDB.queryAccountTableByTokenAndAddress('17qMsJfCWz97Ag2rkrMttWjyiNybXioz3d', SYS_TOKEN);
+  // logger.info(result2);
+  // console.log(result2)
 
-  console.log('To read bancortoken table')
-  result = await storageDB.queryBancorTokenTable('TOKEN102');
-  console.log(result);
+  // console.log('To read bancortoken table')
+  // result = await storageDB.queryBancorTokenTable('TOKEN102');
+  // console.log(result);
 
-  let x = 122.001122334455667788;
-  let nX = new BigNumber(x);
+  // let x = 122.001122334455667788;
+  // let nX = new BigNumber(x);
 
-  console.log('x: ', x);
-  console.log('nX: ', nX);
-  console.log('number: x', nX.toNumber())
-  console.log('nX string: ', nX.toString())
+  // console.log('x: ', x);
+  // console.log('nX: ', nX);
+  // console.log('number: x', nX.toNumber())
+  // console.log('nX string: ', nX.toString())
 
-  await storageDB.execRecord('BEGIN', {})
+  // await storageDB.execRecord('BEGIN', {})
 
-  await storageDB.insertHashTable('abcdefg', HASH_TYPE.TOKEN)
+  // await storageDB.insertHashTable('abcdefg', HASH_TYPE.TOKEN)
 
-  await storageDB.insertHashTable('hijklmn', HASH_TYPE.TOKEN)
+  // await storageDB.insertHashTable('hijklmn', HASH_TYPE.TOKEN)
 
-  await storageDB.execRecord('COMMIT', {});
+  // await storageDB.execRecord('COMMIT', {});
 
   // console.log(result2.data.value)
   // test statement

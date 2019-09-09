@@ -41,7 +41,6 @@ import { parseSellLockBancorToken } from './parse/selllockbancortoken';
 import { parseBuyLockBancorToken } from './parse/buylockbancortoken';
 import { parseRunUserMethod } from './parse/runusermethod';
 import { parseDefaultCommand } from './parse/defaultcommand';
-import { bEnableGetCandy } from '../..';
 import { parseSetUserCode } from './parse/setUserCode';
 
 /**
@@ -107,7 +106,7 @@ export class Synchro {
   // private latestMinerLst: string[];
   private busyIndex: number;
 
-  constructor(options: IfSynchroOptions, logger: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase) {
+  constructor(options: IfSynchroOptions, logger: winston.LoggerInstance, statusdb: StatusDataBase, storagedb: StorageDataBase, bCandy: boolean) {
     this.ip = options.ip;
     this.port = options.port;
     this.logger = logger;
@@ -116,16 +115,20 @@ export class Synchro {
     // get account secret for distributing candy
     let bossObj: any
     try {
-      if (bEnableGetCandy === true) {
+      if (bCandy === true) {
+        this.logger.info('bCandy is:' + bCandy)
         let boss = fs.readFileSync('./secret/boss.json')
         bossObj = JSON.parse(boss.toString());
       } else { // false, not enabled
+        this.logger.info('Can not read boss.json file')
         bossObj = { address: '', secret: '' }
       }
 
     } catch (e) {
       throw new Error('Can not open secret json file')
     }
+    this.logger.info('boss:' + bossObj.address);
+
 
     let SYSINFO: IfSysinfo = {
       secret: bossObj.secret,
