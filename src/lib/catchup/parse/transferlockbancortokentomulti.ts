@@ -23,7 +23,9 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
     for (let i = 0; i < tos.length; i++) {
         to.push(tos[i].address);
         addressArr.push({ address: tos[i].address });
-        amountAll += parseFloat(tos[i].amount);
+        if (caller !== tos[i].address) {
+            amountAll += parseFloat(tos[i].amount);
+        }
 
         let item = newTos.find((elem) => {
             return tos[i].address === elem.address;
@@ -89,6 +91,10 @@ export async function parseTransferLockBancorTokenToMulti(handler: Synchro, rece
 
         // update tos token balance
         for (let i = 0; i < tosTokenLst.length; i++) {
+            if (tosTokenLst[i].address === caller) {
+                continue;
+            }
+
             handler.logger.info('update ' + tosTokenLst[i].address + ' val: ' + tosTokenLst[i].amount);
             await handler.laWriteAccountTable(tosTokenLst[i].address, tokenName, tokenType, tosTokenLst[i].amount.toString())
         }

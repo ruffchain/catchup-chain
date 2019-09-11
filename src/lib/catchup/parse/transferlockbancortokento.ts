@@ -53,14 +53,18 @@ export async function parseTransferLockBancorTokenTo(handler: Synchro, receipt: 
         }
         let valTokenTo = new BigNumber(result.data)
 
+        if (caller === to) {
+            handler.logger.info('caller equal to address' + to)
+        } else {
+            await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller.minus(new BigNumber(amount)).toString());
+
+            await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo.plus(new BigNumber(amount)).toString());
+        }
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
         await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
-        await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller.minus(new BigNumber(amount)).toString());
-
-        await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo.plus(new BigNumber(amount)).toString());
 
         handler.logger.info('\n## parseTransferLockBancorTokenTo() succeed');
     }

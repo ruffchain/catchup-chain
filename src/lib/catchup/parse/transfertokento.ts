@@ -58,14 +58,18 @@ export async function parseTransferTokenTo(handler: Synchro, receipt: IfParseRec
         }
         let valTokenCaller = new BigNumber(result.data)
 
+        if (caller === to) {
+            handler.logger.info('caller eq to address')
+        } else {
+            await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller.minus(new BigNumber(amount)).toString());
+
+            await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo.plus(new BigNumber(amount)).toString());
+        }
+
 
         result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
-
-        await handler.laWriteAccountTable(caller, tokenName, tokenType, valTokenCaller.minus(new BigNumber(amount)).toString());
-
-        await handler.laWriteAccountTable(to, tokenName, tokenType, valTokenTo.plus(new BigNumber(amount)).toString());
 
         handler.logger.info('\n## parseTransferTokenTo() succeed');
     }

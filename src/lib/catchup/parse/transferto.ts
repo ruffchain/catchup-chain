@@ -66,14 +66,21 @@ export async function parseTransferTo(handler: Synchro, receipt: IfParseReceiptI
     } else {
         let val: number = parseFloat(receipt.tx.value);
 
-        // update caller sys balance
-        result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + val)).toString());
+        if (caller === to) {
+            result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee)).toString());
 
-        handler.logger.info('caller balance: ' + (valCaller.toNumber() - fee - val))
-        // udpate to sys balance
-        result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo.plus(new BigNumber(val)).toString());
+            handler.logger.info('caller balance: ' + (valCaller.toNumber() - fee))
+        } else {
+            // update caller sys balance
+            result = await handler.laWriteAccountTable(caller, SYS_TOKEN, TOKEN_TYPE.SYS, valCaller.minus(new BigNumber(fee + val)).toString());
 
-        handler.logger.info('to balance: ' + (valTo.toNumber() + val))
+            handler.logger.info('caller balance: ' + (valCaller.toNumber() - fee - val))
+
+            // udpate to sys balance
+            result = await handler.laWriteAccountTable(to, SYS_TOKEN, TOKEN_TYPE.SYS, valTo.plus(new BigNumber(val)).toString());
+
+            handler.logger.info('to balance: ' + (valTo.toNumber() + val))
+        }
 
         await handler.laWriteAccountTable(creator, SYS_TOKEN, TOKEN_TYPE.SYS, valCreator.plus(new BigNumber(fee)).toString());
 
