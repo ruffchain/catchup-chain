@@ -48,7 +48,7 @@ import { parseSetUserCode } from './parse/setUserCode';
  * 
  */
 
-const PERIOD = 5;
+const PERIOD = 3;
 const MAX_BUSY_INDEX = 10;
 
 interface IfSynchroOptions {
@@ -208,7 +208,7 @@ export class Synchro {
     await this.updateGetLatestBlocks();
 
     this.logger.info('-------- end of looptask() -----------\n');
-    this.logger.info('Delay ', PERIOD, ' seconds\n');
+
     let delay = PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX;
     this.logger.info('Delay looptask ', delay, ' seconds\n');
 
