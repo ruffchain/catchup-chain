@@ -402,6 +402,12 @@ export class Synchro {
       }
       let endT3 = new Date().getTime();
       this.logger.info('Delta of parseTxs :' + (endT3 - startT3));
+
+      // 
+
+      this.busyIndex = (txno > 50) ? 10 : (txno > 30) ? 7 : (txno > 15) ? 5 : (txno > 10) ? 3 : 1;
+    } else {
+      this.busyIndex = 0;
     }
 
     this.logger.info('\nEnd of save block hash to hash table, update block: ' + hashnumber)
