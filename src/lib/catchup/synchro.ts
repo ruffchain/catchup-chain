@@ -209,7 +209,10 @@ export class Synchro {
 
     this.logger.info('-------- end of looptask() -----------\n');
     this.logger.info('Delay ', PERIOD, ' seconds\n');
-    await DelayPromise(PERIOD);
+    let delay = PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX;
+    this.logger.info('Delay looptask ', delay, ' seconds\n');
+
+    await DelayPromise(delay);
     this.loopTask2();
   }
   /**
@@ -263,7 +266,7 @@ export class Synchro {
     this.logger.info('-------- end of looptask2() -----------\n');
 
     let delay = PERIOD * (MAX_BUSY_INDEX - this.busyIndex) / MAX_BUSY_INDEX;
-    this.logger.info('Delay ', delay, ' seconds\n');
+    this.logger.info('Delay loopTask2 ', delay, ' seconds\n');
     await DelayPromise(delay);
     this.loopTask();
   }
