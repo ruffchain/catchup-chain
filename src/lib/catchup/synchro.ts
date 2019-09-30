@@ -1006,7 +1006,7 @@ export class Synchro {
     return result
   }
   public async transferCandy(address: string, value: number) {
-    let result = await transferTo(this.ctx, [address, value + '', 0.001 + '']);
+    let result = await transferTo(this.ctx, [address, value + '', 0.1 + '']);
     return result;
   }
 

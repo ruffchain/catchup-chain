@@ -89,7 +89,7 @@ async function main() {
     console.log('Transfer from ', userList[i].name, ' to ', userList[MAX_USERNUM - i - 1].name, ' ' + sysForEither);
 
     let prom = new Promise<IfResult>(async (resolve) => {
-      let result = await setApi(userList[i].ctx, [userList[MAX_USERNUM - i - 1].getAddress(), sysForEither + '', 0.001 + ''], userList[i]);
+      let result = await setApi(userList[i].ctx, [userList[MAX_USERNUM - i - 1].getAddress(), sysForEither + '', 0.1 + ''], userList[i]);
 
       console.log(result);
       resolve({ ret: 200, resp: 'Send over by ' + userList[i].name });

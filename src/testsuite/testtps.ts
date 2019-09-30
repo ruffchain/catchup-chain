@@ -51,7 +51,7 @@ let userLst: User[] = [];
 function doWork() {
   return new Promise(async (resolve) => {
     console.log(colors.red('\n************************************\n'))
-    let result = await transferTo(userBoss.ctx, [userDeputy.getAddress(), 1000 + '', 0.001 + '']);
+    let result = await transferTo(userBoss.ctx, [userDeputy.getAddress(), 1000 + '', 0.1 + '']);
     console.log(colors.green(userDeputy.name))
     console.log(result);
 
@@ -63,7 +63,7 @@ function doWork() {
       console.log('\nTransfer to ', i, ' user')
       let user = new User('User' + i, SYSINFO, null);
       userLst.push(user);
-      let result = await setApi(userDeputy.ctx, [user.getAddress(), 10 + '', 0.001 + ''], userDeputy);
+      let result = await setApi(userDeputy.ctx, [user.getAddress(), 10 + '', 0.1 + ''], userDeputy);
       logger.info(result);
     }
     result = await getBalance(userDeputy.ctx, [userDeputy.getAddress()]);
@@ -76,7 +76,7 @@ function doWork() {
     let promiseLst: Promise<IfResult>[] = [];
     for (let i = 0; i < userLst.length; i++) {
       let user = userLst[i];
-      promiseLst.push(setApi(user.ctx, [userDeputy.getAddress(), 1 + '', 0.001 + ''], user))
+      promiseLst.push(setApi(user.ctx, [userDeputy.getAddress(), 1 + '', 0.1 + ''], user))
     }
 
     Promise.all(promiseLst).then((result) => {

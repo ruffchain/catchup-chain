@@ -45,7 +45,7 @@ async function main() {
     console.log('Transfer to ', i, ' user')
     let user = new User('User' + i, SYSINFO, null);
     userLst.push(user);
-    // let result = await transferTo(userBoss.ctx, [user.getAddress(), 10 + '', 0.001 + '']);
+    // let result = await transferTo(userBoss.ctx, [user.getAddress(), 10 + '', 0.1 + '']);
     // logger.info(result);
     usersJson.users.push({ address: user.getAddress(), secret: user.getSecret() });
   }

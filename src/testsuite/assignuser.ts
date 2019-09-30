@@ -65,7 +65,7 @@ function promiseTransfer(level: number, levelMax: number, sum: number, userlist:
       let promiseLst: Promise<IfResult>[] = [];
       let sysLeft: number = (sysQuanti - SYS_PER * len);
       let sysToPass: number = sysLeft / len;
-      let sysForEither: number = sysToPass / 2 - 0.001;
+      let sysForEither: number = sysToPass / 2 - 0.1;
 
       for (let i = index; i < index + len; i++) {
         console.log(colors.cyan(userLst[i].name + ' keep '), SYS_PER);
@@ -73,11 +73,11 @@ function promiseTransfer(level: number, levelMax: number, sum: number, userlist:
           console.log('Transfer from ', userLst[i].name, ' to ', userLst[i * 2 + 1].name, ' ' + sysForEither);
 
           let prom = new Promise<IfResult>(async (resolv) => {
-            let result = await setApi(userLst[i].ctx, [userLst[i * 2 + 1].getAddress(), sysForEither + '', 0.001 + ''], userLst[i]);
+            let result = await setApi(userLst[i].ctx, [userLst[i * 2 + 1].getAddress(), sysForEither + '', 0.1 + ''], userLst[i]);
 
             console.log(result);
 
-            result = await setApi(userLst[i].ctx, [userLst[i * 2 + 2].getAddress(), sysForEither + '', 0.001 + ''], userLst[i]);
+            result = await setApi(userLst[i].ctx, [userLst[i * 2 + 2].getAddress(), sysForEither + '', 0.1 + ''], userLst[i]);
 
             console.log(result);
             resolv({ ret: 200, resp: 'Send over by ' + userLst[i].name });
@@ -120,7 +120,7 @@ async function transferMain() {
 
     console.log(colors.red('\n************************************\n'))
     console.log(colors.red('filename:'), fileLst[i])
-    let result = await transferTo(userBoss.ctx, [usersList[0].getAddress(), SUM + '', 0.001 + '']);
+    let result = await transferTo(userBoss.ctx, [usersList[0].getAddress(), SUM + '', 0.1 + '']);
     console.log(colors.green(usersList[0].name))
     console.log(result);
 
@@ -135,7 +135,7 @@ async function transferMain() {
 }
 // async function main() {
 console.log(colors.red('\n************************************\n'))
-// let result = await transferTo(userBoss.ctx, [userLst[0].getAddress(), SUM + '', 0.001 + '']);
+// let result = await transferTo(userBoss.ctx, [userLst[0].getAddress(), SUM + '', 0.1 + '']);
 // console.log(colors.green(userLst[0].name))
 // console.log(result);
 

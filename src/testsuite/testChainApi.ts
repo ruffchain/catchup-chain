@@ -82,7 +82,7 @@ describe('To test Chain API', async function () {
   it('boss transfer 1000 SYS to John', async () => {
     this.timeout(60000);
 
-    let result = await transferTo(userBoss.ctx, [userJohn.getAddress(), 1000 + '', 0.001 + '']);
+    let result = await transferTo(userBoss.ctx, [userJohn.getAddress(), 1000 + '', 0.1 + '']);
     logger.info(result);
 
     expect(result.ret).to.equal(0);
@@ -99,7 +99,7 @@ describe('To test Chain API', async function () {
   it('boss transfer 1000 SYS to Mary', async () => {
     this.timeout(3000);
 
-    let result = await transferTo(userBoss.ctx, [userMary.getAddress(), 1000 + '', 0.001 + '']);
+    let result = await transferTo(userBoss.ctx, [userMary.getAddress(), 1000 + '', 0.1 + '']);
 
     expect(result.ret).to.equal(0);
   })
@@ -114,7 +114,7 @@ describe('To test Chain API', async function () {
   it('boss transfer 1000 SYS to Alice', async () => {
     this.timeout(3000);
 
-    let result = await transferTo(userBoss.ctx, [userAlice.getAddress(), 1000 + '', 0.001 + '']);
+    let result = await transferTo(userBoss.ctx, [userAlice.getAddress(), 1000 + '', 0.1 + '']);
 
     expect(result.ret).to.equal(0);
   })
@@ -130,7 +130,7 @@ describe('To test Chain API', async function () {
   it('John createToken ' + faketoken1, async () => {
     this.timeout(60000);
 
-    let result = await createToken(userJohn.ctx, [faketoken1, "[{\"address\":\"" + userJohn.getAddress() + "\",\"amount\":\"10000\"}]", '9', '0.001']);
+    let result = await createToken(userJohn.ctx, [faketoken1, "[{\"address\":\"" + userJohn.getAddress() + "\",\"amount\":\"10000\"}]", '9', '0.1']);
     console.log(result);
     expect(result.ret).to.equal(0);
   })
