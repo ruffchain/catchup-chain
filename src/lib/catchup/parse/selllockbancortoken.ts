@@ -73,16 +73,14 @@ export async function parseSellLockBancorToken(handler: Synchro, receipt: IfPars
         let out: BigNumber;
 
         // If F=1, not use the formula
-        if (F.eq(1)) {
-            out = e;
-        } else {
-            out = e.dividedBy(S);
-            out = new BigNumber(1).minus(out);
-            let temp1 = out.toNumber();
-            out = new BigNumber(Math.pow(temp1, 1 / F.toNumber()));
-            out = new BigNumber(1).minus(out);
-            out = out.multipliedBy(R);
-        }
+
+        out = e.dividedBy(S);
+        out = new BigNumber(1).minus(out);
+        let temp1 = out.toNumber();
+        out = new BigNumber(Math.pow(temp1, 1 / F.toNumber()));
+        out = new BigNumber(1).minus(out);
+        out = out.multipliedBy(R);
+
 
         // Update system R,S;
         R = R.minus(out);

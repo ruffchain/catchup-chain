@@ -69,20 +69,18 @@ export async function parseBuyLockBancorToken(handler: Synchro, receipt: IfParse
         let out: BigNumber;
 
         // If F=1, not use the formula
-        if (F.eq(1)) {
-            out = e;
-        } else {
-            out = e.dividedBy(R);
-            out = out.plus(new BigNumber(1.0));
 
-            let temp1 = out.toNumber();
-            handler.logger.info('temp1:', temp1);
-            handler.logger.info('F:', F.toNumber());
-            handler.logger.info('math.pow:', Math.pow(temp1, F.toNumber()));
-            out = new BigNumber(Math.pow(temp1, F.toNumber()));
-            out = out.minus(new BigNumber(1));
-            out = out.multipliedBy(S);
-        }
+        out = e.dividedBy(R);
+        out = out.plus(new BigNumber(1.0));
+
+        let temp1 = out.toNumber();
+        handler.logger.info('temp1:', temp1);
+        handler.logger.info('F:', F.toNumber());
+        handler.logger.info('math.pow:', Math.pow(temp1, F.toNumber()));
+        out = new BigNumber(Math.pow(temp1, F.toNumber()));
+        out = out.minus(new BigNumber(1));
+        out = out.multipliedBy(S);
+
 
         handler.logger.info('supply plus:', out.toString());
         handler.logger.info('reserve plus:', e.toString());
