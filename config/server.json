@@ -1,7 +1,7 @@
 {
     "ip": "127.0.0.1",
     "port": 18089,
-    "enableGetCandy": true,
+    "enableGetCandy": false,
     "localPort": 18080,
     "genesisFile": "./config/internal/genesis.json"
 }
