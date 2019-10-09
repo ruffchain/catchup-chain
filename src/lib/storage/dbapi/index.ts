@@ -79,9 +79,9 @@ export function getFunc(funName: string) {
   else if (funName === 'getLatestTxCount') {
     return laGetLatestTxCount;
   }
-  else if (funName === 'getCandy') {
-    return laGetCandy;
-  }
+  // else if (funName === 'getCandy') {
+  //   return laGetCandy;
+  // }
   else if (funName === 'getTokenBySys') {
     return laGetTokenBySys;
   }

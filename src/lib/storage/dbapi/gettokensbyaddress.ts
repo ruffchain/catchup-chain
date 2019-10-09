@@ -1,5 +1,6 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
+import { SYS_NAME } from "./scoop";
 
 
 /**
@@ -19,7 +20,8 @@ export async function laGetTokensByAddress(handle: WRQueue, args: any) {
       for (let i = 0; i < arr.length; i++) {
         arr[i].amount = parseFloat(arr[i].amount)
         if (arr[i].token === 's') {
-          arr[i].token = 'SYS'
+          // arr[i].token = 'SYS'
+          arr[i].token = SYS_NAME
         }
       }
 

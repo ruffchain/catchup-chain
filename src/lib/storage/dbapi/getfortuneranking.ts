@@ -1,6 +1,7 @@
 import { IFeedBack, ErrorCode } from "../../../core";
 import { WRQueue } from "../queue";
 import { resolve } from "dns";
+import { SYS_NAME } from "./scoop";
 
 
 /**
@@ -15,7 +16,7 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
     let result: any;
 
     if (typeof args === 'string') { // tokenName
-      if (args === 's' || args === 'SYS' || args === 'sys') {
+      if (args === 's' || args === 'SYS' || args === 'sys' || args === 'ruff' || args === 'Ruff' || args === 'RUFF') {
         args = 's';
       } else {
         args = args.toUpperCase();
@@ -29,7 +30,8 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
       if (result.err === ErrorCode.RESULT_OK) {
         for (let i = 0; i < result.data.length; i++) {
           if (result.data[i].token === 's') {
-            result.data[i].token = 'SYS'
+            // result.data[i].token = 'SYS'
+            result.data[i].token = SYS_NAME
             break
           }
         }
@@ -54,7 +56,7 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
         return;
       }
 
-      if (tokenName === 'sys' || tokenName === 'SYS') {
+      if (tokenName === 'sys' || tokenName === 'SYS' || tokenName === 'ruff' || tokenName === 'Ruff' || tokenName === 'RUFF') {
         tokenName = 's';
       }
       result = await handle.pStorageDb.queryFortuneRankingByPage(tokenName, page, pageSize);
@@ -62,7 +64,8 @@ export async function laGetFortuneRanking(handle: WRQueue, args: any) {
       if (result.err === ErrorCode.RESULT_OK && tokenName === 's') {
         for (let i = 0; i < result.data.length; i++) {
           if (result.data[i].token === 's') {
-            result.data[i].token = 'SYS'
+            // result.data[i].token = 'SYS'
+            result.data[i].token = SYS_NAME
             break
           }
         }

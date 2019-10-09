@@ -1,6 +1,7 @@
 import { WRQueue } from "../queue";
 import { IFeedBack, ErrorCode, isValidAddress } from "../../../core";
 import { HASH_TYPE } from "../StorageDataBase";
+import { SYS_NAME } from "./scoop";
 
 function isANumber(args: string) {
   // only contain numbers
@@ -33,8 +34,8 @@ export async function laGetName(handle: WRQueue, args: any) {
       // if it is sys
       let queryName: string;
 
-      if (args === 'sys' || args === 'SYS') {
-        resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: 'SYS', type: HASH_TYPE.TOKEN, verified: 0 }] });
+      if (args === 'sys' || args === 'SYS' || args === 'RUFF' || args === 'ruff' || args === 'Ruff') {
+        resolv({ err: ErrorCode.RESULT_OK, data: [{ hash: SYS_NAME, type: HASH_TYPE.TOKEN, verified: 0 }] });
         return;
       } else if (args.toString().length > 20) {
         queryName = args.toString();

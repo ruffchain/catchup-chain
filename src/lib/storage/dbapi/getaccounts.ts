@@ -1,5 +1,6 @@
 import { WRQueue } from "../queue";
 import { IFeedBack, ErrorCode } from "../../../core";
+import { SYS_NAME } from "./scoop";
 
 /**
  * Get accounts info by an arrary of addresses
@@ -17,7 +18,8 @@ export async function laGetAccounts(handle: WRQueue, args: any) {
         arr[i].amount = parseFloat(arr[i].amount);
 
         if (arr[i].token === 's') {
-          arr[i].token = 'SYS'
+          // arr[i].token = 'SYS'
+          arr[i].token = SYS_NAME
         }
       }
 

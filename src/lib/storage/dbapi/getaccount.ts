@@ -1,5 +1,6 @@
 import { WRQueue } from "../queue";
 import { IFeedBack, ErrorCode } from "../../../core";
+import { SYS_NAME } from "./scoop";
 
 /**
  * Get Account info, tokens in hand
@@ -18,7 +19,9 @@ export async function laGetAccount(handle: WRQueue, args: any) {
         arr[i].amount = parseFloat(arr[i].amount);
 
         if (arr[i].token === 's') {
-          arr[i].token = 'SYS'
+          // arr[i].token = 'SYS'
+          // 2019-10-09
+          arr[i].token = SYS_NAME;
         }
       }
 
