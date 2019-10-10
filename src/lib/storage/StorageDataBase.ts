@@ -17,7 +17,6 @@ export const HASH_TYPE = {
 };
 // Token symbol, 
 export const SYS_TOKEN = 's';
-// export const SYS_TOKEN_SYMBOL = 'SYS';
 
 export const TOKEN_TYPE = {
   NORMAL: 'normal',

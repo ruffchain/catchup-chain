@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import { Synchro } from './lib/catchup/synchro';
 import { Inquiro } from './lib/catchup/inquiro';
 import { WRQueue } from './lib/storage/queue';
-import { SYS_TOKEN_PRECISION } from './lib/storage/dbapi/scoop';
+import { SYS_TOKEN_PRECISION, SYS_NAME } from './lib/storage/dbapi/scoop';
 
 
 interface IPreBalance {
@@ -125,7 +125,7 @@ async function main() {
     logger.info('\nShould load address into account table, hash table')
     let arrPreBalances = getPreBalances(genesisFile);
 
-    assert(await storageDB.insertHashTable('SYS', HASH_TYPE.TOKEN), 'add to nameHash table' + ' SYS', logger);
+    assert(await storageDB.insertHashTable(SYS_NAME, HASH_TYPE.TOKEN), 'add to nameHash table' + SYS_NAME, logger);
 
     let amountAll = 0;
     for (let i = 0; i < arrPreBalances.length; i++) {
@@ -142,7 +142,7 @@ async function main() {
     }
 
 
-    assert(await storageDB.insertTokenTable('SYS', TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
+    assert(await storageDB.insertTokenTable(SYS_NAME, TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
       supply: amountAll,
       precision: SYS_TOKEN_PRECISION
     }))), 'save SYS to token table', logger)
