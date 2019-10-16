@@ -127,15 +127,15 @@ async function main() {
 
     assert(await storageDB.insertHashTable(SYS_NAME, HASH_TYPE.TOKEN), 'add to nameHash table' + SYS_NAME, logger);
 
-    let amountAll = 0;
+    let amountAll: BigNumber = new BigNumber(0);
     for (let i = 0; i < arrPreBalances.length; i++) {
       let preBalance = arrPreBalances[i];
       logger.info(preBalance);
 
-      amountAll += preBalance.amount; // add it up
-      let newAmount = preBalance.amount;
+      amountAll = amountAll.plus(new BigNumber(preBalance.amount)); // add it up
+      let newAmount: BigNumber = new BigNumber(preBalance.amount);
 
-      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, new BigNumber(newAmount).toString(), newAmount), 'add to account table ', logger);
+      assert(await storageDB.insertAccountTable(preBalance.address, SYS_TOKEN, TOKEN_TYPE.SYS, new BigNumber(newAmount).toString(), newAmount.toNumber()), 'add to account table ', logger);
 
       assert(await storageDB.insertHashTable(preBalance.address, HASH_TYPE.ADDRESS), 'add to nameHash table ' + preBalance.address, logger);
 
@@ -143,7 +143,7 @@ async function main() {
 
 
     assert(await storageDB.insertTokenTable(SYS_NAME, TOKEN_TYPE.SYS, '-', 0, Buffer.from(JSON.stringify({
-      supply: amountAll,
+      supply: amountAll.toNumber(),
       precision: SYS_TOKEN_PRECISION
     }))), 'save SYS to token table', logger)
 
