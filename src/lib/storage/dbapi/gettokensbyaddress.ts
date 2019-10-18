@@ -17,15 +17,24 @@ export async function laGetTokensByAddress(handle: WRQueue, args: any) {
     if (result.err === ErrorCode.RESULT_OK) {
       arr = result.data;
 
+      let arr2: any[] = [];
+
       for (let i = 0; i < arr.length; i++) {
         arr[i].amount = parseFloat(arr[i].amount)
         if (arr[i].token === 's') {
           // arr[i].token = 'SYS'
           arr[i].token = SYS_NAME
+          arr2.push(arr[i]);
         }
       }
 
-      resolv({ err: ErrorCode.RESULT_OK, data: arr })
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].token !== SYS_NAME) {
+          arr2.push(arr[i]);
+        }
+      }
+
+      resolv({ err: ErrorCode.RESULT_OK, data: arr2 })
       return;
     }
     resolv({ err: ErrorCode.RESULT_SYNC_GETTOKENBYADDRESS_FAILED, data: [] })
